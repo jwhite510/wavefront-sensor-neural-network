@@ -14,7 +14,8 @@ def spatial_grid(x_max, dx, y_max, dy):
 if __name__ == "__main__":
 
     # surface coordinates before propagation
-    sigma, eta = spatial_grid(x_max=1e-2, dx=1e-3, y_max=1e-2, dy=1e-3)
+    ds = 1e-3
+    sigma, eta = spatial_grid(x_max=1e-2, dx=ds, y_max=1e-2, dy=ds)
     sigma = sigma.reshape(1, -1, 1, 1)
     eta = eta.reshape(-1, 1, 1, 1)
 
@@ -23,16 +24,11 @@ if __name__ == "__main__":
     U_initial[:,8:11] = 1
 
     plt.figure(1)
+    plt.title("U_initial")
     plt.pcolormesh(np.squeeze(sigma), np.squeeze(eta), np.squeeze(np.abs(U_initial)**2))
-    plt.show()
-
-
-
-    print("np.shape(U_initial) =>", np.shape(U_initial))
-    exit()
 
     # surface coordinates after propagation
-    x, y = spatial_grid(x_max=1e-2, dx=1e-3, y_max=1e-2, dy=1e-3)
+    x, y = spatial_grid(x_max=1e-2, dx=ds, y_max=1e-2, dy=ds)
     x = x.reshape(1, 1, 1, -1)
     y = y.reshape(1, 1, -1, 1)
 
@@ -42,9 +38,17 @@ if __name__ == "__main__":
 
     r_01 = np.sqrt(z**2 + (x - sigma)**2 + (y - eta)**2)
 
-    U_initial * np.exp(1j * k * r_01) / (r_01**2)
+    fres = U_initial * np.exp(1j * k * r_01) / (r_01**2)
 
+    fres = np.sum(fres, axis=0)*ds
+    fres = np.sum(fres, axis=0)*ds
 
+    U_propagated = ( z / (1j * wavelength) ) * fres
 
+    plt.figure(2)
+    plt.title("U_propagated")
+    plt.pcolormesh(np.squeeze(x), np.squeeze(y), np.squeeze(np.abs(U_propagated)**2))
+    print("np.shape(fres) =>", np.shape(fres))
 
+    plt.show()
 
