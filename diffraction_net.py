@@ -6,60 +6,43 @@ import matplotlib.pyplot as plt
 class DiffractionNet():
     def __init__(self, N):
         self.x = tf.placeholder(tf.float32, shape=[None, N, N, 1])
+        self.nodes = {}
+        self.setup_network()
+        self.out = self.nodes["conv19"]
+
+    def setup_network(self):
 
         # convolutional layer down sampling
-        conv1 = convolutional_layer(self.x, shape=[3,3,1,32], activate='relu', stride=[1,1])
-        conv2 = convolutional_layer(conv1, shape=[3,3,32,32], activate='relu', stride=[1,1])
+        self.nodes["conv1"] = convolutional_layer(self.x, shape=[3,3,1,32], activate='relu', stride=[1,1])
+        self.nodes["conv2"] = convolutional_layer(self.nodes["conv1"], shape=[3,3,32,32], activate='relu', stride=[1,1])
         # max pooling
-        pool3 = max_pooling_layer(conv2, pool_size_val=[2,2], stride_val=[2,2], pad=True)
+        self.nodes["pool3"] = max_pooling_layer(self.nodes["conv2"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
         # convolutional layer
-        conv4 = convolutional_layer(pool3, shape=[3,3,32,64], activate='relu', stride=[1,1])
-        conv5 = convolutional_layer(conv4, shape=[3,3,64,64], activate='relu', stride=[1,1])
+        self.nodes["conv4"] = convolutional_layer(self.nodes["pool3"], shape=[3,3,32,64], activate='relu', stride=[1,1])
+        self.nodes["conv5"] = convolutional_layer(self.nodes["conv4"], shape=[3,3,64,64], activate='relu', stride=[1,1])
         # max pooling
-        pool6 = max_pooling_layer(conv5, pool_size_val=[2,2], stride_val=[2,2], pad=True)
+        self.nodes["pool6"] = max_pooling_layer(self.nodes["conv5"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
         # convolutional layer
-        conv7 = convolutional_layer(pool6, shape=[3,3,64,128], activate='relu', stride=[1,1])
-        conv8 = convolutional_layer(conv7, shape=[3,3,128,128], activate='relu', stride=[1,1])
+        self.nodes["conv7"] = convolutional_layer(self.nodes["pool6"], shape=[3,3,64,128], activate='relu', stride=[1,1])
+        self.nodes["conv8"] = convolutional_layer(self.nodes["conv7"], shape=[3,3,128,128], activate='relu', stride=[1,1])
         # max pooling
-        pool9 = max_pooling_layer(conv8, pool_size_val=[2,2], stride_val=[2,2], pad=True)
+        self.nodes["pool9"] = max_pooling_layer(self.nodes["conv8"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
         # convolutional layer
-        conv10 = convolutional_layer(pool9, shape=[3,3,128,128], activate='relu', stride=[1,1])
-        conv11 = convolutional_layer(conv10, shape=[3,3,128,128], activate='relu', stride=[1,1])
+        self.nodes["conv10"] = convolutional_layer(self.nodes["pool9"], shape=[3,3,128,128], activate='relu', stride=[1,1])
+        self.nodes["conv11"] = convolutional_layer(self.nodes["conv10"], shape=[3,3,128,128], activate='relu', stride=[1,1])
         # up sampling
-        ups12 = upsample_2d(conv11, 2)
+        self.nodes["ups12"] = upsample_2d(self.nodes["conv11"], 2)
         # convolutional layer
-        conv13 = convolutional_layer(ups12, shape=[3,3,128,64], activate='relu', stride=[1,1])
-        conv14 = convolutional_layer(conv13, shape=[3,3,64,64], activate='relu', stride=[1,1])
+        self.nodes["conv13"] = convolutional_layer(self.nodes["ups12"], shape=[3,3,128,64], activate='relu', stride=[1,1])
+        self.nodes["conv14"] = convolutional_layer(self.nodes["conv13"], shape=[3,3,64,64], activate='relu', stride=[1,1])
         # up sampling
-        ups15 = upsample_2d(conv14, 2)
+        self.nodes["ups15"] = upsample_2d(self.nodes["conv14"], 2)
         # convolutional layer
-        conv16 = convolutional_layer(ups15, shape=[3,3,64,32], activate='relu', stride=[1,1])
-        conv17 = convolutional_layer(conv16, shape=[3,3,32,32], activate='relu', stride=[1,1])
+        self.nodes["conv16"] = convolutional_layer(self.nodes["ups15"], shape=[3,3,64,32], activate='relu', stride=[1,1])
+        self.nodes["conv17"] = convolutional_layer(self.nodes["conv16"], shape=[3,3,32,32], activate='relu', stride=[1,1])
         # up sampling
-        ups18 = upsample_2d(conv17, 2)
-        conv19 = convolutional_layer(ups18, shape=[3,3,32,1], activate='sigmoid', stride=[1,1])
-
-        print("conv1 =>", conv1)
-        print("conv2 =>", conv2)
-        print("pool3 =>", pool3)
-        print("conv4 =>", conv4)
-        print("conv5 =>", conv5)
-        print("pool6 =>", pool6)
-        print("conv7 =>", conv7)
-        print("conv8 =>", conv8)
-        print("pool9 =>", pool9)
-        print("conv10 =>", conv10)
-        print("conv11 =>", conv11)
-        print("ups12 =>", ups12)
-        print("conv13 =>", conv13)
-        print("conv14 =>", conv14)
-        print("ups15 =>", ups15)
-        print("conv16 =>", conv16)
-        print("conv17 =>", conv17)
-        print("ups18 =>", ups18)
-        print("conv19 =>", conv19)
-
-        exit()
+        self.nodes["ups18"] = upsample_2d(self.nodes["conv17"], 2)
+        self.nodes["conv19"] = convolutional_layer(self.nodes["ups18"], shape=[3,3,32,1], activate='sigmoid', stride=[1,1])
 
 
 def max_pooling_layer(input_x, pool_size_val,  stride_val, pad=False):
