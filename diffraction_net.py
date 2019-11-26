@@ -4,11 +4,22 @@ import matplotlib.pyplot as plt
 
 
 class DiffractionNet():
-    def __init__(self, N):
+    def __init__(self, name, N):
+        # input image
         self.x = tf.placeholder(tf.float32, shape=[None, N, N, 1])
+        # label
+        self.y = tf.placeholder(tf.float32, shape=[None, N, N, 1])
         self.nodes = {}
         self.setup_network()
         self.out = self.nodes["conv19"]
+
+        # learning rate
+        self.s_LR = tf.placeholder(tf.float32, shape=[])
+        # define loss function
+        self.loss = tf.losses.mean_squared_error(labels=self.y, predictions=self.out)
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
+        self.train = self.optimizer.minimize(self.loss)
+        exit()
 
     def setup_network(self):
 
@@ -43,6 +54,9 @@ class DiffractionNet():
         # up sampling
         self.nodes["ups18"] = upsample_2d(self.nodes["conv17"], 2)
         self.nodes["conv19"] = convolutional_layer(self.nodes["ups18"], shape=[3,3,32,1], activate='sigmoid', stride=[1,1])
+
+    def train(self):
+        pass
 
 
 def max_pooling_layer(input_x, pool_size_val,  stride_val, pad=False):
@@ -92,7 +106,7 @@ def upsample_2d(x, S):
 
 if __name__ == "__main__":
 
-    diffraction_net = DiffractionNet(N=32)
+    diffraction_net = DiffractionNet(name="test1", N=32)
     pass
 
 
