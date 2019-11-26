@@ -1,6 +1,8 @@
 import tensorflow as tf
+import os
 import numpy as np
 import matplotlib.pyplot as plt
+import shutil
 
 
 class DiffractionNet():
@@ -21,6 +23,11 @@ class DiffractionNet():
         self.loss = tf.losses.mean_squared_error(labels=self.y, predictions=self.out)
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
         self.train = self.optimizer.minimize(self.loss)
+
+        # save file
+        if not os.path.isdir('./models'):
+            os.makedirs('./models')
+        shutil.copyfile('./'+__file__, './models/'+__file__.split(".")[0]+'_{}.py'.format(self.name))
 
         # setup logging
         self.tf_loggers = {}
