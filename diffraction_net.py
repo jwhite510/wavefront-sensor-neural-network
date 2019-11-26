@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 class DiffractionNet():
     def __init__(self, name, N):
+        self.name = name
         # input image
         self.x = tf.placeholder(tf.float32, shape=[None, N, N, 1])
         # label
@@ -19,7 +20,16 @@ class DiffractionNet():
         self.loss = tf.losses.mean_squared_error(labels=self.y, predictions=self.out)
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
         self.train = self.optimizer.minimize(self.loss)
-        exit()
+
+        # setup logging
+        self.tf_loggers = {}
+        self.setup_logging()
+
+        # initialize graph
+        self.init = tf.global_variables_initializer()
+        self.sess = tf.Session()
+        self.sess.run(self.init)
+        self.writer = tf.summary.FileWriter("./tensorboard_graph/" + self.name)
 
     def setup_network(self):
 
@@ -54,6 +64,9 @@ class DiffractionNet():
         # up sampling
         self.nodes["ups18"] = upsample_2d(self.nodes["conv17"], 2)
         self.nodes["conv19"] = convolutional_layer(self.nodes["ups18"], shape=[3,3,32,1], activate='sigmoid', stride=[1,1])
+
+    def setup_logging(self):
+        self.tf_loggers["loss"] = tf.summary.scalar("loss", self.loss)
 
     def train(self):
         pass
