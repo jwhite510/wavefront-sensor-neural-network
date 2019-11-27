@@ -9,9 +9,7 @@ def spatial_grid(x_max, dx, y_max, dy):
 
     return x_grid, y_grid
 
-
-
-if __name__ == "__main__":
+def fresnel_diffraction():
 
     # surface coordinates before propagation
     ds = 0.4e-3
@@ -41,7 +39,7 @@ if __name__ == "__main__":
 
 
     z = 1 # meter
-    z = np.linspace(0,0.01,100)
+    z = np.linspace(1000*wavelength,1003*wavelength,100)
     plt.ion()
     fig, ax = plt.subplots()
     for z_ in z:
@@ -55,7 +53,13 @@ if __name__ == "__main__":
         ax.cla()
         ax.set_title("U_propagated: z:{}".format(z_))
         ax.pcolormesh(np.squeeze(x), np.squeeze(y), np.squeeze(np.abs(U_propagated)**2))
-        plt.pause(0.1)
+        plt.pause(0.01)
 
     plt.show()
+
+
+
+if __name__ == "__main__":
+
+    fresnel_diffraction()
 
