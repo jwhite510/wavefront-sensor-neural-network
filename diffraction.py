@@ -3,22 +3,25 @@ import matplotlib.pyplot as plt
 
 
 class DiffractionObject():
-    def __init__(self, ds, y_max, x_max, wavelength):
-        # surface coordinates before propagation
-        self.ds = ds
-        self.y_max = y_max
-        self.wavelength = wavelength
+    def __init__(self, N, x_max, wavelength):
+
+        # object = DiffractionObject(ds=0.4e-3, d_max=1e-2, wavelength=500e-9)
+
+        # measured diffraction pattern plane
         self.x_max = x_max
-        # self.ds = 0.4e-3
-        self.sigma, self.eta = spatial_grid(x_max=self.x_max, dx=self.ds, y_max=self.y_max, dy=self.ds)
-        self.sigma = self.sigma.reshape(1, -1, 1, 1)
-        self.eta = self.eta.reshape(-1, 1, 1, 1)
 
-        # surface coordinates after propagation
-        self.x, self.y = spatial_grid(x_max=self.x_max, dx=self.ds, y_max=self.y_max, dy=self.ds)
-        self.x = self.x.reshape(1, 1, 1, -1)
-        self.y = self.y.reshape(1, 1, -1, 1)
+        # surface coordinates before propagation
+        self.N = N
 
+        self.dx = (2 * self.x_max) / self.N
+
+
+        # define position axis
+        self.x = np.arange(-self.N/2, self.N/2, 1)
+        print("self.x =>", self.x)
+        exit()
+
+        self.wavelength = wavelength
         self.U_initial = None
 
 
@@ -106,16 +109,43 @@ def fraunhoffer_diffraction(object, z):
     plt.show()
 
 
+def fraunhoffer_diffraction_fft(object, z):
+
+    # fft object
+    import ipdb; ipdb.set_trace() # BREAKPOINT
+    print("BREAKPOINT")
+
+
+
+
+
 
 
 if __name__ == "__main__":
 
-    # fresnel_diffraction()
-    object = DiffractionObject(ds=0.4e-3, y_max=1e-2, x_max=1e-2, wavelength=500e-9)
-    # define initial field
-    object.U_initial = np.zeros_like(object.sigma * object.eta, dtype=np.complex128)
-    object.U_initial[:,18:20] = 1
-    object.U_initial[:,30:32] = 1
+    # grid space of the diffraction pattern
+    N = 20 # measurement points
+    diffraction_plane_x_max = 1 # meters
+    diffraction_plane_z = 10 # meters
+    wavelength = 400e-9
 
-    fraunhoffer_diffraction(object, z=100)
+    # measured diffraction plane
+    diffraction_plane_dx = 2*diffraction_plane_x_max/N
+    diffraction_plane_x = diffraction_plane_dx * np.arange(-N/2, N/2, 1)
+
+    # convert distance to frequency domain
+    diffraction_plane_fx = diffraction_plane_x / (wavelength * diffraction_plane_z)
+    diffraction_plane_d_fx = diffraction_plane_dx / (wavelength * diffraction_plane_z)
+
+    # x coordinates at object plane
+    object_plane_dx = 1 / ( diffraction_plane_d_fx * N)
+    object_plane_x = object_plane_dx * np.arange(-N/2, N/2, 1)
+
+    # # convert to image domain
+    # print("d_f_x =>", d_f_x)
+    # print("f_x[1] - f_x[0] =>", f_x[1] - f_x[0])
+
+
+
+
 
