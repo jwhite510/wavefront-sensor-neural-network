@@ -22,7 +22,7 @@ def check_if_vertical(line1, line2):
     elif line2_point[1] < 0 and line1_point[1] < 0:
         return 0.0
     else:
-        print("is vertical, subtracting")
+        # print("is vertical, subtracting")
         return 1.0
 
 
@@ -61,7 +61,7 @@ def make_object(N):
     obj = np.zeros((N,N), dtype=np.complex128)
 
     # generate random indexes
-    np.random.seed(3356)
+    # np.random.seed(3357)
     indexes_n = np.random.randint(4,8)
     # for each index generate an x and y point
     x = []
@@ -73,11 +73,6 @@ def make_object(N):
     x.append(x[0])
     y.append(y[0])
 
-    plt.figure(1)
-    plt.plot(x, y)
-    plt.xlim(0,N)
-    plt.ylim(0,N)
-    # plt.ion()
 
     # for each point on the grid
     for x_i in range(0, N):
@@ -110,18 +105,24 @@ def make_object(N):
                         intersected_vertices.append(point_vertex)
 
             if len(intersected_vertices) > 0:
+                # check that vertices are in order -- edge case
+                import ipdb; ipdb.set_trace() # BREAKPOINT
+                print("BREAKPOINT")
+                exit()
+
                 # check for intersections that are vertically allgined
-                print("intersected_vertices =>", intersected_vertices)
-                print("original intersections =>", intersections)
                 for line1_, line2_ in zip(intersected_vertices[0::2], intersected_vertices[1::2]):
-                    print("check these liens")
-                    print("line1_ =>", line1_)
-                    print("line2_ =>", line2_)
                     intersections -= check_if_vertical(line1_, line2_)
 
             if intersections % 2 == 0:
                 obj[y_i, x_i] = 1
 
+    plt.figure(1)
+    plt.plot(x, y)
+    plt.xlim(0,N)
+    plt.ylim(0,N)
+
+    # plt.ion()
     plt.figure(2)
     plt.pcolormesh(np.abs(obj))
     plt.show()
