@@ -1,6 +1,33 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+def check_if_vertical(line1, line2):
+    # find common point between two lines
+    common_point = [line1[0][0], line1[1][0]]
+    line1_point = [line1[0][1], line1[1][1]]
+    if line2[0][0] != common_point[0] or line2[1][0] != common_point[1]:
+        if line2[0][1] != common_point[0] or line2[1][1] != common_point[1]:
+            common_point = [line1[0][1], line1[1][1]]
+            line1_point = [line1[0][0], line1[1][0]]
+    line2_point = [line2[0][1], line2[1][1]]
+    if common_point == line2_point:
+        line2_point = [line2[0][0], line2[1][0]]
+
+    line2_point[1] -= common_point[1]
+    line1_point[1] -= common_point[1]
+
+    if line2_point[1] > 0 and line1_point[1] > 0:
+        return 0.0
+    elif line2_point[1] < 0 and line1_point[1] < 0:
+        return 0.0
+    else:
+        print("is vertical, subtracting")
+        return 1.0
+
+
+
+
 def orientation(p, q, r):
     val = (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1])
 
@@ -50,7 +77,7 @@ def make_object(N):
     plt.plot(x, y)
     plt.xlim(0,N)
     plt.ylim(0,N)
-    plt.ion()
+    # plt.ion()
 
     # for each point on the grid
     for x_i in range(0, N):
@@ -72,38 +99,26 @@ def make_object(N):
 
                 # check if on a vertice
                 if test_liney[0] in edge_y:
-
-                    # get the point
-                    # index_pt = edge_y.index(test_liney[0])
-                    point_vertex = [edge_x, edge_y]
-                    # append this point
-                    intersected_vertices.append(point_vertex)
+                    # if the line
+                    index_ = edge_y.index(test_liney[0])
+                    if test_linex[0] < edge_x[index_]:
+                    # if True:
+                        # get the point
+                        # index_pt = edge_y.index(test_liney[0])
+                        point_vertex = [edge_x, edge_y]
+                        # append this point
+                        intersected_vertices.append(point_vertex)
 
             if len(intersected_vertices) > 0:
                 # check for intersections that are vertically allgined
                 print("intersected_vertices =>", intersected_vertices)
-                for vertices in intersected_vertices:
-                    print(vertices)
-                # import ipdb; ipdb.set_trace() # BREAKPOINT
-                # print("BREAKPOINT")
-                pass
-                # import ipdb; ipdb.set_trace() # BREAKPOINT
-                # print("BREAKPOINT")
+                print("original intersections =>", intersections)
+                for line1_, line2_ in zip(intersected_vertices[0::2], intersected_vertices[1::2]):
+                    print("check these liens")
+                    print("line1_ =>", line1_)
+                    print("line2_ =>", line2_)
+                    intersections -= check_if_vertical(line1_, line2_)
 
-            plt.figure(2)
-            plt.gca().cla()
-            plt.pcolormesh(np.abs(obj))
-            plt.figure(1)
-            plt.gca().cla()
-            plt.plot(x, y)
-            plt.plot(test_linex, test_liney)
-            plt.xlim(0,N)
-            plt.ylim(0,N)
-
-            plt.pause(0.10)
-            # even number of intersections:
-            # intersections -= (len(intersected_vertices) / 2)
-            print("intersections =>", intersections)
             if intersections % 2 == 0:
                 obj[y_i, x_i] = 1
 
