@@ -34,6 +34,7 @@ def make_object(N):
     obj = np.zeros((N,N), dtype=np.complex128)
 
     # generate random indexes
+    np.random.seed(3356)
     indexes_n = np.random.randint(4,8)
     # for each index generate an x and y point
     x = []
@@ -49,6 +50,7 @@ def make_object(N):
     plt.plot(x, y)
     plt.xlim(0,N)
     plt.ylim(0,N)
+    plt.ion()
 
     # for each point on the grid
     for x_i in range(0, N):
@@ -59,10 +61,49 @@ def make_object(N):
 
             # for each line segment
             intersections = 0.0
+            intersected_vertices = []
             for i in range(0,len(x)-1):
                 # count the number of intersections
-                intersections+=check_intersect( [test_linex, test_liney], [[x[i], x[i+1]], [y[i], y[i+1]]])
+                edge_y = [y[i], y[i+1]]
+                edge_x = [x[i], x[i+1]]
 
+                intersections += check_intersect( [test_linex, test_liney], [edge_x, edge_y])
+                # dont count vertices twice
+
+                # check if on a vertice
+                if test_liney[0] in edge_y:
+
+                    # get the point
+                    # index_pt = edge_y.index(test_liney[0])
+                    point_vertex = [edge_x, edge_y]
+                    # append this point
+                    intersected_vertices.append(point_vertex)
+
+            if len(intersected_vertices) > 0:
+                # check for intersections that are vertically allgined
+                print("intersected_vertices =>", intersected_vertices)
+                for vertices in intersected_vertices:
+                    print(vertices)
+                # import ipdb; ipdb.set_trace() # BREAKPOINT
+                # print("BREAKPOINT")
+                pass
+                # import ipdb; ipdb.set_trace() # BREAKPOINT
+                # print("BREAKPOINT")
+
+            plt.figure(2)
+            plt.gca().cla()
+            plt.pcolormesh(np.abs(obj))
+            plt.figure(1)
+            plt.gca().cla()
+            plt.plot(x, y)
+            plt.plot(test_linex, test_liney)
+            plt.xlim(0,N)
+            plt.ylim(0,N)
+
+            plt.pause(0.10)
+            # even number of intersections:
+            # intersections -= (len(intersected_vertices) / 2)
+            print("intersections =>", intersections)
             if intersections % 2 == 0:
                 obj[y_i, x_i] = 1
 
