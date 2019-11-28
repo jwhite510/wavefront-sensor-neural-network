@@ -13,10 +13,6 @@ def orientation(p, q, r):
 
 
 def check_intersect(line1, line2):
-    plt.figure(88)
-    plt.gca().cla()
-    plt.plot(line1[0], line1[1])
-    plt.plot(line2[0], line2[1])
 
     p1 = (line1[0][0], line1[1][0])
     q1 = (line1[0][1], line1[1][1])
@@ -30,12 +26,8 @@ def check_intersect(line1, line2):
     o4 = orientation(p2, q2, q1)
 
     if o1 != o2 and o3 != o4:
-        # return True
-        print("true")
-    plt.ioff()
-    plt.show()
-    exit()
-    return False
+        return 1.0
+    return 0.0
 
 
 def make_object(N):
@@ -49,32 +41,40 @@ def make_object(N):
     for i in range(indexes_n):
         x.append(int(np.random.rand(1)*N))
         y.append(int(np.random.rand(1)*N))
-        # print("i =>", i)
-        # print("y =>", y)
-        # print("x =>", x)
 
     x.append(x[0])
     y.append(y[0])
 
-    # plt.figure()
-    # print("x =>", x)
-    # print("y =>", y)
-    # plt.plot(x, y)
+    plt.figure(1)
+    plt.plot(x, y)
+    plt.xlim(0,N)
+    plt.ylim(0,N)
 
-    # define test line
-    test_linex = [3, 20]
-    test_liney = [10, 10]
-    plt.plot(test_linex, test_liney)
-    # check if lines intersect
-    # plt.ion()
-    for i in range(0,len(x)-1):
-        # plt.plot([x[i], x[i+1]], [y[i], y[i+1]])
-        # plt.pause(1.1)
-        check_intersect( [test_linex, test_liney], [[x[i], x[i+1]], [y[i], y[i+1]]])
-        # x[i]
-        # y[i]
-        # x[i+1]
-        # y[i+1]
+    # for each point on the grid
+    for x_i in range(0, N):
+        for y_i in range(0, N):
+            # define test line
+            test_linex = [x_i, N-1]
+            test_liney = [y_i, y_i]
+
+            # for each line segment
+            intersections = 0.0
+            for i in range(0,len(x)-1):
+                # count the number of intersections
+                intersections+=check_intersect( [test_linex, test_liney], [[x[i], x[i+1]], [y[i], y[i+1]]])
+
+            if intersections % 2 == 0:
+                obj[y_i, x_i] = 1
+
+    plt.figure(2)
+    plt.pcolormesh(np.abs(obj))
+    plt.show()
+
+
+
+
+
+
     plt.show()
 
 
@@ -82,7 +82,7 @@ def make_object(N):
 if __name__ == "__main__":
 
     # grid space of the diffraction pattern
-    N = 20 # measurement points
+    N = 40 # measurement points
     diffraction_plane_x_max = 1 # meters
     diffraction_plane_z = 10 # meters
     wavelength = 400e-9
