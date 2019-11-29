@@ -73,8 +73,21 @@ def make_object(N):
     x.append(x[0])
     y.append(y[0])
 
+    # import ipdb; ipdb.set_trace() # BREAKPOINT
+    # print("BREAKPOINT")
 
+    x = [5,20,35,20]
+    y = [20,35,20,5]
+    x.append(x[0])
+    y.append(y[0])
+
+
+    plt.figure(1)
+    plt.plot(x, y)
+    plt.xlim(0,N)
+    plt.ylim(0,N)
     # for each point on the grid
+    plt.ion()
     for x_i in range(0, N):
         for y_i in range(0, N):
             # define test line
@@ -84,6 +97,7 @@ def make_object(N):
             # for each line segment
             intersections = 0.0
             intersected_vertices = []
+            roll = False
             for i in range(0,len(x)-1):
                 # count the number of intersections
                 edge_y = [y[i], y[i+1]]
@@ -103,30 +117,38 @@ def make_object(N):
                         point_vertex = [edge_x, edge_y]
                         # append this point
                         intersected_vertices.append(point_vertex)
+                        if i == 0:
+                            roll = True
+
+            if roll:
+                intersected_vertices.insert(0,intersected_vertices.pop())
 
             if len(intersected_vertices) > 0:
                 # check that vertices are in order -- edge case
-                import ipdb; ipdb.set_trace() # BREAKPOINT
-                print("BREAKPOINT")
-                exit()
-
                 # check for intersections that are vertically allgined
+                print("intersected_vertices =>", intersected_vertices)
                 for line1_, line2_ in zip(intersected_vertices[0::2], intersected_vertices[1::2]):
                     intersections -= check_if_vertical(line1_, line2_)
+                    print(check_if_vertical(line1_, line2_))
 
             if intersections % 2 == 0:
                 obj[y_i, x_i] = 1
 
-    plt.figure(1)
-    plt.plot(x, y)
-    plt.xlim(0,N)
-    plt.ylim(0,N)
+            if x_i > 3 and y_i>12:
+                plt.figure(1)
+                plt.gca().cla()
+                plt.plot(x,y)
+                plt.xlim(0,40)
+                plt.ylim(0,40)
+                plt.plot(test_linex, test_liney)
+                plt.figure(2)
+                plt.pcolormesh(np.abs(obj))
+                plt.pause(1.1)
 
-    # plt.ion()
-    plt.figure(2)
+
+    plt.ioff()
     plt.pcolormesh(np.abs(obj))
     plt.show()
-
 
 
 
