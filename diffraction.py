@@ -3,6 +3,7 @@ import math
 from PIL import Image, ImageDraw
 from PIL import ImagePath
 import matplotlib.pyplot as plt
+from scipy.ndimage.interpolation import rotate
 
 
 def make_object(N, min_indexes, max_indexes):
@@ -32,6 +33,37 @@ def make_object(N, min_indexes, max_indexes):
     # convert to numpy array
     im_np_array = np.array(img.getdata(), dtype=np.uint8).reshape(N, N, -1)
     im_np_array = np.sum(im_np_array, axis=2)
+    im_np_array = im_np_array/np.max(im_np_array)
+
+    # random phase
+    phase = np.ones((N,N))
+
+    # random phase shift + frequency
+    phi_shift = np.random.rand()*2*np.pi
+    direcion = np.random.rand()
+    if direcion<0.5:
+        phase = phase * np.sin(phi_shift + np.linspace(0,20,N)).reshape(1,-1)
+    else:
+        phase = phase * np.sin(phi_shift + np.linspace(0,20,N)).reshape(-1,1)
+
+    # apply rotation
+    phase_rot = np.zeros_like(phase)
+    angle = np.random.rand()*45
+    phase_rot = rotate(phase, angle=angle, reshape=True)
+
+    # get distance to crop
+    if angle <= 45:
+        crop = int(N*np.sin(((np.pi/180)*angle)))
+
+    print("crop =>", crop)
+    plt.figure(2)
+    plt.pcolormesh(phase_rot)
+    plt.figure(3)
+    plt.pcolormesh(phase_rot[crop:-crop,crop:-crop])
+    plt.show()
+    exit()
+
+    # apply phase
     return im_np_array
 
 
