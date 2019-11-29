@@ -1,4 +1,7 @@
 import numpy as np
+import math
+from PIL import Image, ImageDraw
+from PIL import ImagePath
 import matplotlib.pyplot as plt
 
 
@@ -58,6 +61,12 @@ def check_intersect(line1, line2):
 
 
 def make_object(N):
+
+    seedval = np.random.randint(1,999)
+    print("seedval =>", seedval)
+    seedval = 454
+    np.random.seed(seedval)
+
     obj = np.zeros((N,N), dtype=np.complex128)
 
     # generate random indexes
@@ -75,12 +84,18 @@ def make_object(N):
 
     # import ipdb; ipdb.set_trace() # BREAKPOINT
     # print("BREAKPOINT")
+    scalef = 9
+    xy = [(scalef*x_, scalef*y_) for x_, y_ in zip(x,y)]
 
-    x = [5,20,35,20]
-    y = [20,35,20,5]
-    x.append(x[0])
-    y.append(y[0])
-
+    image = ImagePath.Path(xy).getbbox()
+    size = list(map(int, map(math.ceil, image[2:])))
+    # img = Image.new("RGB", size, "#f9f9f9")
+    img = Image.new("RGB", size, "#ffffff")
+    img1 = ImageDraw.Draw(img)
+    img1.polygon(xy, fill ="#000000")
+    # img1.polygon(xy, fill ="#eeeeff", outline ="blue")
+    img.show()
+    # exit()
 
     plt.figure(1)
     plt.plot(x, y)
@@ -134,16 +149,16 @@ def make_object(N):
             if intersections % 2 == 0:
                 obj[y_i, x_i] = 1
 
-            if x_i > 3 and y_i>12:
-                plt.figure(1)
-                plt.gca().cla()
-                plt.plot(x,y)
-                plt.xlim(0,40)
-                plt.ylim(0,40)
-                plt.plot(test_linex, test_liney)
-                plt.figure(2)
-                plt.pcolormesh(np.abs(obj))
-                plt.pause(1.1)
+            # if x_i > 3 and y_i>12:
+                # plt.figure(1)
+                # plt.gca().cla()
+                # plt.plot(x,y)
+                # plt.xlim(0,40)
+                # plt.ylim(0,40)
+                # plt.plot(test_linex, test_liney)
+                # plt.figure(2)
+                # plt.pcolormesh(np.abs(obj))
+                # plt.pause(0.1)
 
 
     plt.ioff()
