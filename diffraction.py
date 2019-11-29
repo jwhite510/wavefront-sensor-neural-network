@@ -38,28 +38,22 @@ def make_object(N, min_indexes, max_indexes):
     # random phase
     phase = np.ones((N,N))
 
-    # random phase shift + frequency
-    phi_shift = np.random.rand()*2*np.pi
-    direcion = np.random.rand()
-    if direcion<0.5:
-        phase = phase * np.sin(phi_shift + np.linspace(0,20,N)).reshape(1,-1)
-    else:
-        phase = phase * np.sin(phi_shift + np.linspace(0,20,N)).reshape(-1,1)
 
-    # apply rotation
-    phase_rot = np.zeros_like(phase)
-    angle = np.random.rand()*45
-    phase_rot = rotate(phase, angle=angle, reshape=True)
+    # define a line with slope
+    x = np.linspace(-N/2, N/2, N).reshape(1,-1)
+    y = np.linspace(-N/2, N/2, N).reshape(-1,1)
+    dist = np.zeros_like(x*y)
 
-    # get distance to crop
-    if angle <= 45:
-        crop = int(N*np.sin(((np.pi/180)*angle)))
+    angle = 40
+    P1 = (0,0)
+    P2 = (np.cos(angle*(np.pi/180)),np.sin(angle*(np.pi/180)))
+    # distance from line formula
+    distance = np.abs((P2[1]-P1[1])*x -(P2[0]-P1[0])*y + P2[0]*P1[1] - P2[1]*P1[0]) / np.sqrt((P2[1]-P1[1])**2+(P2[0]-P1[0])**2)
 
-    print("crop =>", crop)
+    plt.figure(1)
+    plt.pcolormesh(x, y, distance)
     plt.figure(2)
-    plt.pcolormesh(phase_rot)
-    plt.figure(3)
-    plt.pcolormesh(phase_rot[crop:-crop,crop:-crop])
+    plt.pcolormesh(x, y, np.sin(distance))
     plt.show()
     exit()
 
