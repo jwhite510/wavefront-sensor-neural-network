@@ -63,12 +63,19 @@ if __name__ == "__main__":
     diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(object)))
 
     # plt.figure()
-    fig, ax = plt.subplots(1,2)
+    fig, ax = plt.subplots(1,2, figsize=(10,5))
+    fig.subplots_adjust(wspace=0.5)
     # object plane
-    ax[0].pcolormesh(object)
+    ax[0].pcolormesh(object_plane_x, object_plane_x, object)
+    ax[0].set_xlabel("object plane distance [m]")
+    ax[0].set_ylabel("object plane distance [m]")
+    ax[0].set_title("object")
 
     # diffraction plane
-    ax[1].pcolormesh(np.abs(diffraction_pattern))
+    ax[1].pcolormesh(diffraction_plane_x, diffraction_plane_x, np.abs(diffraction_pattern))
+    ax[1].set_title("diffraction pattern at %i [m]" % diffraction_plane_z)
+    ax[1].set_xlabel("diffraction plane distance [m]")
+    ax[1].set_ylabel("diffraction plane distance [m]")
     plt.show()
 
 
