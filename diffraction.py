@@ -5,12 +5,12 @@ from PIL import ImagePath
 import matplotlib.pyplot as plt
 
 
-def make_object(N):
+def make_object(N, min_indexes, max_indexes):
     obj = np.zeros((N,N), dtype=np.complex128)
 
     # generate random indexes
     # np.random.seed(3357)
-    indexes_n = np.random.randint(4,8)
+    indexes_n = np.random.randint(min_indexes,max_indexes)
     # for each index generate an x and y point
     x = []
     y = []
@@ -32,10 +32,6 @@ def make_object(N):
     # convert to numpy array
     im_np_array = np.array(img.getdata(), dtype=np.uint8).reshape(N, N, -1)
     im_np_array = np.sum(im_np_array, axis=2)
-    plt.figure()
-    plt.pcolormesh(im_np_array)
-    plt.show()
-    exit()
     return im_np_array
 
 
@@ -61,8 +57,19 @@ if __name__ == "__main__":
 
 
     # construct object in the object plane
-    object = make_object(N)
+    object = make_object(N, min_indexes=4, max_indexes=8)
 
+    # diffraction pattern
+    diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(object)))
+
+    # plt.figure()
+    fig, ax = plt.subplots(1,2)
+    # object plane
+    ax[0].pcolormesh(object)
+
+    # diffraction plane
+    ax[1].pcolormesh(np.abs(diffraction_pattern))
+    plt.show()
 
 
 
