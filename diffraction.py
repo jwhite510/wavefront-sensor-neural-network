@@ -44,6 +44,24 @@ def make_object(N, min_indexes, max_indexes):
     y = np.linspace(-N/2, N/2, N).reshape(-1,1)
     dist = np.zeros_like(x*y)
 
+    z1 = np.sin(0.5*x)*np.ones_like(dist)
+
+    # rotation matrix
+    alpha = 0.2*np.pi
+    x_rot = x * np.cos(alpha) + y * np.sin(alpha)
+    y_rot = y * np.cos(alpha) - x * np.sin(alpha)
+
+    z2 = np.sin(0.5*x_rot)*np.ones_like(dist)
+
+    plt.figure(1)
+    plt.pcolormesh(np.squeeze(x),np.squeeze(y),z1)
+    plt.figure(2)
+    # plt.pcolormesh(np.squeeze(x_rot),np.squeeze(y_rot),z2)
+    plt.pcolormesh(z2)
+    plt.show()
+    exit()
+
+
     angle = 40
     P1 = (0,0)
     P2 = (np.cos(angle*(np.pi/180)),np.sin(angle*(np.pi/180)))
