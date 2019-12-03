@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw
 from PIL import ImagePath
 import matplotlib.pyplot as plt
 from scipy.ndimage.interpolation import rotate
+from scipy.ndimage.filters import gaussian_filter
 
 
 def make_object_phase(object, phase):
@@ -54,6 +55,8 @@ def make_object(N, min_indexes, max_indexes):
     amplitude = np.sum(amplitude, axis=2)
     amplitude = amplitude/np.max(amplitude)
 
+    # apply gaussian filter
+    amplitude = gaussian_filter(amplitude, sigma=0.8, order=0)
     # define a line with slope
     x_phase = np.linspace(-N/2, N/2, N).reshape(1,-1)
     y_phase = np.linspace(-N/2, N/2, N).reshape(-1,1)
@@ -62,7 +65,7 @@ def make_object(N, min_indexes, max_indexes):
     alpha_rad = np.random.rand() * 360.0
     alpha = alpha_rad*(np.pi / 180.0)
     # create random spacial frequency
-    phase_frequency_min, phase_frequency_max = 0.2, 0.8
+    phase_frequency_min, phase_frequency_max = 0.4, 0.8
     phase_frequency = phase_frequency_min + np.random.rand() * (phase_frequency_max - phase_frequency_min)
     print("alpha =>", alpha)
     print("phase_frequency =>", phase_frequency)
@@ -105,6 +108,7 @@ if __name__ == "__main__":
 
     # construct object in the object plane
     object, object_phase = make_object(N, min_indexes=4, max_indexes=8)
+    # object_phase = np.ones_like(object_phase)
     # construct phase
     object_with_phase = make_object_phase(object, object_phase)
 
@@ -132,6 +136,12 @@ if __name__ == "__main__":
     ax[0][1].set_title("diffraction pattern at %i [m]" % diffraction_plane_z)
     ax[0][1].set_xlabel("diffraction plane distance [m]")
     ax[0][1].set_ylabel("diffraction plane distance [m]")
+
+    # diffraction plane
+    ax[1][1].pcolormesh(diffraction_plane_x, diffraction_plane_x, np.log10(np.abs(diffraction_pattern)))
+    ax[1][1].set_title(r"$log_{10}$"+"diffraction pattern at %i [m]" % diffraction_plane_z)
+    ax[1][1].set_xlabel("diffraction plane distance [m]")
+    ax[1][1].set_ylabel("diffraction plane distance [m]")
     plt.show()
 
 
