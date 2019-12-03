@@ -35,43 +35,24 @@ def make_object(N, min_indexes, max_indexes):
     im_np_array = np.sum(im_np_array, axis=2)
     im_np_array = im_np_array/np.max(im_np_array)
 
-    # random phase
-    phase = np.ones((N,N))
-
-
     # define a line with slope
-    x = np.linspace(-N/2, N/2, N).reshape(1,-1)
-    y = np.linspace(-N/2, N/2, N).reshape(-1,1)
-    dist = np.zeros_like(x*y)
+    x_phase = np.linspace(-N/2, N/2, N).reshape(1,-1)
+    y_phase = np.linspace(-N/2, N/2, N).reshape(-1,1)
 
-    z1 = np.sin(0.5*x)*np.ones_like(dist)
-
+    # the not rotated plot
+    alpha = 90.0*(np.pi / 180.0)
     # rotation matrix
-    alpha = 0.2*np.pi
-    x_rot = x * np.cos(alpha) + y * np.sin(alpha)
-    y_rot = y * np.cos(alpha) - x * np.sin(alpha)
-
-    z2 = np.sin(0.5*x_rot)*np.ones_like(dist)
-
-    plt.figure(1)
-    plt.pcolormesh(np.squeeze(x),np.squeeze(y),z1)
-    plt.figure(2)
-    # plt.pcolormesh(np.squeeze(x_rot),np.squeeze(y_rot),z2)
-    plt.pcolormesh(z2)
-    plt.show()
-    exit()
-
-
-    angle = 40
-    P1 = (0,0)
-    P2 = (np.cos(angle*(np.pi/180)),np.sin(angle*(np.pi/180)))
-    # distance from line formula
-    distance = np.abs((P2[1]-P1[1])*x -(P2[0]-P1[0])*y + P2[0]*P1[1] - P2[1]*P1[0]) / np.sqrt((P2[1]-P1[1])**2+(P2[0]-P1[0])**2)
+    x_rot = x_phase * np.cos(alpha) + y_phase * np.sin(alpha)
+    y_rot = y_phase * np.cos(alpha) - x_phase * np.sin(alpha)
+    print("np.shape(x_rot) =>", np.shape(x_rot))
+    z_phase_rot = np.sin(0.5*x_rot)
 
     plt.figure(1)
-    plt.pcolormesh(x, y, distance)
-    plt.figure(2)
-    plt.pcolormesh(x, y, np.sin(distance))
+    plt.plot(x,y)
+    plt.pcolormesh(im_np_array)
+
+    plt.figure(3)
+    plt.pcolormesh(z_phase_rot)
     plt.show()
     exit()
 
