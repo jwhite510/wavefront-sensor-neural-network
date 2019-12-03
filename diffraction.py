@@ -39,13 +39,18 @@ def make_object(N, min_indexes, max_indexes):
     x_phase = np.linspace(-N/2, N/2, N).reshape(1,-1)
     y_phase = np.linspace(-N/2, N/2, N).reshape(-1,1)
 
-    # the not rotated plot
-    alpha = 90.0*(np.pi / 180.0)
+    # create random rotation angle
+    alpha_rad = np.random.rand() * 360.0
+    alpha = alpha_rad*(np.pi / 180.0)
+    # create random spacial frequency
+    phase_frequency_min, phase_frequency_max = 0.2, 0.8
+    phase_frequency = phase_frequency_min + np.random.rand() * (phase_frequency_max - phase_frequency_min)
+    print("phase_frequency =>", phase_frequency)
     # rotation matrix
     x_rot = x_phase * np.cos(alpha) + y_phase * np.sin(alpha)
     y_rot = y_phase * np.cos(alpha) - x_phase * np.sin(alpha)
     print("np.shape(x_rot) =>", np.shape(x_rot))
-    z_phase_rot = np.sin(0.5*x_rot)
+    z_phase_rot = np.sin(phase_frequency*x_rot)
 
     plt.figure(1)
     plt.plot(x,y)
