@@ -7,6 +7,56 @@ from scipy.ndimage.interpolation import rotate
 from scipy.ndimage.filters import gaussian_filter
 
 
+def calc_centroid(mat, axis):
+    """
+    mat: 2 or more dimmensional numpy array
+    axis: the axis to find the centroid
+    """
+    # the number of axes in the input matrix
+    n_axes = np.shape(np.shape(mat))
+    summation_axes = list(range(n_axes[0]))
+    summation_axes.remove(axis)
+    summation_axes = tuple(summation_axes)
+    summ = np.sum(mat, axis=(summation_axes))
+    index_vals = np.arange(0,len(summ))
+
+    # calculate centroid along this plot
+    centroid = np.sum(summ * index_vals) / np.sum(summ)
+    return centroid
+
+
+def remove_ambiguitues(object):
+    """
+    object: 2d numpy array
+
+    remove the translation and conjugate flip ambiguities
+    of a 2d complex matrix
+    """
+
+    # plt.figure(1)
+    # plt.pcolormesh(np.real(object))
+    # plt.figure(2)
+    # plt.pcolormesh(np.imag(object))
+    # plt.figure(3)
+    # plt.pcolormesh(np.abs(object))
+
+    obj_size = np.shape(object)
+    target_row = int(obj_size[0]/2)
+    target_col = int(obj_size[1]/2)
+
+    # calculate centroid along rows
+    centr_row = calc_centroid(np.abs(object), axis=0)
+    centr_col = calc_centroid(np.abs(object), axis=1)
+
+    plt.figure(3)
+    abs_obj = np.abs(object)
+    abs_obj[:,int(centr_col)] = 1
+    abs_obj[int(centr_row),:] = 1
+    plt.pcolormesh(abs_obj)
+    # calculate centroid
+    plt.show()
+    exit()
+
 
 def make_roll_ambiguity(object):
     n_elements = -5
@@ -80,8 +130,6 @@ def make_object(N, min_indexes, max_indexes):
     # create random spacial frequency
     phase_frequency_min, phase_frequency_max = 0.4, 0.8
     phase_frequency = phase_frequency_min + np.random.rand() * (phase_frequency_max - phase_frequency_min)
-    print("alpha =>", alpha)
-    print("phase_frequency =>", phase_frequency)
     # rotation matrix
     x_rot = x_phase * np.cos(alpha) + y_phase * np.sin(alpha)
     y_rot = y_phase * np.cos(alpha) - x_phase * np.sin(alpha)
@@ -156,6 +204,7 @@ if __name__ == "__main__":
     # object_phase = np.ones_like(object_phase)
     # construct phase
     object_with_phase = make_object_phase(object, object_phase)
+    remove_ambiguitues(make_roll_ambiguity(object_with_phase))
 
     plot_fft(object_with_phase)
 
