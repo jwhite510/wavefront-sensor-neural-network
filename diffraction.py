@@ -6,7 +6,28 @@ import matplotlib.pyplot as plt
 from scipy.ndimage.interpolation import rotate
 
 
+def make_object_phase(object, phase):
+    """
+        input:
+        object: between 0 and 1
+        phase: between 0 and 1
+    """
+
+    # multiply phase by object mask
+    phase = phase * object
+
+    # apply the phase
+    object_with_phase = object * np.exp(-1j*phase*(2*np.pi))
+
+    return object_with_phase
+
 def make_object(N, min_indexes, max_indexes):
+    """
+        returns:
+            amplitude, phase
+            both with normalized values between 0 and 1
+
+    """
     obj = np.zeros((N,N), dtype=np.complex128)
 
     # generate random indexes
@@ -49,20 +70,16 @@ def make_object(N, min_indexes, max_indexes):
     x_rot = x_phase * np.cos(alpha) + y_phase * np.sin(alpha)
     y_rot = y_phase * np.cos(alpha) - x_phase * np.sin(alpha)
     z_phase_rot = np.sin(phase_frequency*x_rot)
+    # make the phase between 0 and 2 pi
+    z_phase_rot = z_phase_rot - np.min(z_phase_rot)
+    z_phase_rot = z_phase_rot / np.max(z_phase_rot)
+
+    # normalized phase
+    # z_phase_rot = z_phase_rot * (2*np.pi)
     phase = z_phase_rot*amplitude
 
-    plt.figure(1)
-    plt.plot(x,y)
-    plt.pcolormesh(amplitude)
-
-    plt.figure(2)
-    plt.pcolormesh(phase)
-
-    plt.show()
-    exit()
-
     # apply phase
-    return amplitude
+    return amplitude, phase
 
 
 if __name__ == "__main__":
@@ -87,7 +104,14 @@ if __name__ == "__main__":
 
 
     # construct object in the object plane
-    object = make_object(N, min_indexes=4, max_indexes=8)
+    object, object_phase = make_object(N, min_indexes=4, max_indexes=8)
+    # construct phase
+    object_with_phase = make_object_phase(object, object_phase)
+
+    plt.figure(1)
+    plt.pcolormesh(object_phase)
+    plt.figure(2)
+    plt.pcolormesh(object)
 
     # diffraction pattern
     diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(object)))
