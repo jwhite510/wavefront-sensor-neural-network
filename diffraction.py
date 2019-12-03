@@ -15,7 +15,7 @@ def make_object_phase(object, phase):
     """
 
     # multiply phase by object mask
-    phase = phase * object
+    phase = phase * (object>0.2)
 
     # apply the phase
     object_with_phase = object * np.exp(-1j*phase*(2*np.pi))
@@ -79,7 +79,7 @@ def make_object(N, min_indexes, max_indexes):
 
     # normalized phase
     # z_phase_rot = z_phase_rot * (2*np.pi)
-    phase = z_phase_rot*amplitude
+    phase = z_phase_rot*(amplitude>0.2)
 
     # apply phase
     return amplitude, phase
