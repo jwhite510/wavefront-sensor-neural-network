@@ -7,6 +7,19 @@ from scipy.ndimage.interpolation import rotate
 from scipy.ndimage.filters import gaussian_filter
 
 
+
+def make_roll_ambiguity(object):
+    n_elements = -5
+    object = np.roll(object, shift=n_elements, axis=1)
+    return object
+
+def make_flip_ambiguity(object):
+    object = np.flip(object, axis=1)
+    object = np.flip(object, axis=0)
+    # complex conjugate
+    object = np.conj(object)
+    return object
+
 def make_object_phase(object, phase):
     """
         input:
@@ -32,7 +45,7 @@ def make_object(N, min_indexes, max_indexes):
     obj = np.zeros((N,N), dtype=np.complex128)
 
     # generate random indexes
-    # np.random.seed(3357)
+    # np.random.seed(3367)
     indexes_n = np.random.randint(min_indexes,max_indexes)
     # for each index generate an x and y point
     x = []
@@ -84,6 +97,38 @@ def make_object(N, min_indexes, max_indexes):
     # apply phase
     return amplitude, phase
 
+def plot_fft(object_in):
+
+    # diffraction pattern
+    diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(object_in)))
+
+    # plt.figure()
+    fig, ax = plt.subplots(2,2, figsize=(10,10))
+    fig.subplots_adjust(wspace=0.5, top=0.95, bottom=0.10)
+    # object plane
+    ax[0][0].pcolormesh(object_plane_x, object_plane_x, np.abs(object_in))
+    ax[0][0].set_xlabel("object plane distance [m]")
+    ax[0][0].set_ylabel("object plane distance [m]")
+    ax[0][0].set_title("object")
+
+    # object phase
+    ax[1][0].pcolormesh(object_plane_x, object_plane_x, np.angle(object_in))
+    ax[1][0].set_xlabel("object plane distance [m]")
+    ax[1][0].set_ylabel("object plane distance [m]")
+    ax[1][0].set_title("object phase")
+
+
+    # diffraction plane
+    ax[0][1].pcolormesh(diffraction_plane_x, diffraction_plane_x, np.abs(diffraction_pattern))
+    ax[0][1].set_title("diffraction pattern at %i [m]" % diffraction_plane_z)
+    ax[0][1].set_xlabel("diffraction plane distance [m]")
+    ax[0][1].set_ylabel("diffraction plane distance [m]")
+
+    # diffraction plane
+    ax[1][1].pcolormesh(diffraction_plane_x, diffraction_plane_x, np.log10(np.abs(diffraction_pattern)))
+    ax[1][1].set_title(r"$log_{10}$"+"diffraction pattern at %i [m]" % diffraction_plane_z)
+    ax[1][1].set_xlabel("diffraction plane distance [m]")
+    ax[1][1].set_ylabel("diffraction plane distance [m]")
 
 if __name__ == "__main__":
 
@@ -112,37 +157,16 @@ if __name__ == "__main__":
     # construct phase
     object_with_phase = make_object_phase(object, object_phase)
 
-    # diffraction pattern
-    diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(object_with_phase)))
+    plot_fft(object_with_phase)
 
-    # plt.figure()
-    fig, ax = plt.subplots(2,2, figsize=(10,10))
-    fig.subplots_adjust(wspace=0.5, top=0.95, bottom=0.10)
-    # object plane
-    ax[0][0].pcolormesh(object_plane_x, object_plane_x, np.abs(object_with_phase))
-    ax[0][0].set_xlabel("object plane distance [m]")
-    ax[0][0].set_ylabel("object plane distance [m]")
-    ax[0][0].set_title("object")
+    # apply roll to generate ambiguity
+    plot_fft(make_roll_ambiguity(object_with_phase))
 
-    # object phase
-    ax[1][0].pcolormesh(object_plane_x, object_plane_x, np.angle(object_with_phase))
-    ax[1][0].set_xlabel("object plane distance [m]")
-    ax[1][0].set_ylabel("object plane distance [m]")
-    ax[1][0].set_title("object phase")
+    # conjugate flip to generate ambiguity
+    plot_fft(make_flip_ambiguity(object_with_phase))
 
-
-    # diffraction plane
-    ax[0][1].pcolormesh(diffraction_plane_x, diffraction_plane_x, np.abs(diffraction_pattern))
-    ax[0][1].set_title("diffraction pattern at %i [m]" % diffraction_plane_z)
-    ax[0][1].set_xlabel("diffraction plane distance [m]")
-    ax[0][1].set_ylabel("diffraction plane distance [m]")
-
-    # diffraction plane
-    ax[1][1].pcolormesh(diffraction_plane_x, diffraction_plane_x, np.log10(np.abs(diffraction_pattern)))
-    ax[1][1].set_title(r"$log_{10}$"+"diffraction pattern at %i [m]" % diffraction_plane_z)
-    ax[1][1].set_xlabel("diffraction plane distance [m]")
-    ax[1][1].set_ylabel("diffraction plane distance [m]")
     plt.show()
+
 
 
 
