@@ -22,8 +22,6 @@ def make_object(N, min_indexes, max_indexes):
     x.append(x[0])
     y.append(y[0])
 
-    # import ipdb; ipdb.set_trace() # BREAKPOINT
-    # print("BREAKPOINT")
     xy = [(x_, y_) for x_, y_ in zip(x,y)]
     image = ImagePath.Path(xy).getbbox()
     size = list(map(int, map(math.ceil, image[2:])))
@@ -31,9 +29,9 @@ def make_object(N, min_indexes, max_indexes):
     img1 = ImageDraw.Draw(img)
     img1.polygon(xy, fill ="#ffffff")
     # convert to numpy array
-    im_np_array = np.array(img.getdata(), dtype=np.uint8).reshape(N, N, -1)
-    im_np_array = np.sum(im_np_array, axis=2)
-    im_np_array = im_np_array/np.max(im_np_array)
+    amplitude = np.array(img.getdata(), dtype=np.uint8).reshape(N, N, -1)
+    amplitude = np.sum(amplitude, axis=2)
+    amplitude = amplitude/np.max(amplitude)
 
     # define a line with slope
     x_phase = np.linspace(-N/2, N/2, N).reshape(1,-1)
@@ -45,24 +43,26 @@ def make_object(N, min_indexes, max_indexes):
     # create random spacial frequency
     phase_frequency_min, phase_frequency_max = 0.2, 0.8
     phase_frequency = phase_frequency_min + np.random.rand() * (phase_frequency_max - phase_frequency_min)
+    print("alpha =>", alpha)
     print("phase_frequency =>", phase_frequency)
     # rotation matrix
     x_rot = x_phase * np.cos(alpha) + y_phase * np.sin(alpha)
     y_rot = y_phase * np.cos(alpha) - x_phase * np.sin(alpha)
-    print("np.shape(x_rot) =>", np.shape(x_rot))
     z_phase_rot = np.sin(phase_frequency*x_rot)
+    phase = z_phase_rot*amplitude
 
     plt.figure(1)
     plt.plot(x,y)
-    plt.pcolormesh(im_np_array)
+    plt.pcolormesh(amplitude)
 
-    plt.figure(3)
-    plt.pcolormesh(z_phase_rot)
+    plt.figure(2)
+    plt.pcolormesh(phase)
+
     plt.show()
     exit()
 
     # apply phase
-    return im_np_array
+    return amplitude
 
 
 if __name__ == "__main__":
