@@ -108,28 +108,30 @@ if __name__ == "__main__":
     # construct phase
     object_with_phase = make_object_phase(object, object_phase)
 
-    plt.figure(1)
-    plt.pcolormesh(object_phase)
-    plt.figure(2)
-    plt.pcolormesh(object)
-
     # diffraction pattern
-    diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(object)))
+    diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(object_with_phase)))
 
     # plt.figure()
-    fig, ax = plt.subplots(1,2, figsize=(10,5))
-    fig.subplots_adjust(wspace=0.5)
+    fig, ax = plt.subplots(2,2, figsize=(10,10))
+    fig.subplots_adjust(wspace=0.5, top=0.95, bottom=0.10)
     # object plane
-    ax[0].pcolormesh(object_plane_x, object_plane_x, object)
-    ax[0].set_xlabel("object plane distance [m]")
-    ax[0].set_ylabel("object plane distance [m]")
-    ax[0].set_title("object")
+    ax[0][0].pcolormesh(object_plane_x, object_plane_x, np.abs(object_with_phase))
+    ax[0][0].set_xlabel("object plane distance [m]")
+    ax[0][0].set_ylabel("object plane distance [m]")
+    ax[0][0].set_title("object")
+
+    # object phase
+    ax[1][0].pcolormesh(object_plane_x, object_plane_x, np.angle(object_with_phase))
+    ax[1][0].set_xlabel("object plane distance [m]")
+    ax[1][0].set_ylabel("object plane distance [m]")
+    ax[1][0].set_title("object phase")
+
 
     # diffraction plane
-    ax[1].pcolormesh(diffraction_plane_x, diffraction_plane_x, np.abs(diffraction_pattern))
-    ax[1].set_title("diffraction pattern at %i [m]" % diffraction_plane_z)
-    ax[1].set_xlabel("diffraction plane distance [m]")
-    ax[1].set_ylabel("diffraction plane distance [m]")
+    ax[0][1].pcolormesh(diffraction_plane_x, diffraction_plane_x, np.abs(diffraction_pattern))
+    ax[0][1].set_title("diffraction pattern at %i [m]" % diffraction_plane_z)
+    ax[0][1].set_xlabel("diffraction plane distance [m]")
+    ax[0][1].set_ylabel("diffraction plane distance [m]")
     plt.show()
 
 
