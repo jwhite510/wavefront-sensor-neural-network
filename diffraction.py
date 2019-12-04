@@ -28,16 +28,15 @@ def centroid_shift(mat, value, axis):
     axis: the axis along which the centroid will be shifted
     """
     # use the absolute value
-    # value = -2.0
     # cast value to integer
     value = int(value)
 
-    print("value =>", value)
+    # print("value =>", value)
 
     # calculate current centroid:
     start_c = calc_centroid(np.abs(mat), axis)
     target_c = start_c + value
-    print("start_c =>", start_c)
+    # print("start_c =>", start_c)
     delta_c = 0
 
     if value > 0:
@@ -99,6 +98,37 @@ def remove_ambiguitues(object):
     # remove translational ambiguities
     object = centroid_shift(object, value=(target_row-centr_row), axis=0)
     object = centroid_shift(object, value=(target_col-centr_col), axis=1)
+
+    # remove conjugate flip ambiguity
+
+    # integrate upper left and bottom right triangle
+    # lower left
+    tri_l = np.tril(np.ones(np.shape(object)))
+    # upper right
+    tri_u = np.triu(np.ones(np.shape(object)))
+    integral_upper = np.sum(tri_u*np.abs(object), axis=(0,1))
+    integral_lower = np.sum(tri_l*np.abs(object), axis=(0,1))
+
+    print(integral_upper > integral_lower)
+    if integral_upper > integral_lower:
+        # make conjugate flip
+
+        print("centroid before and after")
+        print(calc_centroid(np.abs(object), axis=1))
+        object = np.flip(object, axis=1)
+        print(calc_centroid(np.abs(object), axis=1))
+
+        object = np.flip(object, axis=0)
+        # complex conjugate
+        object = np.conj(object)
+
+    # plt.figure(438969)
+    # plt.pcolormesh(np.abs(object))
+    # plt.show()
+
+    # exit()
+    # import ipdb; ipdb.set_trace() # BREAKPOINT
+    # print("BREAKPOINT")
 
     return object
 
@@ -250,21 +280,19 @@ if __name__ == "__main__":
     # object_phase = np.ones_like(object_phase)
     # construct phase
     object_with_phase = make_object_phase(object, object_phase)
-    ambiguous_obj = make_roll_ambiguity(object_with_phase)
+    ambiguous_obj = make_flip_ambiguity(object_with_phase)
 
     plot_fft(ambiguous_obj)
     plot_fft(object_with_phase)
     plot_fft(remove_ambiguitues(ambiguous_obj))
     plot_fft(remove_ambiguitues(object_with_phase))
-    plt.ioff()
+    # plt.ioff()
     plt.show()
     exit()
 
 
-
-
-    object_with_phase = remove_ambiguitues(object_with_phase)
-    object_with_phase = remove_ambiguitues(make_roll_ambiguity(object_with_phase))
+    # object_with_phase = remove_ambiguitues(object_with_phase)
+    # object_with_phase = remove_ambiguitues(make_roll_ambiguity(object_with_phase))
 
 
     exit()
