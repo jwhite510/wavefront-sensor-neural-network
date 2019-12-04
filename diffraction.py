@@ -168,7 +168,14 @@ def make_object(N, min_indexes, max_indexes):
             both with normalized values between 0 and 1
 
     """
+    # must be divisible by 4
+    assert N % 4  == 0
     obj = np.zeros((N,N), dtype=np.complex128)
+
+    min_x = N/4 + 1
+    min_y = N/4 + 1
+    max_x = N - N/4 - 1
+    max_y = N - N/4 - 1
 
     # generate random indexes
     # np.random.seed(3367)
@@ -177,8 +184,12 @@ def make_object(N, min_indexes, max_indexes):
     x = []
     y = []
     for i in range(indexes_n):
-        x.append(int(np.random.rand(1)*N))
-        y.append(int(np.random.rand(1)*N))
+
+        x_val = min_x + np.random.rand(1)*(max_x-min_x)
+        y_val = min_y + np.random.rand(1)*(max_y-min_y)
+
+        x.append(int(x_val))
+        y.append(int(y_val))
 
     x.append(x[0])
     y.append(y[0])
@@ -284,8 +295,8 @@ if __name__ == "__main__":
 
     plot_fft(ambiguous_obj)
     plot_fft(object_with_phase)
-    plot_fft(remove_ambiguitues(ambiguous_obj))
-    plot_fft(remove_ambiguitues(object_with_phase))
+    # plot_fft(remove_ambiguitues(ambiguous_obj))
+    # plot_fft(remove_ambiguitues(object_with_phase))
     # plt.ioff()
     plt.show()
     exit()
