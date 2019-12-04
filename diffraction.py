@@ -7,17 +7,82 @@ from scipy.ndimage.interpolation import rotate
 from scipy.ndimage.filters import gaussian_filter
 
 
-def calc_centroid(mat, axis):
+def sum_over_all_except(mat, axis):
     """
     mat: 2 or more dimmensional numpy array
-    axis: the axis to find the centroid
+    axis: the axis to keep
+
+    perform summation over all axes except the input argument axis
     """
-    # the number of axes in the input matrix
     n_axes = np.shape(np.shape(mat))
     summation_axes = list(range(n_axes[0]))
     summation_axes.remove(axis)
     summation_axes = tuple(summation_axes)
     summ = np.sum(mat, axis=(summation_axes))
+    return summ
+
+def centroid_shift(mat, value, axis):
+    """
+    mat: the matrix which the centroid will be shifted
+    value: the amount to shift the centroid
+    axis: the axis along which the centroid will be shifted
+    """
+    value = -2.0
+    # cast value to integer
+    value = int(value)
+
+    print("value =>", value)
+
+    # calculate current centroid:
+    start_c = calc_centroid(mat, axis)
+    target_c = start_c + value
+
+    delta_c = 0
+
+    if value > 0:
+        # increase the centroid while its less than the target
+        new_c = float(start_c)
+        while new_c < target_c:
+            mat = np.roll(mat, shift=1, axis=axis)
+            new_c = calc_centroid(mat, axis)
+
+    elif value < 0:
+        # decrease the centroid while its greater than the target
+        new_c = float(start_c)
+        while new_c > target_c:
+            mat = np.roll(mat, shift=-1, axis=axis)
+            new_c = calc_centroid(mat, axis)
+
+    print("start_c =>", start_c)
+    print("new_c =>", new_c)
+    print("target_c =>", target_c)
+    exit()
+
+
+    while delta_c < value:
+        # roll the matrix
+        mat = np.roll(mat, shift=1, axis=axis)
+        new_c = calc_centroid(mat, axis)
+
+
+    print("delta_c =>", delta_c)
+    # print("start_c =>", start_c)
+    # print("new_c =>", new_c)
+    exit()
+
+    print("value =>", value)
+    plt.show()
+    exit()
+
+
+def calc_centroid(mat, axis):
+    """
+    mat: 2 or more dimmensional numpy array
+    axis: the axis to find the centroid
+    """
+
+    # the number of axes in the input matrix
+    summ = sum_over_all_except(mat, axis)
     index_vals = np.arange(0,len(summ))
 
     # calculate centroid along this plot
@@ -47,6 +112,12 @@ def remove_ambiguitues(object):
     # calculate centroid along rows
     centr_row = calc_centroid(np.abs(object), axis=0)
     centr_col = calc_centroid(np.abs(object), axis=1)
+
+    # print("target_row =>", target_row)
+    # print("centr_row =>", centr_row)
+    # print("target_col =>", target_col)
+    # print("centr_col =>", centr_col)
+    centroid_shift(np.abs(object), value=(target_row-centr_row), axis=0)
 
     plt.figure(3)
     abs_obj = np.abs(object)
@@ -204,6 +275,8 @@ if __name__ == "__main__":
     # object_phase = np.ones_like(object_phase)
     # construct phase
     object_with_phase = make_object_phase(object, object_phase)
+    remove_ambiguitues(object_with_phase)
+    exit()
     remove_ambiguitues(make_roll_ambiguity(object_with_phase))
 
     plot_fft(object_with_phase)
