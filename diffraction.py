@@ -43,46 +43,17 @@ def centroid_shift(mat, value, axis):
     if value > 0:
         # increase the centroid while its less than the target
         new_c = float(start_c)
-
-        plt.ion()
-        plt.figure(1)
-        plt.gca().cla()
-        plt.pcolormesh(np.abs(mat))
-        plt.pause(0.001)
-
         while new_c < target_c:
             mat = np.roll(mat, shift=1, axis=axis)
             new_c = calc_centroid(np.abs(mat), axis)
-
-            plt.figure(2)
-            print("---------------")
-            print("new_c =>", new_c)
-            print("target_c =>", target_c)
-            plt.gca().cla()
-            plt.pcolormesh(np.abs(mat))
-            plt.pause(0.5)
 
     elif value < 0:
         # decrease the centroid while its greater than the target
         new_c = float(start_c)
 
-        plt.ion()
-        plt.figure(1)
-        plt.gca().cla()
-        plt.pcolormesh(np.abs(mat))
-        plt.pause(0.001)
-
         while new_c > target_c:
             mat = np.roll(mat, shift=-1, axis=axis)
             new_c = calc_centroid(np.abs(mat), axis)
-
-            plt.figure(2)
-            print("---------------")
-            print("new_c =>", new_c)
-            print("target_c =>", target_c)
-            plt.gca().cla()
-            plt.pcolormesh(np.abs(mat))
-            plt.pause(0.5)
 
     return mat
 
@@ -125,6 +96,7 @@ def remove_ambiguitues(object):
     centr_row = calc_centroid(np.abs(object), axis=0)
     centr_col = calc_centroid(np.abs(object), axis=1)
 
+    # remove translational ambiguities
     object = centroid_shift(object, value=(target_row-centr_row), axis=0)
     object = centroid_shift(object, value=(target_col-centr_col), axis=1)
 
@@ -274,12 +246,27 @@ if __name__ == "__main__":
 
 
     # construct object in the object plane
-    for _ in range(100):
-        object, object_phase = make_object(N, min_indexes=4, max_indexes=8)
-        # object_phase = np.ones_like(object_phase)
-        # construct phase
-        object_with_phase = make_object_phase(object, object_phase)
-        object_with_phase = remove_ambiguitues(object_with_phase)
+    object, object_phase = make_object(N, min_indexes=4, max_indexes=8)
+    # object_phase = np.ones_like(object_phase)
+    # construct phase
+    object_with_phase = make_object_phase(object, object_phase)
+    ambiguous_obj = make_roll_ambiguity(object_with_phase)
+
+    plot_fft(ambiguous_obj)
+    plot_fft(object_with_phase)
+    plot_fft(remove_ambiguitues(ambiguous_obj))
+    plot_fft(remove_ambiguitues(object_with_phase))
+    plt.ioff()
+    plt.show()
+    exit()
+
+
+
+
+    object_with_phase = remove_ambiguitues(object_with_phase)
+    object_with_phase = remove_ambiguitues(make_roll_ambiguity(object_with_phase))
+
+
     exit()
     remove_ambiguitues(make_roll_ambiguity(object_with_phase))
 
