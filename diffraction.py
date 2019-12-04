@@ -7,6 +7,56 @@ from scipy.ndimage.interpolation import rotate
 from scipy.ndimage.filters import gaussian_filter
 
 
+def f_position_shift(mat, shift_value, axis):
+    shift_value = 10
+    """
+    mat: 2d numpy array
+    shift_value: the number of columns/rows to shift the matrix
+    axis: the axis to shift the position
+
+    shift_value may be a float
+
+    """
+
+    plt.figure(1)
+    plt.pcolormesh(np.abs(mat))
+    print("shift_value =>", shift_value)
+
+    N = np.shape(mat)[axis]
+    x_axis = np.arange(0,N) - N/2
+    dxf_axis = 1 / N
+    xf_axis = dxf_axis * np.arange(-N/2, N/2, 1)
+
+    # fft
+    mat = np.fft.fftshift(np.fft.fft(np.fft.fftshift(mat, axes=axis), axis=axis), axes=axis)
+    phase = np.exp(-1j * xf_axis*shift_value)
+
+    # extend along axis
+    phase_shape = [1,1]
+    phase_shape[axis] = -1
+    phase = phase.reshape(tuple(phase_shape))
+
+
+    plt.figure(3333)
+    plt.pcolormesh(np.abs(mat))
+
+
+    mat = mat * phase
+    # ifft
+    mat = np.fft.fftshift(np.fft.ifft(np.fft.fftshift(mat, axes=axis), axis=axis), axes=axis)
+
+    plt.figure(2)
+    plt.pcolormesh(np.abs(mat))
+    plt.show()
+
+
+    exit()
+
+    print(x_axis)
+    print(xf_axis)
+    exit()
+
+
 def sum_over_all_except(mat, axis):
     """
     mat: 2 or more dimmensional numpy array
@@ -56,7 +106,6 @@ def centroid_shift(mat, value, axis):
 
     return mat
 
-
 def calc_centroid(mat, axis):
     """
     mat: 2 or more dimmensional numpy array
@@ -70,7 +119,6 @@ def calc_centroid(mat, axis):
     # calculate centroid along this plot
     centroid = np.sum(summ * index_vals) / np.sum(summ)
     return centroid
-
 
 def remove_ambiguitues(object):
     """
@@ -94,6 +142,11 @@ def remove_ambiguitues(object):
     # calculate centroid along rows
     centr_row = calc_centroid(np.abs(object), axis=0)
     centr_col = calc_centroid(np.abs(object), axis=1)
+
+    f_position_shift(object, shift_value=(target_row-centr_row), axis=0)
+
+    target_row-centr_row
+    target_col-centr_col
 
     # remove translational ambiguities
     object = centroid_shift(object, value=(target_row-centr_row), axis=0)
@@ -131,8 +184,6 @@ def remove_ambiguitues(object):
     # print("BREAKPOINT")
 
     return object
-
-
 
 def make_roll_ambiguity(object):
     n_elements = -5
@@ -233,7 +284,6 @@ def make_object(N, min_indexes, max_indexes):
     return amplitude, phase
 
 def plot_fft(object_in):
-
     # diffraction pattern
     diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(object_in)))
 
@@ -293,10 +343,13 @@ if __name__ == "__main__":
     object_with_phase = make_object_phase(object, object_phase)
     ambiguous_obj = make_flip_ambiguity(object_with_phase)
 
+    remove_ambiguitues(object_with_phase)
+    exit()
+
     plot_fft(ambiguous_obj)
     plot_fft(object_with_phase)
-    # plot_fft(remove_ambiguitues(ambiguous_obj))
-    # plot_fft(remove_ambiguitues(object_with_phase))
+    plot_fft(remove_ambiguitues(ambiguous_obj))
+    plot_fft(remove_ambiguitues(object_with_phase))
     # plt.ioff()
     plt.show()
     exit()
