@@ -27,52 +27,64 @@ def centroid_shift(mat, value, axis):
     value: the amount to shift the centroid
     axis: the axis along which the centroid will be shifted
     """
-    value = -2.0
+    # use the absolute value
+    # value = -2.0
     # cast value to integer
     value = int(value)
 
     print("value =>", value)
 
     # calculate current centroid:
-    start_c = calc_centroid(mat, axis)
+    start_c = calc_centroid(np.abs(mat), axis)
     target_c = start_c + value
-
+    print("start_c =>", start_c)
     delta_c = 0
 
     if value > 0:
         # increase the centroid while its less than the target
         new_c = float(start_c)
+
+        plt.ion()
+        plt.figure(1)
+        plt.gca().cla()
+        plt.pcolormesh(np.abs(mat))
+        plt.pause(0.001)
+
         while new_c < target_c:
             mat = np.roll(mat, shift=1, axis=axis)
-            new_c = calc_centroid(mat, axis)
+            new_c = calc_centroid(np.abs(mat), axis)
+
+            plt.figure(2)
+            print("---------------")
+            print("new_c =>", new_c)
+            print("target_c =>", target_c)
+            plt.gca().cla()
+            plt.pcolormesh(np.abs(mat))
+            plt.pause(0.5)
 
     elif value < 0:
         # decrease the centroid while its greater than the target
         new_c = float(start_c)
+
+        plt.ion()
+        plt.figure(1)
+        plt.gca().cla()
+        plt.pcolormesh(np.abs(mat))
+        plt.pause(0.001)
+
         while new_c > target_c:
             mat = np.roll(mat, shift=-1, axis=axis)
-            new_c = calc_centroid(mat, axis)
+            new_c = calc_centroid(np.abs(mat), axis)
 
-    print("start_c =>", start_c)
-    print("new_c =>", new_c)
-    print("target_c =>", target_c)
-    exit()
+            plt.figure(2)
+            print("---------------")
+            print("new_c =>", new_c)
+            print("target_c =>", target_c)
+            plt.gca().cla()
+            plt.pcolormesh(np.abs(mat))
+            plt.pause(0.5)
 
-
-    while delta_c < value:
-        # roll the matrix
-        mat = np.roll(mat, shift=1, axis=axis)
-        new_c = calc_centroid(mat, axis)
-
-
-    print("delta_c =>", delta_c)
-    # print("start_c =>", start_c)
-    # print("new_c =>", new_c)
-    exit()
-
-    print("value =>", value)
-    plt.show()
-    exit()
+    return mat
 
 
 def calc_centroid(mat, axis):
@@ -113,20 +125,11 @@ def remove_ambiguitues(object):
     centr_row = calc_centroid(np.abs(object), axis=0)
     centr_col = calc_centroid(np.abs(object), axis=1)
 
-    # print("target_row =>", target_row)
-    # print("centr_row =>", centr_row)
-    # print("target_col =>", target_col)
-    # print("centr_col =>", centr_col)
-    centroid_shift(np.abs(object), value=(target_row-centr_row), axis=0)
+    object = centroid_shift(object, value=(target_row-centr_row), axis=0)
+    object = centroid_shift(object, value=(target_col-centr_col), axis=1)
 
-    plt.figure(3)
-    abs_obj = np.abs(object)
-    abs_obj[:,int(centr_col)] = 1
-    abs_obj[int(centr_row),:] = 1
-    plt.pcolormesh(abs_obj)
-    # calculate centroid
-    plt.show()
-    exit()
+    return object
+
 
 
 def make_roll_ambiguity(object):
@@ -271,11 +274,12 @@ if __name__ == "__main__":
 
 
     # construct object in the object plane
-    object, object_phase = make_object(N, min_indexes=4, max_indexes=8)
-    # object_phase = np.ones_like(object_phase)
-    # construct phase
-    object_with_phase = make_object_phase(object, object_phase)
-    remove_ambiguitues(object_with_phase)
+    for _ in range(100):
+        object, object_phase = make_object(N, min_indexes=4, max_indexes=8)
+        # object_phase = np.ones_like(object_phase)
+        # construct phase
+        object_with_phase = make_object_phase(object, object_phase)
+        object_with_phase = remove_ambiguitues(object_with_phase)
     exit()
     remove_ambiguitues(make_roll_ambiguity(object_with_phase))
 
