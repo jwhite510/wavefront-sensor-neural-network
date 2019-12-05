@@ -44,13 +44,13 @@ if __name__ == "__main__":
     # generate a data set
     N = 40
 
-    make_dataset("testabc.hdf5", N=N, samples=10)
+    make_dataset("train_data.hdf5", N=N, samples=10)
 
-    make_dataset("testabc.hdf5", N=N, samples=10)
+    make_dataset("test_data.hdf5", N=N, samples=10)
 
     # test open the data set
     index = 4
-    with tables.open_file("testabc.hdf5", mode="r") as hdf5file:
+    with tables.open_file("train_data.hdf5", mode="r") as hdf5file:
 
         object = hdf5file.root.object_amplitude[index,:].reshape(N,N)
         object_phase = hdf5file.root.object_phase[index,:].reshape(N,N)
