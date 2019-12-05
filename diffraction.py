@@ -8,7 +8,7 @@ from scipy.ndimage.filters import gaussian_filter
 
 
 def f_position_shift(mat, shift_value, axis):
-    shift_value = 10
+    # shift_value = 1.5
     """
     mat: 2d numpy array
     shift_value: the number of columns/rows to shift the matrix
@@ -17,44 +17,24 @@ def f_position_shift(mat, shift_value, axis):
     shift_value may be a float
 
     """
-
-    plt.figure(1)
-    plt.pcolormesh(np.abs(mat))
     print("shift_value =>", shift_value)
 
     N = np.shape(mat)[axis]
-    x_axis = np.arange(0,N) - N/2
+    x_axis = np.arange(-N/2, N/2, 1)
     dxf_axis = 1 / N
     xf_axis = dxf_axis * np.arange(-N/2, N/2, 1)
-
-    # fft
-    mat = np.fft.fftshift(np.fft.fft(np.fft.fftshift(mat, axes=axis), axis=axis), axes=axis)
-    phase = np.exp(-1j * xf_axis*shift_value)
-
+    phase = np.exp(-1j * (2*np.pi) * xf_axis*shift_value)
     # extend along axis
     phase_shape = [1,1]
     phase_shape[axis] = -1
     phase = phase.reshape(tuple(phase_shape))
 
-
-    plt.figure(3333)
-    plt.pcolormesh(np.abs(mat))
-
-
+    mat = np.fft.fftshift(np.fft.fft(np.fft.fftshift(mat, axes=axis),axis=axis),axes=axis)
     mat = mat * phase
-    # ifft
-    mat = np.fft.fftshift(np.fft.ifft(np.fft.fftshift(mat, axes=axis), axis=axis), axes=axis)
+    mat = np.fft.fftshift(np.fft.ifft(np.fft.fftshift(mat, axes=axis),axis=axis),axes=axis)
 
-    plt.figure(2)
-    plt.pcolormesh(np.abs(mat))
-    plt.show()
+    return mat
 
-
-    exit()
-
-    print(x_axis)
-    print(xf_axis)
-    exit()
 
 
 def sum_over_all_except(mat, axis):
@@ -143,7 +123,25 @@ def remove_ambiguitues(object):
     centr_row = calc_centroid(np.abs(object), axis=0)
     centr_col = calc_centroid(np.abs(object), axis=1)
 
-    f_position_shift(object, shift_value=(target_row-centr_row), axis=0)
+    plt.figure(2)
+    plt.pcolormesh(np.abs(object))
+    plt.ion()
+
+    for shift_val in np.linspace(0,10,30):
+        object_s = f_position_shift(object, shift_value=shift_val, axis=0)
+        object_s = f_position_shift(object_s, shift_value=shift_val, axis=1)
+        plt.figure(3)
+        plt.gca().cla()
+        plt.pcolormesh(np.abs(object_s))
+        plt.pause(0.5)
+
+    # object = f_position_shift(object, shift_value=(target_row-centr_row), axis=0)
+    # object = f_position_shift(object, shift_value=(target_col-centr_col), axis=1)
+
+    plt.figure(3)
+    plt.pcolormesh(np.abs(object))
+    plt.show()
+    exit()
 
     target_row-centr_row
     target_col-centr_col
