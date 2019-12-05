@@ -71,6 +71,15 @@ class DiffractionNet():
         self.sess.run(self.init)
         self.writer = tf.summary.FileWriter("./tensorboard_graph/" + self.name)
 
+        # initialize get data object
+        self.get_data = GetData(10)
+        # number of epochs to run
+        self.epochs = 80
+        self.i = None
+        self.epoch = None
+        self.dots = None
+
+
     def setup_network(self):
 
         # convolutional layer down sampling
@@ -110,8 +119,26 @@ class DiffractionNet():
     def setup_logging(self):
         self.tf_loggers["loss"] = tf.summary.scalar("loss", self.loss)
 
-    def train(self):
-        pass
+    def supervised_learn(self):
+        print("train network")
+        for self.i in range(self.epochs):
+            self.epoch = self.i + 1
+            print("Epoch : {}".format(self.epoch))
+            self.dots = 0
+            while self.get_data.batch_index < self.get_data.samples:
+                self.show_loading_bar()
+
+                # retrieve data
+                data = self.get_data.next_batch()
+                print("train network here")
+                exit()
+
+    def show_loading_bar(self):
+        # display loading bar
+        percent = 50 * self.get_data.batch_index / self.get_data.samples
+        if percent - self.dots > 1:
+            print(".", end="", flush=True)
+            self.dots += 1
 
 def max_pooling_layer(input_x, pool_size_val,  stride_val, pad=False):
     if pad:
@@ -153,12 +180,12 @@ def upsample_2d(x, S):
     return tf.image.resize_nearest_neighbor(x, (S*height, S*width))
 
 if __name__ == "__main__":
-    getdata = GetData(batch_size=10)
-    getdata.next_batch()
-    del getdata
+    # getdata = GetData(batch_size=10)
+    # getdata.next_batch()
+    # del getdata
 
-
-    # diffraction_net = DiffractionNet(name="test1", N=32)
+    diffraction_net = DiffractionNet(name="test1", N=32)
+    diffraction_net.supervised_learn()
     # pass
 
 
