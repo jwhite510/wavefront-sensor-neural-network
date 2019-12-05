@@ -5,6 +5,7 @@ from PIL import ImagePath
 import matplotlib.pyplot as plt
 from scipy.ndimage.interpolation import rotate
 from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage.interpolation import shift as sc_shift
 
 
 def f_position_shift(mat, shift_value, axis):
@@ -17,21 +18,12 @@ def f_position_shift(mat, shift_value, axis):
     shift_value may be a float
 
     """
-    print("shift_value =>", shift_value)
+    # print("shift_value =>", shift_value)
 
-    N = np.shape(mat)[axis]
-    x_axis = np.arange(-N/2, N/2, 1)
-    dxf_axis = 1 / N
-    xf_axis = dxf_axis * np.arange(-N/2, N/2, 1)
-    phase = np.exp(-1j * (2*np.pi) * xf_axis*shift_value)
-    # extend along axis
-    phase_shape = [1,1]
-    phase_shape[axis] = -1
-    phase = phase.reshape(tuple(phase_shape))
-
-    mat = np.fft.fftshift(np.fft.fft(np.fft.fftshift(mat, axes=axis),axis=axis),axes=axis)
-    mat = mat * phase
-    mat = np.fft.fftshift(np.fft.ifft(np.fft.fftshift(mat, axes=axis),axis=axis),axes=axis)
+    shift_val = [0,0]
+    shift_val[axis] = shift_value
+    mat.real = sc_shift(np.real(mat), shift=tuple(shift_val))
+    mat.imag = sc_shift(np.imag(mat), shift=tuple(shift_val))
 
     return mat
 
@@ -108,13 +100,6 @@ def remove_ambiguitues(object):
     of a 2d complex matrix
     """
 
-    # plt.figure(1)
-    # plt.pcolormesh(np.real(object))
-    # plt.figure(2)
-    # plt.pcolormesh(np.imag(object))
-    # plt.figure(3)
-    # plt.pcolormesh(np.abs(object))
-
     obj_size = np.shape(object)
     target_row = int(obj_size[0]/2)
     target_col = int(obj_size[1]/2)
@@ -123,32 +108,13 @@ def remove_ambiguitues(object):
     centr_row = calc_centroid(np.abs(object), axis=0)
     centr_col = calc_centroid(np.abs(object), axis=1)
 
-    plt.figure(2)
-    plt.pcolormesh(np.abs(object))
-    plt.ion()
+    # plt.figure(2)
+    # plt.pcolormesh(np.abs(object))
+    # # plt.ion()
 
-    for shift_val in np.linspace(0,10,30):
-        object_s = f_position_shift(object, shift_value=shift_val, axis=0)
-        object_s = f_position_shift(object_s, shift_value=shift_val, axis=1)
-        plt.figure(3)
-        plt.gca().cla()
-        plt.pcolormesh(np.abs(object_s))
-        plt.pause(0.5)
-
-    # object = f_position_shift(object, shift_value=(target_row-centr_row), axis=0)
-    # object = f_position_shift(object, shift_value=(target_col-centr_col), axis=1)
-
-    plt.figure(3)
-    plt.pcolormesh(np.abs(object))
-    plt.show()
-    exit()
-
-    target_row-centr_row
-    target_col-centr_col
-
-    # remove translational ambiguities
-    object = centroid_shift(object, value=(target_row-centr_row), axis=0)
-    object = centroid_shift(object, value=(target_col-centr_col), axis=1)
+    # move centroid to the center
+    object = f_position_shift(object, shift_value=(target_row-centr_row), axis=0)
+    object = f_position_shift(object, shift_value=(target_col-centr_col), axis=1)
 
     # remove conjugate flip ambiguity
 
@@ -172,14 +138,6 @@ def remove_ambiguitues(object):
         object = np.flip(object, axis=0)
         # complex conjugate
         object = np.conj(object)
-
-    # plt.figure(438969)
-    # plt.pcolormesh(np.abs(object))
-    # plt.show()
-
-    # exit()
-    # import ipdb; ipdb.set_trace() # BREAKPOINT
-    # print("BREAKPOINT")
 
     return object
 
@@ -341,11 +299,11 @@ if __name__ == "__main__":
     object_with_phase = make_object_phase(object, object_phase)
     ambiguous_obj = make_flip_ambiguity(object_with_phase)
 
-    remove_ambiguitues(object_with_phase)
-    exit()
+    # remove_ambiguitues(object_with_phase)
+    # exit()
 
-    plot_fft(ambiguous_obj)
-    plot_fft(object_with_phase)
+    # plot_fft(ambiguous_obj)
+    # plot_fft(object_with_phase)
     plot_fft(remove_ambiguitues(ambiguous_obj))
     plot_fft(remove_ambiguitues(object_with_phase))
     # plt.ioff()

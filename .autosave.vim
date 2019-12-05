@@ -48,14 +48,14 @@ setlocal fdl=20
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-104
+96
 normal! zo
-let s:l = 131 - ((28 * winheight(0) + 27) / 55)
+let s:l = 129 - ((34 * winheight(0) + 27) / 55)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-131
-normal! 020|
+129
+normal! 05|
 lcd ~/Projects/diffraction
 wincmd w
 argglobal
@@ -68,14 +68,14 @@ setlocal fdl=20
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-104
+96
 normal! zo
-let s:l = 32 - ((22 * winheight(0) + 27) / 55)
+let s:l = 302 - ((28 * winheight(0) + 27) / 55)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-32
-normal! 05|
+302
+normal! 0
 lcd ~/Projects/diffraction
 wincmd w
 argglobal
@@ -88,11 +88,11 @@ setlocal fdl=20
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-let s:l = 1221 - ((26 * winheight(0) + 13) / 27)
+let s:l = 2415 - ((26 * winheight(0) + 13) / 27)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-1221
+2415
 normal! 046|
 lcd ~/Projects/diffraction
 wincmd w
@@ -106,12 +106,14 @@ setlocal fdl=20
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-let s:l = 32 - ((6 * winheight(0) + 13) / 27)
+96
+normal! zo
+let s:l = 21 - ((10 * winheight(0) + 13) / 27)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-32
-normal! 05|
+21
+normal! 06|
 lcd ~/Projects/diffraction
 wincmd w
 2wincmd w
