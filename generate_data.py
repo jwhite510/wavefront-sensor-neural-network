@@ -27,7 +27,11 @@ def make_dataset(filename, N, samples):
 
         # save the dimmensions of the data
         hd5file.root.N.append(np.array([[N]]))
-        for _ in range(samples):
+        for i in range(samples):
+
+            if i % 100 == 0:
+                print("Generating sample %i of %i" % (i, samples))
+
 
             # generate a sample
             object, object_phase = diffraction_functions.make_object(N, min_indexes=4, max_indexes=8)
@@ -44,9 +48,9 @@ if __name__ == "__main__":
     # generate a data set
     N = 40
 
-    make_dataset("train_data.hdf5", N=N, samples=10)
+    make_dataset("train_data.hdf5", N=N, samples=30)
 
-    make_dataset("test_data.hdf5", N=N, samples=10)
+    make_dataset("test_data.hdf5", N=N, samples=30)
 
     # test open the data set
     index = 4
