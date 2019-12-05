@@ -13,27 +13,23 @@ class GetData():
         self.batch_size = batch_size
         self.train_filename = "train_data.hdf5"
         self.test_filename = "test_data.hdf5"
-
-        hdf5_file = tables.open_file(self.train_filename, mode="r")
-        self.samples = hdf5_file.root.object_amplitude.shape[0]
-        hdf5_file.close()
+        self.hdf5_file = tables.open_file(self.train_filename, mode="r")
+        self.samples = self.hdf5_file.root.object_amplitude.shape[0]
 
     def next_batch(self):
 
         # retrieve the next batch of data from the data source
-        hdf5_file = tables.open_file(self.train_filename, mode="r")
         samples = {}
-        samples["object_amplitude_samples"] = hdf5_file.root.object_amplitude[self.batch_index:self.batch_index + self.batch_size, :]
-        samples["object_phase_samples"] = hdf5_file.root.object_phase[self.batch_index:self.batch_index + self.batch_size, :]
-        samples["diffraction_samples"] = hdf5_file.root.diffraction[self.batch_index:self.batch_index + self.batch_size, :]
-        hdf5_file.close()
+        samples["object_amplitude_samples"] = self.hdf5_file.root.object_amplitude[self.batch_index:self.batch_index + self.batch_size, :]
+        samples["object_phase_samples"] = self.hdf5_file.root.object_phase[self.batch_index:self.batch_index + self.batch_size, :]
+        samples["diffraction_samples"] = self.hdf5_file.root.diffraction[self.batch_index:self.batch_index + self.batch_size, :]
 
         self.batch_index += self.batch_size
 
         return  samples
 
     def __del__(self):
-        print("destructor called")
+        self.hdf5_file.close()
 
 
 class DiffractionNet():
@@ -112,7 +108,6 @@ class DiffractionNet():
     def train(self):
         pass
 
-
 def max_pooling_layer(input_x, pool_size_val,  stride_val, pad=False):
     if pad:
         return tf.layers.max_pooling2d(input_x, pool_size=[pool_size_val[0], pool_size_val[1]], strides=[stride_val[0], stride_val[1]], padding="SAME")
@@ -143,32 +138,19 @@ def convolutional_layer(input_x, shape, activate, stride):
     elif activate == 'none':
         return conv2d(input_x, W, stride) + b
 
-
 def conv2d(x, W, stride):
     return tf.nn.conv2d(x, W, strides=[1, stride[0], stride[1], 1], padding='SAME')
 
 def upsample_2d(x, S):
-
     height = int(x.shape[1])
     width = int(x.shape[2])
 
     return tf.image.resize_nearest_neighbor(x, (S*height, S*width))
 
-
-
-
-
 if __name__ == "__main__":
-
     getdata = GetData(batch_size=10)
     getdata.next_batch()
     del getdata
-
-
-
-
-
-
 
 
     # diffraction_net = DiffractionNet(name="test1", N=32)
