@@ -18,7 +18,7 @@ def make_dataset(filename, N, samples):
         # create array for the image
         hdf5file.create_earray(hdf5file.root, "diffraction", tables.Float64Atom(), shape=(0,N*N))
 
-        hdf5file.create_earray(hdf5file.root, "N", tables.Float64Atom(), shape=(0,1))
+        hdf5file.create_earray(hdf5file.root, "N", tables.Int32Atom(), shape=(0,1))
 
         hdf5file.close()
 
@@ -55,6 +55,9 @@ if __name__ == "__main__":
     # test open the data set
     index = 4
     with tables.open_file("train_data.hdf5", mode="r") as hdf5file:
+
+        # print("hdf5file.root.N =>", hdf5file.root.N[0,0])
+        N = hdf5file.root.N[0,0]
 
         object = hdf5file.root.object_amplitude[index,:].reshape(N,N)
         object_phase = hdf5file.root.object_phase[index,:].reshape(N,N)
