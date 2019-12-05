@@ -15,6 +15,11 @@ class GetData():
         self.test_filename = "test_data.hdf5"
         self.hdf5_file = tables.open_file(self.train_filename, mode="r")
         self.samples = self.hdf5_file.root.object_amplitude.shape[0]
+        # shape of the sample
+        self.N = self.hdf5_file.root.N[0,0]
+        print("initializing GetData")
+        print("self.N =>", self.N)
+        print("self.samples =>", self.samples)
 
     def next_batch(self):
 
