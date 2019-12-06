@@ -167,6 +167,11 @@ class DiffractionNet():
         loss_value = self.sess.run(self.loss, feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
         print("loss_value =>", loss_value)
 
+        # write to log
+        summ = self.sess.run(self.tf_loggers["loss"], feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
+        self.writer.add_summary(summ, global_step=self.epoch)
+        self.writer.flush()
+
     def __del__(self):
         del self.get_data
 
