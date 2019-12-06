@@ -24,9 +24,9 @@ class GetData():
     def next_batch(self):
         # retrieve the next batch of data from the data source
         samples = {}
-        samples["object_amplitude_samples"] = self.hdf5_file.root.object_amplitude[self.batch_index:self.batch_index + self.batch_size, :]
-        samples["object_phase_samples"] = self.hdf5_file.root.object_phase[self.batch_index:self.batch_index + self.batch_size, :]
-        samples["diffraction_samples"] = self.hdf5_file.root.diffraction[self.batch_index:self.batch_index + self.batch_size, :]
+        samples["object_amplitude_samples"] = self.hdf5_file.root.object_amplitude[0,:]
+        samples["object_phase_samples"] = self.hdf5_file.root.object_phase[0, :]
+        samples["diffraction_samples"] = self.hdf5_file.root.diffraction[0, :]
 
         self.batch_index += self.batch_size
 
@@ -90,37 +90,42 @@ class DiffractionNet():
     def setup_network(self):
         # convolutional layer down sampling
         self.nodes["conv1"] = convolutional_layer(self.x, shape=[3,3,1,32], activate='relu', stride=[1,1])
-        self.nodes["conv2"] = convolutional_layer(self.nodes["conv1"], shape=[3,3,32,32], activate='relu', stride=[1,1])
-        # max pooling
-        self.nodes["pool3"] = max_pooling_layer(self.nodes["conv2"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
-        # convolutional layer
-        self.nodes["conv4"] = convolutional_layer(self.nodes["pool3"], shape=[3,3,32,64], activate='relu', stride=[1,1])
-        self.nodes["conv5"] = convolutional_layer(self.nodes["conv4"], shape=[3,3,64,64], activate='relu', stride=[1,1])
-        # max pooling
-        self.nodes["pool6"] = max_pooling_layer(self.nodes["conv5"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
-        # convolutional layer
-        self.nodes["conv7"] = convolutional_layer(self.nodes["pool6"], shape=[3,3,64,128], activate='relu', stride=[1,1])
-        self.nodes["conv8"] = convolutional_layer(self.nodes["conv7"], shape=[3,3,128,128], activate='relu', stride=[1,1])
-        # max pooling
-        self.nodes["pool9"] = max_pooling_layer(self.nodes["conv8"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
-        # convolutional layer
-        self.nodes["conv10"] = convolutional_layer(self.nodes["pool9"], shape=[3,3,128,128], activate='relu', stride=[1,1])
-        self.nodes["conv11"] = convolutional_layer(self.nodes["conv10"], shape=[3,3,128,128], activate='relu', stride=[1,1])
-        # up sampling
-        self.nodes["ups12"] = upsample_2d(self.nodes["conv11"], 2)
-        # convolutional layer
-        self.nodes["conv13"] = convolutional_layer(self.nodes["ups12"], shape=[3,3,128,64], activate='relu', stride=[1,1])
-        self.nodes["conv14"] = convolutional_layer(self.nodes["conv13"], shape=[3,3,64,64], activate='relu', stride=[1,1])
-        # up sampling
-        self.nodes["ups15"] = upsample_2d(self.nodes["conv14"], 2)
-        # convolutional layer
-        self.nodes["conv16"] = convolutional_layer(self.nodes["ups15"], shape=[3,3,64,32], activate='relu', stride=[1,1])
-        self.nodes["conv17"] = convolutional_layer(self.nodes["conv16"], shape=[3,3,32,32], activate='relu', stride=[1,1])
-        # up sampling
-        self.nodes["ups18"] = upsample_2d(self.nodes["conv17"], 2)
-        self.nodes["conv19"] = convolutional_layer(self.nodes["ups18"], shape=[3,3,32,1], activate='sigmoid', stride=[1,1])
+        layer1 = tf.contrib.layers.flatten(self.nodes["conv1"])
+        layer2 = tf.layers.dense(inputs=layer1, units=128)
+        layer3 = tf.layers.dense(inputs=layer2, units=40*40)
+        layer3_sh = tf.reshape(layer3, [-1, 40, 40, 1])
+        self.out = layer3_sh
 
-        self.out = self.nodes["conv19"]
+        # self.nodes["conv2"] = convolutional_layer(self.nodes["conv1"], shape=[3,3,32,32], activate='relu', stride=[1,1])
+        # # max pooling
+        # self.nodes["pool3"] = max_pooling_layer(self.nodes["conv2"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
+        # # convolutional layer
+        # self.nodes["conv4"] = convolutional_layer(self.nodes["pool3"], shape=[3,3,32,64], activate='relu', stride=[1,1])
+        # self.nodes["conv5"] = convolutional_layer(self.nodes["conv4"], shape=[3,3,64,64], activate='relu', stride=[1,1])
+        # # max pooling
+        # self.nodes["pool6"] = max_pooling_layer(self.nodes["conv5"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
+        # # convolutional layer
+        # self.nodes["conv7"] = convolutional_layer(self.nodes["pool6"], shape=[3,3,64,128], activate='relu', stride=[1,1])
+        # self.nodes["conv8"] = convolutional_layer(self.nodes["conv7"], shape=[3,3,128,128], activate='relu', stride=[1,1])
+        # # max pooling
+        # self.nodes["pool9"] = max_pooling_layer(self.nodes["conv8"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
+        # # convolutional layer
+        # self.nodes["conv10"] = convolutional_layer(self.nodes["pool9"], shape=[3,3,128,128], activate='relu', stride=[1,1])
+        # self.nodes["conv11"] = convolutional_layer(self.nodes["conv10"], shape=[3,3,128,128], activate='relu', stride=[1,1])
+        # # up sampling
+        # self.nodes["ups12"] = upsample_2d(self.nodes["conv11"], 2)
+        # # convolutional layer
+        # self.nodes["conv13"] = convolutional_layer(self.nodes["ups12"], shape=[3,3,128,64], activate='relu', stride=[1,1])
+        # self.nodes["conv14"] = convolutional_layer(self.nodes["conv13"], shape=[3,3,64,64], activate='relu', stride=[1,1])
+        # # up sampling
+        # self.nodes["ups15"] = upsample_2d(self.nodes["conv14"], 2)
+        # # convolutional layer
+        # self.nodes["conv16"] = convolutional_layer(self.nodes["ups15"], shape=[3,3,64,32], activate='relu', stride=[1,1])
+        # self.nodes["conv17"] = convolutional_layer(self.nodes["conv16"], shape=[3,3,32,32], activate='relu', stride=[1,1])
+        # # up sampling
+        # self.nodes["ups18"] = upsample_2d(self.nodes["conv17"], 2)
+        # self.nodes["conv19"] = convolutional_layer(self.nodes["ups18"], shape=[3,3,32,1], activate='sigmoid', stride=[1,1])
+        # self.out = self.nodes["conv19"]
 
     def setup_logging(self):
         self.tf_loggers["loss"] = tf.summary.scalar("loss", self.loss)
