@@ -48,7 +48,7 @@ class DiffractionNet():
         self.name = name
 
         # initialize get data object
-        self.get_data = GetData(10)
+        self.get_data = GetData(batch_size=10)
 
         # input image
         self.x = tf.placeholder(tf.float32, shape=[None, self.get_data.N , self.get_data.N, 1])
@@ -127,6 +127,7 @@ class DiffractionNet():
 
     def supervised_learn(self):
         print("train network")
+        plt.ion()
         for self.i in range(self.epochs):
             self.epoch = self.i + 1
             print("Epoch : {}".format(self.epoch))
@@ -144,22 +145,28 @@ class DiffractionNet():
                 # print("self.x =>", self.x)
                 # print("self.y =>", self.y)
 
-                print("runnig training")
                 self.sess.run(self.train, feed_dict={self.x:diffraction_samples,
                                                     self.y:object_amplitude_samples,
-                                                    self.s_LR:0.0001})
+                                                    self.s_LR:0.001})
                 self.add_tensorboard_values()
 
-                # self.sess.run(self.nn_nodes["supervised"]["phase_network_train_coefs_params"],
-                         # feed_dict={self.nn_nodes["supervised"]["x_in"]: batch_x,
-                                    # self.nn_nodes["supervised"]["actual_coefs_params"]: batch_y,
-                                    # self.nn_nodes["general"]["hold_prob"]: 1.0,
-                                    # self.nn_nodes["supervised"]["s_LR"]: 0.0001})
+            if self.i % 2 == 0:
+                # look at the output
+                output = self.sess.run(self.out, feed_dict={self.x:diffraction_samples})
+
+                index = 0
+                plt.figure(1)
+                plt.gca().cla()
+                plt.pcolormesh(object_amplitude_samples[index,:,:,0])
+                plt.figure(2)
+                plt.gca().cla()
+                plt.pcolormesh(output[index,:,:,0])
+                plt.pause(0.1)
+
 
             self.get_data.batch_index = 0
 
     def add_tensorboard_values(self):
-        print("add tensorboard values")
         data = self.get_data.evaluate_on_train_data(n_samples=50)
         object_amplitude_samples = data["object_amplitude_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         object_phase_samples = data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
@@ -226,7 +233,7 @@ if __name__ == "__main__":
     # getdata.next_batch()
     # del getdata
 
-    diffraction_net = DiffractionNet(name="test1")
+    diffraction_net = DiffractionNet(name="test2")
     diffraction_net.supervised_learn()
     del diffraction_net
     # pass
