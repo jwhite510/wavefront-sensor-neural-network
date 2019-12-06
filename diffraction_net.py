@@ -22,7 +22,6 @@ class GetData():
         print("self.samples =>", self.samples)
 
     def next_batch(self):
-
         # retrieve the next batch of data from the data source
         samples = {}
         samples["object_amplitude_samples"] = self.hdf5_file.root.object_amplitude[self.batch_index:self.batch_index + self.batch_size, :]
@@ -34,7 +33,6 @@ class GetData():
         return  samples
 
     def evaluate_on_train_data(self, n_samples):
-
         samples = {}
         samples["object_amplitude_samples"] = self.hdf5_file.root.object_amplitude[:n_samples, :]
         samples["object_phase_samples"] = self.hdf5_file.root.object_phase[:n_samples, :]
@@ -89,9 +87,7 @@ class DiffractionNet():
         self.epoch = None
         self.dots = None
 
-
     def setup_network(self):
-
         # convolutional layer down sampling
         self.nodes["conv1"] = convolutional_layer(self.x, shape=[3,3,1,32], activate='relu', stride=[1,1])
         self.nodes["conv2"] = convolutional_layer(self.nodes["conv1"], shape=[3,3,32,32], activate='relu', stride=[1,1])
@@ -171,10 +167,8 @@ class DiffractionNet():
         loss_value = self.sess.run(self.loss, feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
         print("loss_value =>", loss_value)
 
-
     def __del__(self):
         del self.get_data
-
 
     def show_loading_bar(self):
         # display loading bar
