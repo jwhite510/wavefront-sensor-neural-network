@@ -33,6 +33,15 @@ class GetData():
 
         return  samples
 
+    def evaluate_on_train_data(self, n_samples):
+
+        samples = {}
+        samples["object_amplitude_samples"] = self.hdf5_file.root.object_amplitude[:n_samples, :]
+        samples["object_phase_samples"] = self.hdf5_file.root.object_phase[:n_samples, :]
+        samples["diffraction_samples"] = self.hdf5_file.root.diffraction[:n_samples, :]
+
+        return samples
+
     def __del__(self):
         self.hdf5_file.close()
 
@@ -131,20 +140,19 @@ class DiffractionNet():
 
                 # retrieve data
                 data = self.get_data.next_batch()
-                print("np.shape(data['object_amplitude_samples']) => ",np.shape(data['object_amplitude_samples']))
-                print("np.shape(data['object_phase_samples']) => ",np.shape(data['object_phase_samples']))
-                print("np.shape(data['diffraction_samples']) => ",np.shape(data['diffraction_samples']))
 
                 # run training iteration
                 object_amplitude_samples = data["object_amplitude_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
                 object_phase_samples = data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
                 diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-                print("self.x =>", self.x)
-                print("self.y =>", self.y)
-                exit()
+                # print("self.x =>", self.x)
+                # print("self.y =>", self.y)
+
+                print("runnig training")
                 self.sess.run(self.train, feed_dict={self.x:diffraction_samples,
-                                                    self.y:object_amplitude_samples})
-                exit()
+                                                    self.y:object_amplitude_samples,
+                                                    self.s_LR:0.0001})
+                self.add_tensorboard_values()
 
                 # self.sess.run(self.nn_nodes["supervised"]["phase_network_train_coefs_params"],
                          # feed_dict={self.nn_nodes["supervised"]["x_in"]: batch_x,
@@ -153,6 +161,15 @@ class DiffractionNet():
                                     # self.nn_nodes["supervised"]["s_LR"]: 0.0001})
 
             self.get_data.batch_index = 0
+
+    def add_tensorboard_values(self):
+        print("add tensorboard values")
+        data = self.get_data.evaluate_on_train_data(n_samples=50)
+        object_amplitude_samples = data["object_amplitude_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+        object_phase_samples = data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+        diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+        loss_value = self.sess.run(self.loss, feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
+        print("loss_value =>", loss_value)
 
 
     def __del__(self):
