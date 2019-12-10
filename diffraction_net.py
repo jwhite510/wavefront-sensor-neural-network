@@ -144,9 +144,8 @@ class DiffractionNet():
                 self.sess.run(self.train, feed_dict={self.x:diffraction_samples,
                                                     self.y:object_amplitude_samples,
                                                     self.s_LR:0.001})
-                self.add_tensorboard_values()
-
-            if self.i % 2 == 0:
+            self.add_tensorboard_values()
+            if self.i % 5 == 0:
                 # plot the output
                 output = self.sess.run(self.out, feed_dict={self.x:diffraction_samples})
                 self.epoch

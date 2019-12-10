@@ -48,9 +48,9 @@ if __name__ == "__main__":
     # generate a data set
     N = 40
 
-    make_dataset("train_data.hdf5", N=N, samples=30)
+    make_dataset("train_data.hdf5", N=N, samples=40000)
 
-    make_dataset("test_data.hdf5", N=N, samples=30)
+    make_dataset("test_data.hdf5", N=N, samples=200)
 
     # test open the data set
     index = 4
@@ -65,9 +65,9 @@ if __name__ == "__main__":
 
         object_with_phase = diffraction_functions.make_object_phase(object, object_phase)
         diffraction_functions.plot_fft(object_with_phase)
-        plt.figure(43546)
-        plt.pcolormesh(diffraction)
-        plt.show()
+        # plt.figure(43546)
+        # plt.pcolormesh(diffraction)
+        # plt.show()
 
 
 
