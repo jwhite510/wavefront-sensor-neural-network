@@ -126,8 +126,6 @@ class DiffractionNet():
         self.tf_loggers["loss"] = tf.summary.scalar("loss", self.loss)
 
     def supervised_learn(self):
-        print("train network")
-        plt.ion()
         for self.i in range(self.epochs):
             self.epoch = self.i + 1
             print("Epoch : {}".format(self.epoch))
@@ -142,8 +140,6 @@ class DiffractionNet():
                 object_amplitude_samples = data["object_amplitude_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
                 object_phase_samples = data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
                 diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-                # print("self.x =>", self.x)
-                # print("self.y =>", self.y)
 
                 self.sess.run(self.train, feed_dict={self.x:diffraction_samples,
                                                     self.y:object_amplitude_samples,
@@ -151,17 +147,25 @@ class DiffractionNet():
                 self.add_tensorboard_values()
 
             if self.i % 2 == 0:
-                # look at the output
+                # plot the output
                 output = self.sess.run(self.out, feed_dict={self.x:diffraction_samples})
+                self.epoch
 
-                index = 0
-                plt.figure(1)
-                plt.gca().cla()
-                plt.pcolormesh(object_amplitude_samples[index,:,:,0])
-                plt.figure(2)
-                plt.gca().cla()
-                plt.pcolormesh(output[index,:,:,0])
-                plt.pause(0.1)
+                # create directory if it doesnt exist
+                if not os.path.isdir(self.name+"_pictures"):
+                    os.mkdir(self.name+"_pictures")
+                if not os.path.isdir(self.name+"_pictures/"+str(self.epoch)):
+                    os.mkdir(self.name+"_pictures/"+str(self.epoch))
+
+                for index in range(0,5):
+                    axes_obj = PlotAxes("sample "+str(index))
+                    axes_obj.diffraction_input.pcolormesh(diffraction_samples[index,:,:,0])
+                    axes_obj.object_actual.pcolormesh(object_amplitude_samples[index,:,:,0])
+                    axes_obj.object_output.pcolormesh(output[index,:,:,0])
+                    # axes_obj.diffraction_recons.pcolormesh()
+                    axes_obj.save(self.name+"_pictures/"+str(self.epoch)+"/sample_"+str(index))
+                    del axes_obj
+
 
 
             self.get_data.batch_index = 0
@@ -228,12 +232,51 @@ def upsample_2d(x, S):
 
     return tf.image.resize_nearest_neighbor(x, (S*height, S*width))
 
+
+
+class PlotAxes():
+    def __init__(self,fig_title):
+        """
+        fig_title:(string)
+        title for the figure
+        """
+        # create plot
+        self.fig = plt.figure(figsize=(10,10))
+        self.gs = self.fig.add_gridspec(2,2)
+
+        self.fig.text(0.5, 0.95,fig_title, fontsize=30, ha='center')
+
+        self.axes = {}
+        self.diffraction_input = self.fig.add_subplot(self.gs[0:1,0:1])
+        self.diffraction_input.set_title("diffraction_input")
+        self.diffraction_input.set_xticks([])
+        self.diffraction_input.set_yticks([])
+
+        self.diffraction_recons = self.fig.add_subplot(self.gs[0:1,1:2])
+        self.diffraction_recons.set_title("diffraction_recons")
+        self.diffraction_recons.set_xticks([])
+        self.diffraction_recons.set_yticks([])
+
+        self.object_actual = self.fig.add_subplot(self.gs[1:2,1:2])
+        self.object_actual.set_title("object_actual")
+        self.object_actual.set_xticks([])
+        self.object_actual.set_yticks([])
+
+        self.object_output = self.fig.add_subplot(self.gs[1:2,0:1])
+        self.object_output.set_title("object_output")
+        self.object_output.set_xticks([])
+        self.object_output.set_yticks([])
+
+    def save(self, filename):
+        self.fig.savefig(filename)
+
+
 if __name__ == "__main__":
     # getdata = GetData(batch_size=10)
     # getdata.next_batch()
     # del getdata
 
-    diffraction_net = DiffractionNet(name="test2")
+    diffraction_net = DiffractionNet(name="test3")
     diffraction_net.supervised_learn()
     del diffraction_net
     # pass
