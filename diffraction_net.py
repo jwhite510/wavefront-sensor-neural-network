@@ -57,12 +57,14 @@ class DiffractionNet():
 
         self.nodes = {}
         self.out = None
+        self.out_logits = None
         self.setup_network()
 
         # learning rate
         self.s_LR = tf.placeholder(tf.float32, shape=[])
         # define loss function
-        self.loss = tf.losses.mean_squared_error(labels=self.y, predictions=self.out)
+        # self.loss = tf.losses.mean_squared_error(labels=self.y, predictions=self.out)
+        self.loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=self.y, logits=self.out_logits)
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
         self.train = self.optimizer.minimize(self.loss)
 
@@ -156,10 +158,12 @@ class DiffractionNet():
         self.nodes["ups18"] = tf.keras.layers.UpSampling2D(size=2)(self.nodes["conv17"])
 
         # self.nodes["conv19"] = convolutional_layer(self.nodes["ups18"], shape=[3,3,32,1], activate='sigmoid', stride=[1,1])
-        self.nodes["conv19"] = tf.keras.layers.Conv2D(filters=1, kernel_size=3, padding='SAME', activation='sigmoid')(self.nodes["ups18"])
+        self.nodes["conv19"] = tf.keras.layers.Conv2D(filters=1, kernel_size=3, padding='SAME', activation='none')(self.nodes["ups18"])
 
         # self.out = self.nodes["conv19"]
-        self.out = self.nodes["conv19"]
+        self.out_logits = self.nodes["conv19"]
+
+        self.out = tf.nn.sigmoid(self.out_logits)
 
     def setup_logging(self):
         self.tf_loggers["loss"] = tf.summary.scalar("loss", self.loss)
