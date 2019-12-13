@@ -39,9 +39,15 @@ def make_dataset(filename, N, samples):
 
             diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(object_with_phase)))
 
+            # absolute value
+            diffraction_pattern = np.abs(diffraction_pattern)
+
+            # normalize the diffraction pattern
+            diffraction_pattern = diffraction_pattern / np.max(diffraction_pattern)
+
             hd5file.root.object_amplitude.append(object.reshape(1,-1))
             hd5file.root.object_phase.append(object_phase.reshape(1,-1))
-            hd5file.root.diffraction.append(np.abs(diffraction_pattern).reshape(1,-1))
+            hd5file.root.diffraction.append(diffraction_pattern.reshape(1,-1))
 
 
 if __name__ == "__main__":
