@@ -46,6 +46,8 @@ class GetData():
 class DiffractionNet():
     def __init__(self, name):
         self.name = name
+        print("initializing network")
+        print(name)
 
         # initialize get data object
         self.get_data = GetData(batch_size=10)
