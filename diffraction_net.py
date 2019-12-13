@@ -158,7 +158,7 @@ class DiffractionNet():
         self.nodes["ups18"] = tf.keras.layers.UpSampling2D(size=2)(self.nodes["conv17"])
 
         # self.nodes["conv19"] = convolutional_layer(self.nodes["ups18"], shape=[3,3,32,1], activate='sigmoid', stride=[1,1])
-        self.nodes["conv19"] = tf.keras.layers.Conv2D(filters=1, kernel_size=3, padding='SAME', activation='none')(self.nodes["ups18"])
+        self.nodes["conv19"] = tf.keras.layers.Conv2D(filters=1, kernel_size=3, padding='SAME')(self.nodes["ups18"])
 
         # self.out = self.nodes["conv19"]
         self.out_logits = self.nodes["conv19"]
