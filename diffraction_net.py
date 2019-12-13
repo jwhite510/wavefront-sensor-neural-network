@@ -64,7 +64,7 @@ class DiffractionNet():
         self.s_LR = tf.placeholder(tf.float32, shape=[])
         # define loss function
         # self.loss = tf.losses.mean_squared_error(labels=self.y, predictions=self.out)
-        self.loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=self.y, logits=self.out_logits)
+        self.loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.y, logits=self.out_logits))
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
         self.train = self.optimizer.minimize(self.loss)
 
