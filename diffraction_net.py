@@ -65,8 +65,44 @@ class DiffractionNet():
         # learning rate
         self.s_LR = tf.placeholder(tf.float32, shape=[])
         # define loss function
+
+
+        # # testing output
+        # self.out_logits = tf.constant(np.array([[0.0, 1.0, 0.0, 0.0]]))
+        # self.out = tf.constant(np.array([[0.01, 1.0, 0.01, 0.01]]))
+        # self.y = tf.constant(np.array([[0.0, 0.0, 1.0, 0.0]]))
+
+
+        # # mean squared error
         # self.loss = tf.losses.mean_squared_error(labels=self.y, predictions=self.out)
-        self.loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.y, logits=self.out_logits))
+
+
+        # # original cost function i used (after mean_squared_error)
+        # self.loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.y, logits=self.out_logits))
+
+
+        # # identical cost function #1
+        # sm = tf.nn.softmax(self.out)
+        # self.loss = -tf.reduce_sum(self.y * tf.log(sm))
+
+
+        # # identical cost function #2
+        # self.loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=self.y, logits=self.out)
+
+
+        # # without softmax activation
+        # self.loss = -tf.reduce_sum(self.y * tf.log(self.out))
+
+
+        # still dont understand these
+        # loss = tf.nn.softmax_cross_entropy_with_logits(labels=self.y, logits=self.out)
+        # loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.y, logits=self.out))
+
+        # with tf.Session() as sess:
+            # out = sess.run(self.loss)
+            # print("out =>", out)
+        # exit()
+
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
         self.train = self.optimizer.minimize(self.loss)
 
@@ -188,7 +224,7 @@ class DiffractionNet():
 
                 self.sess.run(self.train, feed_dict={self.x:diffraction_samples,
                                                     self.y:object_amplitude_samples,
-                                                    self.s_LR:0.001})
+                                                    self.s_LR:0.0001})
             self.add_tensorboard_values()
             if self.i % 5 == 0:
                 # plot the output
@@ -320,7 +356,7 @@ if __name__ == "__main__":
     # getdata.next_batch()
     # del getdata
 
-    diffraction_net = DiffractionNet(name="test3")
+    diffraction_net = DiffractionNet(name="test8")
     diffraction_net.supervised_learn()
     del diffraction_net
     # pass
