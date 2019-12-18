@@ -242,10 +242,12 @@ class DiffractionNet():
                 self.epoch
 
                 # create directory if it doesnt exist
-                if not os.path.isdir(self.name+"_pictures"):
-                    os.mkdir(self.name+"_pictures")
-                if not os.path.isdir(self.name+"_pictures/"+str(self.epoch)):
-                    os.mkdir(self.name+"_pictures/"+str(self.epoch))
+                if not os.path.isdir("nn_pictures"):
+                    os.mkdir("nn_pictures")
+                if not os.path.isdir("nn_pictures/"+self.name+"_pictures"):
+                    os.mkdir("nn_pictures/"+self.name+"_pictures")
+                if not os.path.isdir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)):
+                    os.mkdir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch))
 
                 for index in range(0,5):
                     axes_obj = PlotAxes("sample "+str(index))
@@ -253,7 +255,7 @@ class DiffractionNet():
                     axes_obj.object_actual.pcolormesh(object_amplitude_samples[index,:,:,0])
                     axes_obj.object_output.pcolormesh(output[index,:,:,0])
                     # axes_obj.diffraction_recons.pcolormesh()
-                    axes_obj.save(self.name+"_pictures/"+str(self.epoch)+"/sample_"+str(index))
+                    axes_obj.save("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/sample_"+str(index))
                     del axes_obj
 
 
