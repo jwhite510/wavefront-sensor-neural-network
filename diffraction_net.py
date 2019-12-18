@@ -13,10 +13,11 @@ class GetData():
         self.batch_size = batch_size
         self.train_filename = "train_data.hdf5"
         self.test_filename = "test_data.hdf5"
-        self.hdf5_file = tables.open_file(self.train_filename, mode="r")
-        self.samples = self.hdf5_file.root.object_amplitude.shape[0]
+        self.hdf5_file_train = tables.open_file(self.train_filename, mode="r")
+        self.hdf5_file_validation = tables.open_file(self.test_filename, mode="r")
+        self.samples = self.hdf5_file_train.root.object_amplitude.shape[0]
         # shape of the sample
-        self.N = self.hdf5_file.root.N[0,0]
+        self.N = self.hdf5_file_train.root.N[0,0]
         print("initializing GetData")
         print("self.N =>", self.N)
         print("self.samples =>", self.samples)
@@ -24,9 +25,9 @@ class GetData():
     def next_batch(self):
         # retrieve the next batch of data from the data source
         samples = {}
-        samples["object_amplitude_samples"] = self.hdf5_file.root.object_amplitude[self.batch_index:self.batch_index + self.batch_size, :]
-        samples["object_phase_samples"] = self.hdf5_file.root.object_phase[self.batch_index:self.batch_index + self.batch_size, :]
-        samples["diffraction_samples"] = self.hdf5_file.root.diffraction[self.batch_index:self.batch_index + self.batch_size, :]
+        samples["object_amplitude_samples"] = self.hdf5_file_train.root.object_amplitude[self.batch_index:self.batch_index + self.batch_size, :]
+        samples["object_phase_samples"] = self.hdf5_file_train.root.object_phase[self.batch_index:self.batch_index + self.batch_size, :]
+        samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction[self.batch_index:self.batch_index + self.batch_size, :]
 
         self.batch_index += self.batch_size
 
@@ -34,14 +35,22 @@ class GetData():
 
     def evaluate_on_train_data(self, n_samples):
         samples = {}
-        samples["object_amplitude_samples"] = self.hdf5_file.root.object_amplitude[:n_samples, :]
-        samples["object_phase_samples"] = self.hdf5_file.root.object_phase[:n_samples, :]
-        samples["diffraction_samples"] = self.hdf5_file.root.diffraction[:n_samples, :]
+        samples["object_amplitude_samples"] = self.hdf5_file_train.root.object_amplitude[:n_samples, :]
+        samples["object_phase_samples"] = self.hdf5_file_train.root.object_phase[:n_samples, :]
+        samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction[:n_samples, :]
+
+        return samples
+
+    def evaluate_on_validation_data(self, n_samples):
+        samples = {}
+        samples["object_amplitude_samples"] = self.hdf5_file_validation.root.object_amplitude[:n_samples, :]
+        samples["object_phase_samples"] = self.hdf5_file_validation.root.object_phase[:n_samples, :]
+        samples["diffraction_samples"] = self.hdf5_file_validation.root.diffraction[:n_samples, :]
 
         return samples
 
     def __del__(self):
-        self.hdf5_file.close()
+        self.hdf5_file_train.close()
 
 class DiffractionNet():
     def __init__(self, name):
@@ -204,7 +213,8 @@ class DiffractionNet():
         self.out = tf.nn.sigmoid(self.out_logits)
 
     def setup_logging(self):
-        self.tf_loggers["loss"] = tf.summary.scalar("loss", self.loss)
+        self.tf_loggers["loss_training"] = tf.summary.scalar("loss", self.loss)
+        self.tf_loggers["loss_validation"] = tf.summary.scalar("loss", self.loss)
 
     def supervised_learn(self):
         for self.i in range(self.epochs):
@@ -251,15 +261,33 @@ class DiffractionNet():
             self.get_data.batch_index = 0
 
     def add_tensorboard_values(self):
+        # # # # # # # # # # # # # # #
+        # loss on the training data #
+        # # # # # # # # # # # # # # #
         data = self.get_data.evaluate_on_train_data(n_samples=50)
         object_amplitude_samples = data["object_amplitude_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         object_phase_samples = data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         loss_value = self.sess.run(self.loss, feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
-        print("loss_value =>", loss_value)
+        print("training loss_value =>", loss_value)
 
         # write to log
-        summ = self.sess.run(self.tf_loggers["loss"], feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
+        summ = self.sess.run(self.tf_loggers["loss_training"], feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
+        self.writer.add_summary(summ, global_step=self.epoch)
+        self.writer.flush()
+
+        # # # # # # # # # # # # # # # #
+        # loss on the validation data #
+        # # # # # # # # # # # # # # # #
+        data = self.get_data.evaluate_on_validation_data(n_samples=50)
+        object_amplitude_samples = data["object_amplitude_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+        object_phase_samples = data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+        diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+        loss_value = self.sess.run(self.loss, feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
+        print("validation loss_value =>", loss_value)
+
+        # write to log
+        summ = self.sess.run(self.tf_loggers["loss_validation"], feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
         self.writer.add_summary(summ, global_step=self.epoch)
         self.writer.flush()
 
