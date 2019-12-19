@@ -237,27 +237,19 @@ class DiffractionNet():
                                                     self.s_LR:0.0001})
             self.add_tensorboard_values()
             if self.i % 5 == 0:
-                # plot the output
-                output = self.sess.run(self.out, feed_dict={self.x:diffraction_samples})
-                self.epoch
 
                 # create directory if it doesnt exist
-                if not os.path.isdir("nn_pictures"):
-                    os.mkdir("nn_pictures")
-                if not os.path.isdir("nn_pictures/"+self.name+"_pictures"):
-                    os.mkdir("nn_pictures/"+self.name+"_pictures")
-                if not os.path.isdir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)):
-                    os.mkdir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch))
+                check_is_dir("nn_pictures")
+                check_is_dir("nn_pictures/"+self.name+"_pictures")
+                check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch))
+                check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"training")
+                check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"validation")
 
-                for index in range(0,5):
-                    axes_obj = PlotAxes("sample "+str(index))
-                    axes_obj.diffraction_input.pcolormesh(diffraction_samples[index,:,:,0])
-                    axes_obj.object_actual.pcolormesh(object_amplitude_samples[index,:,:,0])
-                    axes_obj.object_output.pcolormesh(output[index,:,:,0])
-                    # axes_obj.diffraction_recons.pcolormesh()
-                    axes_obj.save("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/sample_"+str(index))
-                    del axes_obj
+                data = self.get_data.evaluate_on_train_data(n_samples=50)
+                self.evaluate_performance(data, "training")
 
+                data = self.get_data.evaluate_on_validation_data(n_samples=50)
+                self.evaluate_performance(data, "validation")
 
 
             self.get_data.batch_index = 0
@@ -303,6 +295,29 @@ class DiffractionNet():
             print(".", end="", flush=True)
             self.dots += 1
 
+    def evaluate_performance(_data, _set):
+        """
+            _data: the data set to input to the network
+            _set: (validation or training)
+            make plots of the output of the network
+        """
+        object_amplitude_samples = _data["object_amplitude_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+        object_phase_samples = _data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+        diffraction_samples = _data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+
+        # plot the output
+        output = self.sess.run(self.out, feed_dict={self.x:diffraction_samples})
+        self.epoch
+
+        for index in range(0,5):
+            axes_obj = PlotAxes("sample "+str(index))
+            axes_obj.diffraction_input.pcolormesh(diffraction_samples[index,:,:,0])
+            axes_obj.object_actual.pcolormesh(object_amplitude_samples[index,:,:,0])
+            axes_obj.object_output.pcolormesh(output[index,:,:,0])
+            # axes_obj.diffraction_recons.pcolormesh()
+            axes_obj.save("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/sample_"+str(index))
+            del axes_obj
+
 def max_pooling_layer(input_x, pool_size_val,  stride_val, pad=False):
     if pad:
         return tf.layers.max_pooling2d(input_x, pool_size=[pool_size_val[0], pool_size_val[1]], strides=[stride_val[0], stride_val[1]], padding="SAME")
@@ -342,7 +357,9 @@ def upsample_2d(x, S):
 
     return tf.image.resize_nearest_neighbor(x, (S*height, S*width))
 
-
+def check_is_dir(directory):
+    if not os.path.isdir(directory):
+        os.mkdir(directory)
 
 class PlotAxes():
     def __init__(self,fig_title):
