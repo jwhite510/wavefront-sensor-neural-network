@@ -238,8 +238,8 @@ class DiffractionNet():
                 check_is_dir("nn_pictures")
                 check_is_dir("nn_pictures/"+self.name+"_pictures")
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch))
-                check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"training")
-                check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"validation")
+                check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/training")
+                check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/validation")
 
                 data = self.get_data.evaluate_on_train_data(n_samples=50)
                 self.evaluate_performance(data, "training")
