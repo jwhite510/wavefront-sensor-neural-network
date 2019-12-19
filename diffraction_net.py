@@ -66,54 +66,42 @@ class DiffractionNet():
         # label
         self.y = tf.placeholder(tf.float32, shape=[None, self.get_data.N, self.get_data.N, 1])
 
-        self.nodes = {}
-        self.out = None
-        self.out_logits = None
-        self.setup_network()
+        # amplitude retrieval network
+        self.nodes_amplitude = {}
+        with tf.variable_scope("amplitude"):
+            self.setup_network(self.nodes_amplitude)
+
+        self.nodes_phase = {}
+        with tf.variable_scope("phase"):
+            self.setup_network(self.nodes_phase)
+
+        tvars = tf.trainable_variables()
+        amplitude_network_variables = [var for var in tvars if "amplitude" in var.name]
+        phase_network_variables = [var for var in tvars if "phase" in var.name]
 
         # learning rate
         self.s_LR = tf.placeholder(tf.float32, shape=[])
+
         # define loss function
 
+        # mean squared error
+        # self.nodes_amplitude["loss"] = tf.losses.mean_squared_error(labels=self.y, predictions=self.nodes_amplitude["out"])
 
-        # # testing output
-        # self.out_logits = tf.constant(np.array([[0.0, 1.0, 0.0, 0.0]]))
-        # self.out = tf.constant(np.array([[0.01, 1.0, 0.01, 0.01]]))
-        # self.y = tf.constant(np.array([[0.0, 0.0, 1.0, 0.0]]))
+        # log loss
+        self.nodes_amplitude["loss"] = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.y, logits=self.nodes_amplitude["out_logits"]))
 
+        # mean squared error
+        # self.nodes_phase["loss"] = tf.losses.mean_squared_error(labels=self.y, predictions=self.nodes_phase["out"])
 
-        # # mean squared error
-        # self.loss = tf.losses.mean_squared_error(labels=self.y, predictions=self.out)
-
-
-        # # original cost function i used (after mean_squared_error)
-        # self.loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.y, logits=self.out_logits))
+        # log loss
+        self.nodes_phase["loss"] = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.y, logits=self.nodes_phase["out_logits"]))
 
 
-        # # identical cost function #1
-        # sm = tf.nn.softmax(self.out)
-        # self.loss = -tf.reduce_sum(self.y * tf.log(sm))
+        optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
+        self.nodes_amplitude["train"] = optimizer.minimize(self.loss, var_list=amplitude_network_variables)
 
-
-        # # identical cost function #2
-        # self.loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=self.y, logits=self.out)
-
-
-        # # without softmax activation
-        # self.loss = -tf.reduce_sum(self.y * tf.log(self.out))
-
-
-        # still dont understand these
-        # loss = tf.nn.softmax_cross_entropy_with_logits(labels=self.y, logits=self.out)
-        # loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.y, logits=self.out))
-
-        # with tf.Session() as sess:
-            # out = sess.run(self.loss)
-            # print("out =>", out)
-        # exit()
-
-        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
-        self.train = self.optimizer.minimize(self.loss)
+        optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
+        self.nodes_phase["train"] = optimizer.minimize(self.loss, var_list=phase_network_variables)
 
         # save file
         if not os.path.isdir('./models'):
@@ -136,85 +124,86 @@ class DiffractionNet():
         self.epoch = None
         self.dots = None
 
-    def setup_network(self):
+    def setup_network(self, _nodes):
         # convolutional layer down sampling
 
-        # self.nodes["conv1"] = convolutional_layer(self.x, shape=[3,3,1,32], activate='relu', stride=[1,1])
-        self.nodes["conv1"] = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding='SAME', activation='relu')(self.x)
+        # _nodes["conv1"] = convolutional_layer(self.x, shape=[3,3,1,32], activate='relu', stride=[1,1])
+        _nodes["conv1"] = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding='SAME', activation='relu')(self.x)
 
-        # self.nodes["conv2"] = convolutional_layer(self.nodes["conv1"], shape=[3,3,32,32], activate='relu', stride=[1,1])
-        self.nodes["conv2"] = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding='SAME', activation='relu')(self.nodes["conv1"])
-
-        # max pooling
-        # self.nodes["pool3"] = max_pooling_layer(self.nodes["conv2"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
-        self.nodes["pool3"] = tf.keras.layers.MaxPooling2D(pool_size=(2,2), padding='SAME')(self.nodes["conv2"])
-
-        # convolutional layer
-        # self.nodes["conv4"] = convolutional_layer(self.nodes["pool3"], shape=[3,3,32,64], activate='relu', stride=[1,1])
-        self.nodes["conv4"] = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding='SAME', activation='relu')(self.nodes["pool3"])
-
-        # self.nodes["conv5"] = convolutional_layer(self.nodes["conv4"], shape=[3,3,64,64], activate='relu', stride=[1,1])
-        self.nodes["conv5"] = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding='SAME', activation='relu')(self.nodes["conv4"])
+        # _nodes["conv2"] = convolutional_layer(_nodes["conv1"], shape=[3,3,32,32], activate='relu', stride=[1,1])
+        _nodes["conv2"] = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding='SAME', activation='relu')(_nodes["conv1"])
 
         # max pooling
-        # self.nodes["pool6"] = max_pooling_layer(self.nodes["conv5"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
-        self.nodes["pool6"] = tf.keras.layers.MaxPooling2D(pool_size=(2,2), padding='SAME')(self.nodes["conv5"])
+        # _nodes["pool3"] = max_pooling_layer(_nodes["conv2"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
+        _nodes["pool3"] = tf.keras.layers.MaxPooling2D(pool_size=(2,2), padding='SAME')(_nodes["conv2"])
 
         # convolutional layer
-        # self.nodes["conv7"] = convolutional_layer(self.nodes["pool6"], shape=[3,3,64,128], activate='relu', stride=[1,1])
-        self.nodes["conv7"] = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding='SAME', activation='relu')(self.nodes["pool6"])
+        # _nodes["conv4"] = convolutional_layer(_nodes["pool3"], shape=[3,3,32,64], activate='relu', stride=[1,1])
+        _nodes["conv4"] = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding='SAME', activation='relu')(_nodes["pool3"])
 
-        # self.nodes["conv8"] = convolutional_layer(self.nodes["conv7"], shape=[3,3,128,128], activate='relu', stride=[1,1])
-        self.nodes["conv8"] = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding='SAME', activation='relu')(self.nodes["conv7"])
+        # _nodes["conv5"] = convolutional_layer(_nodes["conv4"], shape=[3,3,64,64], activate='relu', stride=[1,1])
+        _nodes["conv5"] = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding='SAME', activation='relu')(_nodes["conv4"])
 
         # max pooling
-        # self.nodes["pool9"] = max_pooling_layer(self.nodes["conv8"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
-        self.nodes["pool9"] = tf.keras.layers.MaxPooling2D(pool_size=(2,2), padding='SAME')(self.nodes["conv8"])
+        # _nodes["pool6"] = max_pooling_layer(_nodes["conv5"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
+        _nodes["pool6"] = tf.keras.layers.MaxPooling2D(pool_size=(2,2), padding='SAME')(_nodes["conv5"])
 
         # convolutional layer
-        # self.nodes["conv10"] = convolutional_layer(self.nodes["pool9"], shape=[3,3,128,128], activate='relu', stride=[1,1])
-        self.nodes["conv10"] = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding='SAME', activation='relu')(self.nodes["pool9"])
+        # _nodes["conv7"] = convolutional_layer(_nodes["pool6"], shape=[3,3,64,128], activate='relu', stride=[1,1])
+        _nodes["conv7"] = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding='SAME', activation='relu')(_nodes["pool6"])
 
-        # self.nodes["conv11"] = convolutional_layer(self.nodes["conv10"], shape=[3,3,128,128], activate='relu', stride=[1,1])
-        self.nodes["conv11"] = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding='SAME', activation='relu')(self.nodes["conv10"])
+        # _nodes["conv8"] = convolutional_layer(_nodes["conv7"], shape=[3,3,128,128], activate='relu', stride=[1,1])
+        _nodes["conv8"] = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding='SAME', activation='relu')(_nodes["conv7"])
 
-        # up sampling
-        # self.nodes["ups12"] = upsample_2d(self.nodes["conv11"], 2)
-        self.nodes["ups12"] = tf.keras.layers.UpSampling2D(size=2)(self.nodes["conv11"])
-
-        # convolutional layer
-        # self.nodes["conv13"] = convolutional_layer(self.nodes["ups12"], shape=[3,3,128,64], activate='relu', stride=[1,1])
-        self.nodes["conv13"] = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding='SAME', activation='relu')(self.nodes["ups12"])
-
-        # self.nodes["conv14"] = convolutional_layer(self.nodes["conv13"], shape=[3,3,64,64], activate='relu', stride=[1,1])
-        self.nodes["conv14"] = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding='SAME', activation='relu')(self.nodes["conv13"])
-
-        # up sampling
-        # self.nodes["ups15"] = upsample_2d(self.nodes["conv14"], 2)
-        self.nodes["ups15"] = tf.keras.layers.UpSampling2D(size=2)(self.nodes["conv14"])
+        # max pooling
+        # _nodes["pool9"] = max_pooling_layer(_nodes["conv8"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
+        _nodes["pool9"] = tf.keras.layers.MaxPooling2D(pool_size=(2,2), padding='SAME')(_nodes["conv8"])
 
         # convolutional layer
-        # self.nodes["conv16"] = convolutional_layer(self.nodes["ups15"], shape=[3,3,64,32], activate='relu', stride=[1,1])
-        self.nodes["conv16"] = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding='SAME', activation='relu')(self.nodes["ups15"])
+        # _nodes["conv10"] = convolutional_layer(_nodes["pool9"], shape=[3,3,128,128], activate='relu', stride=[1,1])
+        _nodes["conv10"] = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding='SAME', activation='relu')(_nodes["pool9"])
 
-        # self.nodes["conv17"] = convolutional_layer(self.nodes["conv16"], shape=[3,3,32,32], activate='relu', stride=[1,1])
-        self.nodes["conv17"] = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding='SAME', activation='relu')(self.nodes["conv16"])
+        # _nodes["conv11"] = convolutional_layer(_nodes["conv10"], shape=[3,3,128,128], activate='relu', stride=[1,1])
+        _nodes["conv11"] = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding='SAME', activation='relu')(_nodes["conv10"])
 
         # up sampling
-        # self.nodes["ups18"] = upsample_2d(self.nodes["conv17"], 2)
-        self.nodes["ups18"] = tf.keras.layers.UpSampling2D(size=2)(self.nodes["conv17"])
+        # _nodes["ups12"] = upsample_2d(_nodes["conv11"], 2)
+        _nodes["ups12"] = tf.keras.layers.UpSampling2D(size=2)(_nodes["conv11"])
 
-        # self.nodes["conv19"] = convolutional_layer(self.nodes["ups18"], shape=[3,3,32,1], activate='sigmoid', stride=[1,1])
-        self.nodes["conv19"] = tf.keras.layers.Conv2D(filters=1, kernel_size=3, padding='SAME')(self.nodes["ups18"])
+        # convolutional layer
+        # _nodes["conv13"] = convolutional_layer(_nodes["ups12"], shape=[3,3,128,64], activate='relu', stride=[1,1])
+        _nodes["conv13"] = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding='SAME', activation='relu')(_nodes["ups12"])
 
-        # self.out = self.nodes["conv19"]
-        self.out_logits = self.nodes["conv19"]
+        # _nodes["conv14"] = convolutional_layer(_nodes["conv13"], shape=[3,3,64,64], activate='relu', stride=[1,1])
+        _nodes["conv14"] = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding='SAME', activation='relu')(_nodes["conv13"])
 
-        self.out = tf.nn.sigmoid(self.out_logits)
+        # up sampling
+        # _nodes["ups15"] = upsample_2d(_nodes["conv14"], 2)
+        _nodes["ups15"] = tf.keras.layers.UpSampling2D(size=2)(_nodes["conv14"])
+
+        # convolutional layer
+        # _nodes["conv16"] = convolutional_layer(_nodes["ups15"], shape=[3,3,64,32], activate='relu', stride=[1,1])
+        _nodes["conv16"] = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding='SAME', activation='relu')(_nodes["ups15"])
+
+        # _nodes["conv17"] = convolutional_layer(_nodes["conv16"], shape=[3,3,32,32], activate='relu', stride=[1,1])
+        _nodes["conv17"] = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding='SAME', activation='relu')(_nodes["conv16"])
+
+        # up sampling
+        # _nodes["ups18"] = upsample_2d(_nodes["conv17"], 2)
+        _nodes["ups18"] = tf.keras.layers.UpSampling2D(size=2)(_nodes["conv17"])
+
+        # _nodes["conv19"] = convolutional_layer(_nodes["ups18"], shape=[3,3,32,1], activate='sigmoid', stride=[1,1])
+        _nodes["conv19"] = tf.keras.layers.Conv2D(filters=1, kernel_size=3, padding='SAME')(_nodes["ups18"])
+
+        _nodes["out_logits"] = _nodes["conv19"]
+
+        _nodes["out"] = tf.nn.sigmoid(_nodes["out_logits"])
 
     def setup_logging(self):
-        self.tf_loggers["loss_training"] = tf.summary.scalar("loss_training", self.loss)
-        self.tf_loggers["loss_validation"] = tf.summary.scalar("loss_validation", self.loss)
+        self.tf_loggers["amplitude_loss_training"] = tf.summary.scalar("amplitude_loss_training", self.nodes_amplitude["loss"])
+        self.tf_loggers["amplitude_loss_validation"] = tf.summary.scalar("amplitude_loss_validation", self.nodes_amplitude["loss"])
+        self.tf_loggers["phase_loss_training"] = tf.summary.scalar("phase_loss_training", self.nodes_phase["loss"])
+        self.tf_loggers["phase_loss_validation"] = tf.summary.scalar("phase_loss_validation", self.nodes_phase["loss"])
 
     def supervised_learn(self):
         for self.i in range(self.epochs):
@@ -232,9 +221,16 @@ class DiffractionNet():
                 object_phase_samples = data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
                 diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
 
-                self.sess.run(self.train, feed_dict={self.x:diffraction_samples,
+                # train amplitude network
+                self.sess.run(self.nodes_amplitude["train"], feed_dict={self.x:diffraction_samples,
                                                     self.y:object_amplitude_samples,
                                                     self.s_LR:0.0001})
+
+                # train phase network
+                self.sess.run(self.nodes_phase["train"], feed_dict={self.x:diffraction_samples,
+                                                    self.y:object_phase_samples,
+                                                    self.s_LR:0.0001})
+
             self.add_tensorboard_values()
             if self.i % 5 == 0:
 
@@ -262,13 +258,24 @@ class DiffractionNet():
         object_amplitude_samples = data["object_amplitude_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         object_phase_samples = data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-        loss_value = self.sess.run(self.loss, feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
-        print("training loss_value =>", loss_value)
+
+        # amplitude loss
+        loss_value = self.sess.run(self.nodes_amplitude["loss"], feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
+        print("amplitude training loss_value =>", loss_value)
+
+        # phase loss
+        loss_value = self.sess.run(self.nodes_phase["loss"], feed_dict={self.x:diffraction_samples, self.y:object_phase_samples})
+        print("phase training loss_value =>", loss_value)
 
         # write to log
-        summ = self.sess.run(self.tf_loggers["loss_training"], feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
+        # amplitude
+        summ = self.sess.run(self.tf_loggers["amplitude_loss_training"], feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
         self.writer.add_summary(summ, global_step=self.epoch)
-        self.writer.flush()
+
+        # phase
+        summ = self.sess.run(self.tf_loggers["phase_loss_training"], feed_dict={self.x:diffraction_samples, self.y:object_phase_samples})
+        self.writer.add_summary(summ, global_step=self.epoch)
+
 
         # # # # # # # # # # # # # # # #
         # loss on the validation data #
@@ -277,12 +284,22 @@ class DiffractionNet():
         object_amplitude_samples = data["object_amplitude_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         object_phase_samples = data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-        loss_value = self.sess.run(self.loss, feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
-        print("validation loss_value =>", loss_value)
+
+        # amplitude loss
+        loss_value = self.sess.run(self.nodes_amplitude["loss"], feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
+        print("amplitude validation loss_value =>", loss_value)
+
+        # phase loss
+        loss_value = self.sess.run(self.nodes_phase["loss"], feed_dict={self.x:diffraction_samples, self.y:object_phase_samples})
+        print("phase validation loss_value =>", loss_value)
 
         # write to log
-        summ = self.sess.run(self.tf_loggers["loss_validation"], feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
+        summ = self.sess.run(self.tf_loggers["amplitude_loss_validation"], feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
         self.writer.add_summary(summ, global_step=self.epoch)
+
+        summ = self.sess.run(self.tf_loggers["phase_loss_validation"], feed_dict={self.x:diffraction_samples, self.y:object_phase_samples})
+        self.writer.add_summary(summ, global_step=self.epoch)
+
         self.writer.flush()
 
     def __del__(self):
@@ -295,7 +312,7 @@ class DiffractionNet():
             print(".", end="", flush=True)
             self.dots += 1
 
-    def evaluate_performance(_data, _set):
+    def evaluate_performance(self, _data, _set):
         """
             _data: the data set to input to the network
             _set: (validation or training)
@@ -306,14 +323,15 @@ class DiffractionNet():
         diffraction_samples = _data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
 
         # plot the output
-        output = self.sess.run(self.out, feed_dict={self.x:diffraction_samples})
-        self.epoch
+        amplitude_output = self.sess.run(self.nodes_amplitude["out"], feed_dict={self.x:diffraction_samples})
+        phase_output = self.sess.run(self.nodes_phase["out"], feed_dict={self.x:diffraction_samples})
 
+        # TODO: also plot the phase_output
         for index in range(0,5):
             axes_obj = PlotAxes("sample "+str(index))
             axes_obj.diffraction_input.pcolormesh(diffraction_samples[index,:,:,0])
             axes_obj.object_actual.pcolormesh(object_amplitude_samples[index,:,:,0])
-            axes_obj.object_output.pcolormesh(output[index,:,:,0])
+            axes_obj.object_output.pcolormesh(amplitude_output[index,:,:,0])
             # axes_obj.diffraction_recons.pcolormesh()
             axes_obj.save("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/sample_"+str(index))
             del axes_obj
