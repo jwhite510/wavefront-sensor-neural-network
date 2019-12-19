@@ -213,8 +213,8 @@ class DiffractionNet():
         self.out = tf.nn.sigmoid(self.out_logits)
 
     def setup_logging(self):
-        self.tf_loggers["loss_training"] = tf.summary.scalar("loss", self.loss)
-        self.tf_loggers["loss_validation"] = tf.summary.scalar("loss", self.loss)
+        self.tf_loggers["loss_training"] = tf.summary.scalar("loss_training", self.loss)
+        self.tf_loggers["loss_validation"] = tf.summary.scalar("loss_validation", self.loss)
 
     def supervised_learn(self):
         for self.i in range(self.epochs):
