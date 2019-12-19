@@ -98,10 +98,10 @@ class DiffractionNet():
 
 
         optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
-        self.nodes_amplitude["train"] = optimizer.minimize(self.loss, var_list=amplitude_network_variables)
+        self.nodes_amplitude["train"] = optimizer.minimize(self.nodes_amplitude["loss"], var_list=amplitude_network_variables)
 
         optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
-        self.nodes_phase["train"] = optimizer.minimize(self.loss, var_list=phase_network_variables)
+        self.nodes_phase["train"] = optimizer.minimize(self.nodes_phase["loss"], var_list=phase_network_variables)
 
         # save file
         if not os.path.isdir('./models'):
@@ -326,12 +326,18 @@ class DiffractionNet():
         amplitude_output = self.sess.run(self.nodes_amplitude["out"], feed_dict={self.x:diffraction_samples})
         phase_output = self.sess.run(self.nodes_phase["out"], feed_dict={self.x:diffraction_samples})
 
-        # TODO: also plot the phase_output
+        # multiply by amplitude_output
+
+        phase_output = phase_output * amplitude_output
+
         for index in range(0,5):
             axes_obj = PlotAxes("sample "+str(index))
             axes_obj.diffraction_input.pcolormesh(diffraction_samples[index,:,:,0])
-            axes_obj.object_actual.pcolormesh(object_amplitude_samples[index,:,:,0])
-            axes_obj.object_output.pcolormesh(amplitude_output[index,:,:,0])
+            axes_obj.amplitude_actual.pcolormesh(object_amplitude_samples[index,:,:,0])
+            axes_obj.amplitude_output.pcolormesh(amplitude_output[index,:,:,0])
+            axes_obj.phase_actual.pcolormesh(object_phase_samples[index,:,:,0])
+            axes_obj.phase_output.pcolormesh(phase_output[index,:,:,0])
+
             # axes_obj.diffraction_recons.pcolormesh()
             axes_obj.save("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/sample_"+str(index))
             del axes_obj
@@ -387,7 +393,7 @@ class PlotAxes():
         """
         # create plot
         self.fig = plt.figure(figsize=(10,10))
-        self.gs = self.fig.add_gridspec(2,2)
+        self.gs = self.fig.add_gridspec(3,2)
 
         self.fig.text(0.5, 0.95,fig_title, fontsize=30, ha='center')
 
@@ -402,15 +408,25 @@ class PlotAxes():
         self.diffraction_recons.set_xticks([])
         self.diffraction_recons.set_yticks([])
 
-        self.object_actual = self.fig.add_subplot(self.gs[1:2,1:2])
-        self.object_actual.set_title("object_actual")
-        self.object_actual.set_xticks([])
-        self.object_actual.set_yticks([])
+        self.amplitude_actual = self.fig.add_subplot(self.gs[1:2,1:2])
+        self.amplitude_actual.set_title("amplitude_actual")
+        self.amplitude_actual.set_xticks([])
+        self.amplitude_actual.set_yticks([])
 
-        self.object_output = self.fig.add_subplot(self.gs[1:2,0:1])
-        self.object_output.set_title("object_output")
-        self.object_output.set_xticks([])
-        self.object_output.set_yticks([])
+        self.amplitude_output = self.fig.add_subplot(self.gs[1:2,0:1])
+        self.amplitude_output.set_title("amplitude_output")
+        self.amplitude_output.set_xticks([])
+        self.amplitude_output.set_yticks([])
+
+        self.phase_output = self.fig.add_subplot(self.gs[2:3,0:1])
+        self.phase_output.set_title("phase_output")
+        self.phase_output.set_xticks([])
+        self.phase_output.set_yticks([])
+
+        self.phase_actual = self.fig.add_subplot(self.gs[2:3,1:2])
+        self.phase_actual.set_title("phase_actual")
+        self.phase_actual.set_xticks([])
+        self.phase_actual.set_yticks([])
 
     def save(self, filename):
         self.fig.savefig(filename)
