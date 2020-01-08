@@ -128,6 +128,8 @@ def plot_fft(object_in):
     ax[1][1].set_xlabel("diffraction plane distance [m]")
     ax[1][1].set_ylabel("diffraction plane distance [m]")
 
+    return fig
+
 
 
 
@@ -158,13 +160,16 @@ if __name__ == "__main__":
     # construct phase
     object_with_phase = make_object_phase(object, object_phase)
 
-    plot_fft(object_with_phase)
+    fig = plot_fft(object_with_phase)
+    fig.savefig("obj1.png")
 
     # apply roll to generate ambiguity
-    plot_fft(make_roll_ambiguity(object_with_phase))
+    fig = plot_fft(make_roll_ambiguity(object_with_phase))
+    fig.savefig("obj2.png")
 
     # conjugate flip to generate ambiguity
-    plot_fft(make_flip_ambiguity(object_with_phase))
+    fig = plot_fft(make_flip_ambiguity(object_with_phase))
+    fig.savefig("obj3.png")
 
     plt.show()
 
