@@ -36,6 +36,14 @@ def make_dataset(filename, N, samples):
             # generate a sample
             object, object_phase = diffraction_functions.make_object(N, min_indexes=4, max_indexes=8)
             object_with_phase = diffraction_functions.make_object_phase(object, object_phase)
+            # remove ambiguity
+
+            object_with_phase = diffraction_functions.remove_ambiguitues(object_with_phase)
+
+            object_amplitude = np.abs(object_with_phase)
+
+            object_phase = np.angle(object_with_phase)
+            object_phase[object_amplitude<0.2] = 0
 
             diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(object_with_phase)))
 
@@ -45,7 +53,7 @@ def make_dataset(filename, N, samples):
             # normalize the diffraction pattern
             diffraction_pattern = diffraction_pattern / np.max(diffraction_pattern)
 
-            hd5file.root.object_amplitude.append(object.reshape(1,-1))
+            hd5file.root.object_amplitude.append(object_amplitude.reshape(1,-1))
             hd5file.root.object_phase.append(object_phase.reshape(1,-1))
             hd5file.root.diffraction.append(diffraction_pattern.reshape(1,-1))
 

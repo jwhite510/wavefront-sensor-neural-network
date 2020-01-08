@@ -301,9 +301,13 @@ if __name__ == "__main__":
 
     plt.figure(1)
     plt.pcolormesh(np.abs(object_with_phase))
-
     plt.figure(2)
+    plt.pcolormesh(np.angle(object_with_phase))
+
+    plt.figure(3)
     plt.pcolormesh(np.abs(object_with_phase_removed_ambi))
+    plt.figure(4)
+    plt.pcolormesh(np.angle(object_with_phase_removed_ambi))
 
     plt.show()
     exit()
