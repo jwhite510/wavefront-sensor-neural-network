@@ -77,18 +77,12 @@ if __name__ == "__main__":
         object_phase = hdf5file.root.object_phase[index,:].reshape(N,N)
         diffraction = hdf5file.root.diffraction[index,:].reshape(N,N)
 
-        object_with_phase = diffraction_functions.make_object_phase(object, object_phase)
-        diffraction_functions.plot_fft(object_with_phase)
-        # plt.figure(43546)
-        # plt.pcolormesh(diffraction)
-        # plt.show()
-
-
-
-
-
-
-
-
+        plt.figure(1)
+        plt.pcolormesh(object)
+        plt.figure(2)
+        plt.pcolormesh(object_phase)
+        plt.figure(3)
+        plt.pcolormesh(diffraction)
+        plt.show()
 
 
