@@ -5,8 +5,134 @@ from PIL import ImagePath
 import matplotlib.pyplot as plt
 from scipy.ndimage.interpolation import rotate
 from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage.interpolation import shift as sc_shift
 
 
+def f_position_shift(mat, shift_value, axis):
+    # shift_value = 1.5
+    """
+    mat: 2d numpy array
+    shift_value: the number of columns/rows to shift the matrix
+    axis: the axis to shift the position
+
+    shift_value may be a float
+
+    """
+    # print("shift_value =>", shift_value)
+
+    shift_val = [0,0]
+    shift_val[axis] = shift_value
+    mat.real = sc_shift(np.real(mat), shift=tuple(shift_val))
+    mat.imag = sc_shift(np.imag(mat), shift=tuple(shift_val))
+
+    return mat
+
+def sum_over_all_except(mat, axis):
+    """
+    mat: 2 or more dimmensional numpy array
+    axis: the axis to keep
+
+    perform summation over all axes except the input argument axis
+    """
+    n_axes = np.shape(np.shape(mat))
+    summation_axes = list(range(n_axes[0]))
+    summation_axes.remove(axis)
+    summation_axes = tuple(summation_axes)
+    summ = np.sum(mat, axis=(summation_axes))
+    return summ
+
+def centroid_shift(mat, value, axis):
+    """
+    mat: the matrix which the centroid will be shifted
+    value: the amount to shift the centroid
+    axis: the axis along which the centroid will be shifted
+    """
+    # use the absolute value
+    # cast value to integer
+    value = int(value)
+
+    # print("value =>", value)
+
+    # calculate current centroid:
+    start_c = calc_centroid(np.abs(mat), axis)
+    target_c = start_c + value
+    # print("start_c =>", start_c)
+    delta_c = 0
+
+    if value > 0:
+        # increase the centroid while its less than the target
+        new_c = float(start_c)
+        while new_c < target_c:
+            mat = np.roll(mat, shift=1, axis=axis)
+            new_c = calc_centroid(np.abs(mat), axis)
+
+    elif value < 0:
+        # decrease the centroid while its greater than the target
+        new_c = float(start_c)
+
+        while new_c > target_c:
+            mat = np.roll(mat, shift=-1, axis=axis)
+            new_c = calc_centroid(np.abs(mat), axis)
+
+    return mat
+
+def calc_centroid(mat, axis):
+    """
+    mat: 2 or more dimmensional numpy array
+    axis: the axis to find the centroid
+    """
+
+    # the number of axes in the input matrix
+    summ = sum_over_all_except(mat, axis)
+    index_vals = np.arange(0,len(summ))
+
+    # calculate centroid along this plot
+    centroid = np.sum(summ * index_vals) / np.sum(summ)
+    return centroid
+
+def remove_ambiguitues(object):
+    """
+    object: 2d numpy array
+
+    remove the translation and conjugate flip ambiguities
+    of a 2d complex matrix
+    """
+
+    obj_size = np.shape(object)
+    target_row = int(obj_size[0]/2)
+    target_col = int(obj_size[1]/2)
+
+    # calculate centroid along rows
+    centr_row = calc_centroid(np.abs(object), axis=0)
+    centr_col = calc_centroid(np.abs(object), axis=1)
+
+    # move centroid to the center
+    object = f_position_shift(object, shift_value=(target_row-centr_row), axis=0)
+    object = f_position_shift(object, shift_value=(target_col-centr_col), axis=1)
+    # remove conjugate flip ambiguity
+
+    # integrate upper left and bottom right triangle
+    # lower left
+    tri_l = np.tril(np.ones(np.shape(object)))
+    # upper right
+    tri_u = np.triu(np.ones(np.shape(object)))
+    integral_upper = np.sum(tri_u*np.abs(object), axis=(0,1))
+    integral_lower = np.sum(tri_l*np.abs(object), axis=(0,1))
+
+    # print(integral_upper > integral_lower)
+    if integral_upper > integral_lower:
+        # make conjugate flip
+
+        # print("centroid before and after")
+        # print(calc_centroid(np.abs(object), axis=1))
+        object = np.flip(object, axis=1)
+        # print(calc_centroid(np.abs(object), axis=1))
+
+        object = np.flip(object, axis=0)
+        # complex conjugate
+        object = np.conj(object)
+
+    return object
 
 def make_roll_ambiguity(object):
     n_elements = -5
@@ -42,7 +168,14 @@ def make_object(N, min_indexes, max_indexes):
             both with normalized values between 0 and 1
 
     """
+    # must be divisible by 4
+    assert N % 4  == 0
     obj = np.zeros((N,N), dtype=np.complex128)
+
+    min_x = N/4 + 1
+    min_y = N/4 + 1
+    max_x = N - N/4 - 1
+    max_y = N - N/4 - 1
 
     # generate random indexes
     # np.random.seed(3367)
@@ -51,8 +184,12 @@ def make_object(N, min_indexes, max_indexes):
     x = []
     y = []
     for i in range(indexes_n):
-        x.append(int(np.random.rand(1)*N))
-        y.append(int(np.random.rand(1)*N))
+
+        x_val = min_x + np.random.rand(1)*(max_x-min_x)
+        y_val = min_y + np.random.rand(1)*(max_y-min_y)
+
+        x.append(int(x_val))
+        y.append(int(y_val))
 
     x.append(x[0])
     y.append(y[0])
@@ -160,16 +297,29 @@ if __name__ == "__main__":
     # construct phase
     object_with_phase = make_object_phase(object, object_phase)
 
+    object_with_phase_removed_ambi = remove_ambiguitues(np.array(object_with_phase))
+
+    plt.figure(1)
+    plt.pcolormesh(np.abs(object_with_phase))
+
+    plt.figure(2)
+    plt.pcolormesh(np.abs(object_with_phase_removed_ambi))
+
+    plt.show()
+    exit()
+
+
     fig = plot_fft(object_with_phase)
-    fig.savefig("obj1.png")
+    fig = plot_fft(object_with_phase_removed_ambi)
+    # fig.savefig("obj1.png")
 
     # apply roll to generate ambiguity
-    fig = plot_fft(make_roll_ambiguity(object_with_phase))
-    fig.savefig("obj2.png")
+    # fig = plot_fft(make_roll_ambiguity(object_with_phase))
+    # fig.savefig("obj2.png")
 
-    # conjugate flip to generate ambiguity
-    fig = plot_fft(make_flip_ambiguity(object_with_phase))
-    fig.savefig("obj3.png")
+    # # conjugate flip to generate ambiguity
+    # fig = plot_fft(make_flip_ambiguity(object_with_phase))
+    # fig.savefig("obj3.png")
 
     plt.show()
 
