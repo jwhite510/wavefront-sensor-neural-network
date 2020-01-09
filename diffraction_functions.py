@@ -221,12 +221,11 @@ def make_object(N, min_indexes, max_indexes):
     x_rot = x_phase * np.cos(alpha) + y_phase * np.sin(alpha)
     y_rot = y_phase * np.cos(alpha) - x_phase * np.sin(alpha)
     z_phase_rot = np.sin(phase_frequency*x_rot)
-    # make the phase between 0 and 2 pi
+    # make the phase between 0 and 1
     z_phase_rot = z_phase_rot - np.min(z_phase_rot)
     z_phase_rot = z_phase_rot / np.max(z_phase_rot)
 
     # normalized phase
-    # z_phase_rot = z_phase_rot * (2*np.pi)
     phase = z_phase_rot*(amplitude>0.2)
 
     # apply phase

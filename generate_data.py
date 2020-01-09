@@ -27,6 +27,7 @@ def make_dataset(filename, N, samples):
 
         # save the dimmensions of the data
         hd5file.root.N.append(np.array([[N]]))
+        # plt.ion()
         for i in range(samples):
 
             if i % 100 == 0:
@@ -35,23 +36,52 @@ def make_dataset(filename, N, samples):
 
             # generate a sample
             object, object_phase = diffraction_functions.make_object(N, min_indexes=4, max_indexes=8)
+            # object_phase : between 0 and 1
+            # object : between 0 and 1
+
             object_with_phase = diffraction_functions.make_object_phase(object, object_phase)
             # remove ambiguity
 
             object_with_phase = diffraction_functions.remove_ambiguitues(object_with_phase)
 
-            object_amplitude = np.abs(object_with_phase)
+            # normalize complex object
+            object_with_phase = object_with_phase / np.max(np.abs(object_with_phase))
 
+            object_amplitude = np.abs(object_with_phase)
             object_phase = np.angle(object_with_phase)
+
+            object_phase += np.pi
+
             object_phase[object_amplitude<0.2] = 0
 
-            diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(object_with_phase)))
+            # divide by 2 pi
+            object_phase = object_phase / (2*np.pi)
 
+            diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(object_with_phase)))
             # absolute value
             diffraction_pattern = np.abs(diffraction_pattern)
-
             # normalize the diffraction pattern
             diffraction_pattern = diffraction_pattern / np.max(diffraction_pattern)
+
+            # plt.figure(1)
+            # plt.gca().cla()
+            # plt.clf()
+            # plt.pcolormesh(np.array( object_phase ))
+            # plt.colorbar()
+
+            # plt.figure(2)
+            # plt.gca().cla()
+            # plt.clf()
+            # plt.pcolormesh(np.array( object_amplitude ))
+            # plt.colorbar()
+
+            # plt.figure(3)
+            # plt.gca().cla()
+            # plt.clf()
+            # plt.pcolormesh(np.array( diffraction_pattern ))
+            # plt.colorbar()
+
+            # plt.pause(0.5)
 
             hd5file.root.object_amplitude.append(object_amplitude.reshape(1,-1))
             hd5file.root.object_phase.append(object_phase.reshape(1,-1))
