@@ -9,6 +9,29 @@ from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.interpolation import shift as sc_shift
 
 
+def construct_diffraction_pattern(normalized_amplitude, normalized_phase):
+    """
+    construct diffraction pattern from normalized (retrieved object)
+
+    """
+    amplitude = np.array(normalized_amplitude)
+    phase = np.array(normalized_phase)
+
+    phase *= 2*np.pi
+    phase -= np.pi
+
+    complex_object = amplitude * np.exp(1j * phase)
+
+    diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))
+    # absolute value
+    diffraction_pattern = np.abs(diffraction_pattern)
+    # normalize the diffraction pattern
+    diffraction_pattern = diffraction_pattern / np.max(diffraction_pattern)
+
+    return diffraction_pattern
+
+
+
 def f_position_shift(mat, shift_value, axis):
     # shift_value = 1.5
     """

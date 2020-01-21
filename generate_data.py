@@ -104,6 +104,9 @@ def make_dataset(filename, N, samples):
             hd5file.root.object_phase.append(object_phase.reshape(1,-1))
             hd5file.root.diffraction.append(diffraction_pattern.reshape(1,-1))
 
+            # reconstruct diffraction pattern
+            # recons_diff = diffraction_functions.construct_diffraction_pattern(object_amplitude, object_phase)
+
 
 if __name__ == "__main__":
     # generate a data set

@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import shutil
 import tables
+import diffraction_functions
 
 
 class GetData():
@@ -119,7 +120,7 @@ class DiffractionNet():
         self.writer = tf.summary.FileWriter("./tensorboard_graph/" + self.name)
 
         # number of epochs to run
-        self.epochs = 80
+        self.epochs = 99999
         self.i = None
         self.epoch = None
         self.dots = None
@@ -338,6 +339,10 @@ class DiffractionNet():
             axes_obj.phase_actual.pcolormesh(object_phase_samples[index,:,:,0])
             axes_obj.phase_output.pcolormesh(phase_output[index,:,:,0])
 
+            # reconstructed diffraction pattern
+            recons_diffraction = diffraction_functions.construct_diffraction_pattern(amplitude_output[index,:,:,0], phase_output[index,:,:,0])
+            axes_obj.diffraction_recons.pcolormesh(recons_diffraction)
+
             # axes_obj.diffraction_recons.pcolormesh()
             axes_obj.save("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/sample_"+str(index))
             del axes_obj
@@ -437,7 +442,7 @@ if __name__ == "__main__":
     # getdata.next_batch()
     # del getdata
 
-    diffraction_net = DiffractionNet(name="test8")
+    diffraction_net = DiffractionNet(name="ambiguity_removal_normalized_80k_samples")
     diffraction_net.supervised_learn()
     del diffraction_net
     # pass
