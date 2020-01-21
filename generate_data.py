@@ -2,6 +2,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tables
 import diffraction_functions
+import os
+
+def print_debug_variables(debug_locals):
+
+    debug_x = None
+    from types import ModuleType
+    print("(variable):"+19*" "+"(type):"+23*" "+"(shape):")
+    for debug_x in debug_locals:
+        if debug_x[0:2] != "__" and not callable(debug_locals[debug_x]) and not isinstance(debug_locals[debug_x], ModuleType) and debug_x!="debug_x" and debug_x!="debug_locals":
+            print(debug_x, end='')
+            print((30-len(debug_x))*' ', end='')
+            print(type(debug_locals[debug_x]), end='')
+            print((30-len(str(type(debug_locals[debug_x]))))*' ', end='')
+            try:
+                print(np.shape(np.array(debug_locals[debug_x])), end='')
+            except:
+                pass
+            print("")
+    print("")
+
 
 
 def make_dataset(filename, N, samples):
@@ -33,55 +53,52 @@ def make_dataset(filename, N, samples):
             if i % 100 == 0:
                 print("Generating sample %i of %i" % (i, samples))
 
+            # create object
+            object_amplitude = diffraction_functions.make_object(N, min_indexes=4, max_indexes=8)
 
-            # generate a sample
-            object, object_phase = diffraction_functions.make_object(N, min_indexes=4, max_indexes=8)
-            # object_phase : between 0 and 1
-            # object : between 0 and 1
+            # center the object and remove ambiguity
+            object_amplitude = diffraction_functions.remove_ambiguitues(object_amplitude)
+            object_amplitude = diffraction_functions.remove_ambiguitues(object_amplitude)
 
-            object_with_phase = diffraction_functions.make_object_phase(object, object_phase)
-            # remove ambiguity
+            # make sure the object is normalized
+            object_amplitude = object_amplitude - np.min(object_amplitude)
+            object_amplitude = object_amplitude / np.max(object_amplitude)
 
-            object_with_phase = diffraction_functions.remove_ambiguitues(object_with_phase)
+            # generate phase to apply to the object
+            object_phase = diffraction_functions.create_phase(N)
 
-            # normalize complex object
-            object_with_phase = object_with_phase / np.max(np.abs(object_with_phase))
+            complex_object = object_amplitude * np.exp(1j * object_phase)
+            complex_object[np.abs(complex_object)<0.01] = 0
 
-            object_amplitude = np.abs(object_with_phase)
-            object_phase = np.angle(object_with_phase)
-
+            # set the phase between 0:(0 pi) and 1:(2 pi)
+            object_phase = np.angle(complex_object)
+            object_phase[int(N/2), int(N/2)] = -np.pi # make sure the center is 0, it might be 1 (0 or 2pi)
             object_phase += np.pi
+            object_phase /= 2*np.pi
 
-            object_phase[object_amplitude<0.2] = 0
-
-            # divide by 2 pi
-            object_phase = object_phase / (2*np.pi)
-
-            diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(object_with_phase)))
+            diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))
             # absolute value
             diffraction_pattern = np.abs(diffraction_pattern)
             # normalize the diffraction pattern
             diffraction_pattern = diffraction_pattern / np.max(diffraction_pattern)
 
-            # plt.figure(1)
-            # plt.gca().cla()
-            # plt.clf()
-            # plt.pcolormesh(np.array( object_phase ))
+            # plt.figure()
+            # plt.imshow(object_phase)
             # plt.colorbar()
+            # plt.savefig("./1.png")
+            # os.system("display 1.png & disown")
 
-            # plt.figure(2)
-            # plt.gca().cla()
-            # plt.clf()
-            # plt.pcolormesh(np.array( object_amplitude ))
+            # plt.figure()
+            # plt.imshow(object_amplitude)
             # plt.colorbar()
+            # plt.savefig("./2.png")
+            # os.system("display 2.png & disown")
 
-            # plt.figure(3)
-            # plt.gca().cla()
-            # plt.clf()
-            # plt.pcolormesh(np.array( diffraction_pattern ))
+            # plt.figure()
+            # plt.imshow(diffraction_pattern)
             # plt.colorbar()
-
-            # plt.pause(0.5)
+            # plt.savefig("./3.png")
+            # os.system("display 3.png & disown")
 
             hd5file.root.object_amplitude.append(object_amplitude.reshape(1,-1))
             hd5file.root.object_phase.append(object_phase.reshape(1,-1))

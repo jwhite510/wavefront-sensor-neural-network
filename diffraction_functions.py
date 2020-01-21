@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import math
 from PIL import Image, ImageDraw
 from PIL import ImagePath
@@ -22,8 +23,7 @@ def f_position_shift(mat, shift_value, axis):
 
     shift_val = [0,0]
     shift_val[axis] = shift_value
-    mat.real = sc_shift(np.real(mat), shift=tuple(shift_val))
-    mat.imag = sc_shift(np.imag(mat), shift=tuple(shift_val))
+    mat = sc_shift(mat, shift=tuple(shift_val))
 
     return mat
 
@@ -92,7 +92,7 @@ def calc_centroid(mat, axis):
 
 def remove_ambiguitues(object):
     """
-    object: 2d numpy array
+    object: 2d numpy array (not complex)
 
     remove the translation and conjugate flip ambiguities
     of a 2d complex matrix
@@ -103,8 +103,8 @@ def remove_ambiguitues(object):
     target_col = int(obj_size[1]/2)
 
     # calculate centroid along rows
-    centr_row = calc_centroid(np.abs(object), axis=0)
-    centr_col = calc_centroid(np.abs(object), axis=1)
+    centr_row = calc_centroid(object, axis=0)
+    centr_col = calc_centroid(object, axis=1)
 
     # move centroid to the center
     object = f_position_shift(object, shift_value=(target_row-centr_row), axis=0)
@@ -116,21 +116,14 @@ def remove_ambiguitues(object):
     tri_l = np.tril(np.ones(np.shape(object)))
     # upper right
     tri_u = np.triu(np.ones(np.shape(object)))
-    integral_upper = np.sum(tri_u*np.abs(object), axis=(0,1))
-    integral_lower = np.sum(tri_l*np.abs(object), axis=(0,1))
+    integral_upper = np.sum(tri_u*object, axis=(0,1))
+    integral_lower = np.sum(tri_l*object, axis=(0,1))
 
     # print(integral_upper > integral_lower)
     if integral_upper > integral_lower:
         # make conjugate flip
-
-        # print("centroid before and after")
-        # print(calc_centroid(np.abs(object), axis=1))
         object = np.flip(object, axis=1)
-        # print(calc_centroid(np.abs(object), axis=1))
-
         object = np.flip(object, axis=0)
-        # complex conjugate
-        object = np.conj(object)
 
     return object
 
@@ -207,29 +200,7 @@ def make_object(N, min_indexes, max_indexes):
 
     # apply gaussian filter
     amplitude = gaussian_filter(amplitude, sigma=0.8, order=0)
-    # define a line with slope
-    x_phase = np.linspace(-N/2, N/2, N).reshape(1,-1)
-    y_phase = np.linspace(-N/2, N/2, N).reshape(-1,1)
-
-    # create random rotation angle
-    alpha_rad = np.random.rand() * 360.0
-    alpha = alpha_rad*(np.pi / 180.0)
-    # create random spacial frequency
-    phase_frequency_min, phase_frequency_max = 0.4, 0.8
-    phase_frequency = phase_frequency_min + np.random.rand() * (phase_frequency_max - phase_frequency_min)
-    # rotation matrix
-    x_rot = x_phase * np.cos(alpha) + y_phase * np.sin(alpha)
-    y_rot = y_phase * np.cos(alpha) - x_phase * np.sin(alpha)
-    z_phase_rot = np.sin(phase_frequency*x_rot)
-    # make the phase between 0 and 1
-    z_phase_rot = z_phase_rot - np.min(z_phase_rot)
-    z_phase_rot = z_phase_rot / np.max(z_phase_rot)
-
-    # normalized phase
-    phase = z_phase_rot*(amplitude>0.2)
-
-    # apply phase
-    return amplitude, phase
+    return amplitude
 
 def plot_fft(object_in):
 
@@ -266,7 +237,40 @@ def plot_fft(object_in):
 
     return fig
 
+def create_phase(N):
+    """
+    N: dimmensions of image
 
+    returns:
+    phase from -pi to +pi
+
+    the phase is 0 at the center of the image
+
+    """
+    # np.random.seed(22)
+    # define a line with slope
+    x_phase = np.linspace(-N/2, N/2, N).reshape(1,-1)
+    y_phase = np.linspace(-N/2, N/2, N).reshape(-1,1)
+
+    # create random rotation angle
+    alpha_rad = np.random.rand() * 360.0
+    alpha = alpha_rad*(np.pi / 180.0)
+    # create random spacial frequency
+    phase_frequency_min, phase_frequency_max = 0.4, 0.8
+    phase_frequency = phase_frequency_min + np.random.rand() * (phase_frequency_max - phase_frequency_min)
+    # rotation matrix
+    x_rot = x_phase * np.cos(alpha) + y_phase * np.sin(alpha)
+    y_rot = y_phase * np.cos(alpha) - x_phase * np.sin(alpha)
+
+    phase = np.exp(1j * phase_frequency * x_rot)
+
+    # subtract phase at center
+    phase_at_center = np.angle(phase[int(N/2), int(N/2)])
+    phase = phase * np.exp(-1j * phase_at_center) * np.exp(1j * np.pi)
+    phase = np.pi*phase
+
+    # from - pi to + pi
+    return np.real(phase)
 
 
 # grid space of the diffraction pattern
