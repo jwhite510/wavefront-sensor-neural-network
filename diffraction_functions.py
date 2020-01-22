@@ -285,14 +285,21 @@ def create_phase(N):
     x_rot = x_phase * np.cos(alpha) + y_phase * np.sin(alpha)
     y_rot = y_phase * np.cos(alpha) - x_phase * np.sin(alpha)
 
-    phase = np.exp(1j * phase_frequency * x_rot)
+    # random cep
+    phase = np.exp(1j * phase_frequency * x_rot) * np.exp(1j * 10*np.random.rand())
 
     # subtract phase at center
-    phase_at_center = np.angle(phase[int(N/2), int(N/2)])
-    phase = phase * np.exp(-1j * phase_at_center) * np.exp(1j * np.pi)
+    # phase_at_center = np.angle(phase[int(N/2), int(N/2)])
+    # phase = phase * np.exp(-1j * phase_at_center) * np.exp(1j * np.pi)
     phase = np.pi*phase
 
-    # from - pi to + pi
+
+    # # return linear phase
+    # phase = 0.7 * x_rot + 30*np.random.rand()
+    # return phase
+
+
+    # may be phase wrapped
     return np.real(phase)
 
 
