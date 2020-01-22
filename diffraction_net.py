@@ -223,7 +223,7 @@ class DiffractionNet():
                                                     self.phase_actual:object_phase_samples,
                                                     self.s_LR:0.0001})
 
-                self.add_tensorboard_values()
+            self.add_tensorboard_values()
             if self.i % 5 == 0:
 
                 # create directory if it doesnt exist
@@ -433,7 +433,7 @@ if __name__ == "__main__":
     # getdata.next_batch()
     # del getdata
 
-    diffraction_net = DiffractionNet(name="set_phase_to_0_at_center2_mse")
+    diffraction_net = DiffractionNet(name="one_network_b")
     diffraction_net.supervised_learn()
     del diffraction_net
     # pass
