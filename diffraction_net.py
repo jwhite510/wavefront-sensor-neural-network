@@ -320,7 +320,7 @@ class DiffractionNet():
 
         # multiply by amplitude_output
 
-        phase_output = phase_output * amplitude_output #TODO maybe remove this
+        # phase_output = phase_output * amplitude_output #TODO maybe remove this
 
         for index in range(0,5):
             axes_obj = PlotAxes("sample "+str(index))
