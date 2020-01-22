@@ -65,44 +65,39 @@ class DiffractionNet():
         # input image
         self.x = tf.placeholder(tf.float32, shape=[None, self.get_data.N , self.get_data.N, 1])
         # label
-        self.y = tf.placeholder(tf.float32, shape=[None, self.get_data.N, self.get_data.N, 1])
+        self.phase_actual = tf.placeholder(tf.float32, shape=[None, self.get_data.N, self.get_data.N, 1])
+        self.amplitude_actual = tf.placeholder(tf.float32, shape=[None, self.get_data.N, self.get_data.N, 1])
 
         # amplitude retrieval network
-        self.nodes_amplitude = {}
-        with tf.variable_scope("amplitude"):
-            self.setup_network(self.nodes_amplitude)
-
-        self.nodes_phase = {}
-        with tf.variable_scope("phase"):
-            self.setup_network(self.nodes_phase)
-
-        tvars = tf.trainable_variables()
-        amplitude_network_variables = [var for var in tvars if "amplitude" in var.name]
-        phase_network_variables = [var for var in tvars if "phase" in var.name]
+        self.nn_nodes = {}
+        self.setup_network(self.nn_nodes)
 
         # learning rate
         self.s_LR = tf.placeholder(tf.float32, shape=[])
 
         # define loss function
 
+        #####################
         # mean squared error
-        # self.nodes_amplitude["loss"] = tf.losses.mean_squared_error(labels=self.y, predictions=self.nodes_amplitude["out"])
+        #####################
+        self.nn_nodes["amplitude_loss"] = tf.losses.mean_squared_error(labels=self.amplitude_actual, predictions=self.nn_nodes["amplitude_out"])
+        self.nn_nodes["phase_loss"] = tf.losses.mean_squared_error(labels=self.phase_actual, predictions=self.nn_nodes["phase_out"])
 
-        # log loss
-        self.nodes_amplitude["loss"] = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.y, logits=self.nodes_amplitude["out_logits"]))
+        #####################
+        # cross entropy loss
+        #####################
+        # self.nn_nodes["amplitude_loss"] = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.amplitude_actual, logits=self.nn_nodes["amplitude_logits"]))
+        # self.nn_nodes["phase_loss"] = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.phase_actual, logits=self.nn_nodes["phase_logits"]))
 
-        # mean squared error
-        # self.nodes_phase["loss"] = tf.losses.mean_squared_error(labels=self.y, predictions=self.nodes_phase["out"])
+        #####################
+        # reconstruction loss
+        #####################
+        # self.nn_nodes["recons_loss"] = TODO
 
-        # log loss
-        self.nodes_phase["loss"] = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.y, logits=self.nodes_phase["out_logits"]))
-
+        self.nn_nodes["cost_function"] = self.nn_nodes["amplitude_loss"] + self.nn_nodes["phase_loss"]
 
         optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
-        self.nodes_amplitude["train"] = optimizer.minimize(self.nodes_amplitude["loss"], var_list=amplitude_network_variables)
-
-        optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
-        self.nodes_phase["train"] = optimizer.minimize(self.nodes_phase["loss"], var_list=phase_network_variables)
+        self.nn_nodes["train"] = optimizer.minimize(self.nn_nodes["cost_function"])
 
         # save file
         if not os.path.isdir('./models'):
@@ -194,17 +189,17 @@ class DiffractionNet():
         _nodes["ups18"] = tf.keras.layers.UpSampling2D(size=2)(_nodes["conv17"])
 
         # _nodes["conv19"] = convolutional_layer(_nodes["ups18"], shape=[3,3,32,1], activate='sigmoid', stride=[1,1])
-        _nodes["conv19"] = tf.keras.layers.Conv2D(filters=1, kernel_size=3, padding='SAME')(_nodes["ups18"])
-
-        _nodes["out_logits"] = _nodes["conv19"]
-
-        _nodes["out"] = tf.nn.sigmoid(_nodes["out_logits"])
+        _nodes["phase_logits"] = tf.keras.layers.Conv2D(filters=1, kernel_size=3, padding='SAME')(_nodes["ups18"])
+        _nodes["amplitude_logits"] = tf.keras.layers.Conv2D(filters=1, kernel_size=3, padding='SAME')(_nodes["ups18"])
+        # _nodes["out_logits"] = _nodes["conv19"]
+        _nodes["phase_out"] = tf.nn.sigmoid(_nodes["phase_logits"])
+        _nodes["amplitude_out"] = tf.nn.sigmoid(_nodes["amplitude_logits"])
 
     def setup_logging(self):
-        self.tf_loggers["amplitude_loss_training"] = tf.summary.scalar("amplitude_loss_training", self.nodes_amplitude["loss"])
-        self.tf_loggers["amplitude_loss_validation"] = tf.summary.scalar("amplitude_loss_validation", self.nodes_amplitude["loss"])
-        self.tf_loggers["phase_loss_training"] = tf.summary.scalar("phase_loss_training", self.nodes_phase["loss"])
-        self.tf_loggers["phase_loss_validation"] = tf.summary.scalar("phase_loss_validation", self.nodes_phase["loss"])
+        self.tf_loggers["amplitude_loss_training"] = tf.summary.scalar("amplitude_loss_training", self.nn_nodes["amplitude_loss"])
+        self.tf_loggers["amplitude_loss_validation"] = tf.summary.scalar("amplitude_loss_validation", self.nn_nodes["amplitude_loss"])
+        self.tf_loggers["phase_loss_training"] = tf.summary.scalar("phase_loss_training", self.nn_nodes["phase_loss"])
+        self.tf_loggers["phase_loss_validation"] = tf.summary.scalar("phase_loss_validation", self.nn_nodes["phase_loss"])
 
     def supervised_learn(self):
         for self.i in range(self.epochs):
@@ -222,17 +217,13 @@ class DiffractionNet():
                 object_phase_samples = data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
                 diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
 
-                # train amplitude network
-                self.sess.run(self.nodes_amplitude["train"], feed_dict={self.x:diffraction_samples,
-                                                    self.y:object_amplitude_samples,
+                # train network
+                self.sess.run(self.nn_nodes["train"], feed_dict={self.x:diffraction_samples,
+                                                    self.amplitude_actual:object_amplitude_samples,
+                                                    self.phase_actual:object_phase_samples,
                                                     self.s_LR:0.0001})
 
-                # train phase network
-                self.sess.run(self.nodes_phase["train"], feed_dict={self.x:diffraction_samples,
-                                                    self.y:object_phase_samples,
-                                                    self.s_LR:0.0001})
-
-            self.add_tensorboard_values()
+                self.add_tensorboard_values()
             if self.i % 5 == 0:
 
                 # create directory if it doesnt exist
@@ -261,20 +252,20 @@ class DiffractionNet():
         diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
 
         # amplitude loss
-        loss_value = self.sess.run(self.nodes_amplitude["loss"], feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
+        loss_value = self.sess.run(self.nn_nodes["amplitude_loss"], feed_dict={self.x:diffraction_samples, self.amplitude_actual:object_amplitude_samples})
         print("amplitude training loss_value =>", loss_value)
 
         # phase loss
-        loss_value = self.sess.run(self.nodes_phase["loss"], feed_dict={self.x:diffraction_samples, self.y:object_phase_samples})
+        loss_value = self.sess.run(self.nn_nodes["phase_loss"], feed_dict={self.x:diffraction_samples, self.phase_actual:object_phase_samples})
         print("phase training loss_value =>", loss_value)
 
         # write to log
         # amplitude
-        summ = self.sess.run(self.tf_loggers["amplitude_loss_training"], feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
+        summ = self.sess.run(self.tf_loggers["amplitude_loss_training"], feed_dict={self.x:diffraction_samples, self.amplitude_actual:object_amplitude_samples})
         self.writer.add_summary(summ, global_step=self.epoch)
 
         # phase
-        summ = self.sess.run(self.tf_loggers["phase_loss_training"], feed_dict={self.x:diffraction_samples, self.y:object_phase_samples})
+        summ = self.sess.run(self.tf_loggers["phase_loss_training"], feed_dict={self.x:diffraction_samples, self.phase_actual:object_phase_samples})
         self.writer.add_summary(summ, global_step=self.epoch)
 
 
@@ -287,18 +278,18 @@ class DiffractionNet():
         diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
 
         # amplitude loss
-        loss_value = self.sess.run(self.nodes_amplitude["loss"], feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
+        loss_value = self.sess.run(self.nn_nodes["amplitude_loss"], feed_dict={self.x:diffraction_samples, self.amplitude_actual:object_amplitude_samples})
         print("amplitude validation loss_value =>", loss_value)
 
         # phase loss
-        loss_value = self.sess.run(self.nodes_phase["loss"], feed_dict={self.x:diffraction_samples, self.y:object_phase_samples})
+        loss_value = self.sess.run(self.nn_nodes["phase_loss"], feed_dict={self.x:diffraction_samples, self.phase_actual:object_phase_samples})
         print("phase validation loss_value =>", loss_value)
 
         # write to log
-        summ = self.sess.run(self.tf_loggers["amplitude_loss_validation"], feed_dict={self.x:diffraction_samples, self.y:object_amplitude_samples})
+        summ = self.sess.run(self.tf_loggers["amplitude_loss_validation"], feed_dict={self.x:diffraction_samples, self.amplitude_actual:object_amplitude_samples})
         self.writer.add_summary(summ, global_step=self.epoch)
 
-        summ = self.sess.run(self.tf_loggers["phase_loss_validation"], feed_dict={self.x:diffraction_samples, self.y:object_phase_samples})
+        summ = self.sess.run(self.tf_loggers["phase_loss_validation"], feed_dict={self.x:diffraction_samples, self.phase_actual:object_phase_samples})
         self.writer.add_summary(summ, global_step=self.epoch)
 
         self.writer.flush()
@@ -324,12 +315,12 @@ class DiffractionNet():
         diffraction_samples = _data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
 
         # plot the output
-        amplitude_output = self.sess.run(self.nodes_amplitude["out"], feed_dict={self.x:diffraction_samples})
-        phase_output = self.sess.run(self.nodes_phase["out"], feed_dict={self.x:diffraction_samples})
+        amplitude_output = self.sess.run(self.nn_nodes["amplitude_out"], feed_dict={self.x:diffraction_samples})
+        phase_output = self.sess.run(self.nn_nodes["phase_out"], feed_dict={self.x:diffraction_samples})
 
         # multiply by amplitude_output
 
-        phase_output = phase_output * amplitude_output
+        phase_output = phase_output * amplitude_output #TODO maybe remove this
 
         for index in range(0,5):
             axes_obj = PlotAxes("sample "+str(index))
@@ -442,7 +433,7 @@ if __name__ == "__main__":
     # getdata.next_batch()
     # del getdata
 
-    diffraction_net = DiffractionNet(name="ambiguity_removal_normalized_80k_samples")
+    diffraction_net = DiffractionNet(name="set_phase_to_0_at_center2_mse")
     diffraction_net.supervised_learn()
     del diffraction_net
     # pass
