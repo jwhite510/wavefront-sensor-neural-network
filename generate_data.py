@@ -22,6 +22,25 @@ def print_debug_variables(debug_locals):
             print("")
     print("")
 
+def make_simulated_object(N, min_indexes, max_indexes):
+
+            # create object
+            object_amplitude = diffraction_functions.make_object(N=N, min_indexes=min_indexes, max_indexes=max_indexes)
+
+            # center the object and remove ambiguity
+            object_amplitude = diffraction_functions.remove_ambiguitues(object_amplitude)
+            object_amplitude = diffraction_functions.remove_ambiguitues(object_amplitude)
+
+            # make sure the object is normalized
+            object_amplitude = object_amplitude - np.min(object_amplitude)
+            object_amplitude = object_amplitude / np.max(object_amplitude)
+
+            # generate phase to apply to the object
+            object_phase = diffraction_functions.create_phase(N) # between -pi and +pi
+
+            return object_phase, object_amplitude
+
+
 
 
 def make_dataset(filename, N, samples):
@@ -53,16 +72,8 @@ def make_dataset(filename, N, samples):
             if i % 100 == 0:
                 print("Generating sample %i of %i" % (i, samples))
 
-            # create object
-            object_amplitude = diffraction_functions.make_object(N, min_indexes=4, max_indexes=8)
 
-            # center the object and remove ambiguity
-            object_amplitude = diffraction_functions.remove_ambiguitues(object_amplitude)
-            object_amplitude = diffraction_functions.remove_ambiguitues(object_amplitude)
-
-            # make sure the object is normalized
-            object_amplitude = object_amplitude - np.min(object_amplitude)
-            object_amplitude = object_amplitude / np.max(object_amplitude)
+            object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
 
             # def plot_thing(arr, num):
                 # arr = np.array(arr)
@@ -74,17 +85,14 @@ def make_dataset(filename, N, samples):
                 # plt.savefig("./"+str(num))
                 # os.system("display "+str(num)+".png & disown")
 
-            # generate phase to apply to the object
-            object_phase = diffraction_functions.create_phase(N)
-
             complex_object = object_amplitude * np.exp(1j * object_phase)
             complex_object[np.abs(complex_object)<0.01] = 0
 
             #TODO: decide to do this or not
             # set phase at center to 0
             # this makes the accuracy lower
-            phase_at_center = np.angle(complex_object)[int(N/2), int(N/2)]
-            complex_object *= np.exp(-1j*phase_at_center)
+            # phase_at_center = np.angle(complex_object)[int(N/2), int(N/2)]
+            # complex_object *= np.exp(-1j*phase_at_center)
 
             # set the phase between 0:(0 pi) and 1:(2 pi)
             object_phase = np.angle(complex_object)
