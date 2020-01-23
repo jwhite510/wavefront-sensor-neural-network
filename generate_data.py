@@ -78,14 +78,18 @@ def make_dataset(filename, N, samples):
             object_phase = diffraction_functions.create_phase(N)
 
             complex_object = object_amplitude * np.exp(1j * object_phase)
-            # complex_object[np.abs(complex_object)<0.01] = 0
+            complex_object[np.abs(complex_object)<0.01] = 0
 
+            #TODO: decide to do this or not
             # set phase at center to 0
+            # this makes the accuracy lower
             phase_at_center = np.angle(complex_object)[int(N/2), int(N/2)]
             complex_object *= np.exp(-1j*phase_at_center)
 
+            # set the phase between 0:(0 pi) and 1:(2 pi)
             object_phase = np.angle(complex_object)
-            object_phase += np.pi # shift it to be between 0 and 1
+            # object_phase[int(N/2), int(N/2)] = -np.pi # make sure the center is 0, it might be 1 (0 or 2pi)
+            object_phase += np.pi
             object_phase /= 2*np.pi
 
             diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))
@@ -116,13 +120,8 @@ def make_dataset(filename, N, samples):
             hd5file.root.object_phase.append(object_phase.reshape(1,-1))
             hd5file.root.diffraction.append(diffraction_pattern.reshape(1,-1))
 
-            # # reconstruct diffraction pattern
+            # reconstruct diffraction pattern
             # recons_diff = diffraction_functions.construct_diffraction_pattern(object_amplitude, object_phase)
-            # plt.figure()
-            # plt.imshow(recons_diff)
-            # plt.colorbar()
-            # plt.savefig("./4.png")
-            # os.system("display 4.png & disown")
 
 
 if __name__ == "__main__":
