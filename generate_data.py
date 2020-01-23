@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import tables
 import diffraction_functions
 import os
+import random
+from PIL import Image
 
 def print_debug_variables(debug_locals):
 
@@ -40,6 +42,31 @@ def make_simulated_object(N, min_indexes, max_indexes):
 
             return object_phase, object_amplitude
 
+def retrieve_coco_image(N, path):
+    coc_images = os.listdir(path)
+
+    amplitude_filepath = os.path.join(path, random.choice(coc_images))
+    amplitude_im = Image.open(amplitude_filepath).convert("LA")
+    amplitude_im = amplitude_im.resize((N,N))
+    amplitude_im = np.array(amplitude_im)
+    amplitude_im = amplitude_im[:,:,0]
+
+    phase_filepath = os.path.join(path, random.choice(coc_images))
+    phase_im = Image.open(phase_filepath).convert("LA")
+    phase_im = phase_im.resize((N,N))
+    phase_im = np.array(phase_im)
+    phase_im = phase_im[:,:,0]
+
+    amplitude_im -= np.min(amplitude_im)
+    amplitude_im = amplitude_im / np.max(amplitude_im)
+
+    phase_im -= np.min(phase_im)
+    phase_im = phase_im /  np.max(phase_im)
+    phase_im = phase_im * 2
+    phase_im = phase_im - 1
+    phase_im *= np.pi
+
+    return phase_im, amplitude_im
 
 
 
@@ -72,18 +99,25 @@ def make_dataset(filename, N, samples):
             if i % 100 == 0:
                 print("Generating sample %i of %i" % (i, samples))
 
+            def plot_thing(arr, num):
+                arr = np.array(arr)
+                # make the center visible
+                arr[int(N/2), int(N/2)] = np.max(arr)
+                plt.figure()
+                plt.imshow(arr)
+                plt.colorbar()
+                plt.savefig("./"+str(num))
+                os.system("display "+str(num)+".png & disown")
 
             object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
+            plot_thing(object_phase, 0)
+            plot_thing(object_amplitude, 1)
 
-            # def plot_thing(arr, num):
-                # arr = np.array(arr)
-                # # make the center visible
-                # arr[int(N/2), int(N/2)] = np.max(arr)
-                # plt.figure()
-                # plt.imshow(arr)
-                # plt.colorbar()
-                # plt.savefig("./"+str(num))
-                # os.system("display "+str(num)+".png & disown")
+            object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/")
+            plot_thing(object_phase, 2)
+            plot_thing(object_amplitude, 3)
+
+            exit()
 
             complex_object = object_amplitude * np.exp(1j * object_phase)
             complex_object[np.abs(complex_object)<0.01] = 0
