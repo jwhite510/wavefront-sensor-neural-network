@@ -139,29 +139,38 @@ def make_dataset(filename, N, samples):
             # normalize the diffraction pattern
             diffraction_pattern = diffraction_pattern / np.max(diffraction_pattern)
 
-            image_ph = tf.placeholder(tf.complex64, shape=[40,40])
-            tf_diffraction_pattern = diffraction_functions.tf_fft2(image_ph, dimmensions=[0,1])
-
-            with tf.Session() as sess:
-                out = sess.run(tf_diffraction_pattern, feed_dict={image_ph:complex_object})
-
-            plt.figure()
-            plt.imshow(np.abs(complex_object))
             # plt.figure()
-            # plt.imshow(np.angle(complex_object))
+            # complex_obj_arr = np.array(complex_object)
+            # print("np.shape(complex_obj_arr) => ",np.shape(complex_obj_arr))
+            # complex_obj_arr = np.fft.fftshift(complex_obj_arr)
+            # complex_obj_arr = np.fft.fft2(complex_obj_arr)
+            # complex_obj_arr = np.fft.fftshift(complex_obj_arr)
+            # complex_obj_arr = np.squeeze(complex_obj_arr)
+            # complex_obj_arr = np.abs(complex_obj_arr)
+            # plt.imshow(complex_obj_arr)
 
-            plt.figure()
-            plt.imshow(np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))))
-            plt.figure()
-            plt.imshow(np.angle(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))))
+            # complex_object = np.expand_dims(complex_object, 2)
+            # complex_object = np.expand_dims(complex_object, 0)
 
-            plt.figure()
-            plt.imshow(np.abs(out))
-            plt.figure()
-            plt.imshow(np.angle(out))
+            # plt.figure()
+            # complex_obj_arr = np.array(complex_object)
+            # print("np.shape(complex_obj_arr) => ",np.shape(complex_obj_arr))
+            # complex_obj_arr = np.fft.fftshift(complex_obj_arr, axes=(1,2))
+            # complex_obj_arr = np.fft.fft2(complex_obj_arr, axes=(1,2))
+            # complex_obj_arr = np.fft.fftshift(complex_obj_arr, axes=(1,2))
+            # complex_obj_arr = np.squeeze(complex_obj_arr)
+            # complex_obj_arr = np.abs(complex_obj_arr)
+            # plt.imshow(complex_obj_arr)
 
-            plt.show()
-            exit()
+            # image_ph = tf.placeholder(tf.complex64, shape=[1,40,40,1])
+            # tf_diffraction_pattern = diffraction_functions.tf_fft2(image_ph, dimmensions=[1,2])
+            # plt.figure()
+            # with tf.Session() as sess:
+                # out = sess.run(tf_diffraction_pattern, feed_dict={image_ph:complex_object})
+            # plt.imshow(np.abs(np.squeeze(out)))
+
+            # plt.show()
+            # exit()
 
             # plt.figure()
             # plt.imshow(object_phase)

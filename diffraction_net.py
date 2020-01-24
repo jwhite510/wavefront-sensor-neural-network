@@ -93,6 +93,7 @@ class DiffractionNet():
         # reconstruction loss
         #####################
         # self.nn_nodes["recons_loss"] = TODO
+        self.nn_nodes["recons_diffraction_pattern"] = diffraction_functions.tf_reconstruct_diffraction_pattern(amplitude_norm=self.nn_nodes["amplitude_out"], phase_norm=self.nn_nodes["phase_out"])
 
         self.nn_nodes["cost_function"] = self.nn_nodes["amplitude_loss"] + self.nn_nodes["phase_loss"]
 
@@ -317,6 +318,7 @@ class DiffractionNet():
         # plot the output
         amplitude_output = self.sess.run(self.nn_nodes["amplitude_out"], feed_dict={self.x:diffraction_samples})
         phase_output = self.sess.run(self.nn_nodes["phase_out"], feed_dict={self.x:diffraction_samples})
+        tf_reconstructed_diff = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:diffraction_samples})
 
         # multiply by amplitude_output
 
@@ -333,6 +335,9 @@ class DiffractionNet():
             # reconstructed diffraction pattern
             recons_diffraction = diffraction_functions.construct_diffraction_pattern(amplitude_output[index,:,:,0], phase_output[index,:,:,0])
             axes_obj.diffraction_recons.pcolormesh(recons_diffraction)
+
+            # tensorflow reconstructed diffraction pattern
+            axes_obj.tf_reconstructed_diff.pcolormesh(tf_reconstructed_diff[index,:,:,0])
 
             # axes_obj.diffraction_recons.pcolormesh()
             axes_obj.save("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/sample_"+str(index))
@@ -389,7 +394,7 @@ class PlotAxes():
         """
         # create plot
         self.fig = plt.figure(figsize=(10,10))
-        self.gs = self.fig.add_gridspec(3,2)
+        self.gs = self.fig.add_gridspec(4,2)
 
         self.fig.text(0.5, 0.95,fig_title, fontsize=30, ha='center')
 
@@ -423,6 +428,11 @@ class PlotAxes():
         self.phase_actual.set_title("phase_actual")
         self.phase_actual.set_xticks([])
         self.phase_actual.set_yticks([])
+
+        self.tf_reconstructed_diff = self.fig.add_subplot(self.gs[3:4,0:1])
+        self.tf_reconstructed_diff.set_title("tf_reconstructed_diff")
+        self.tf_reconstructed_diff.set_xticks([])
+        self.tf_reconstructed_diff.set_yticks([])
 
     def save(self, filename):
         self.fig.savefig(filename)

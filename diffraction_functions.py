@@ -10,6 +10,16 @@ from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.interpolation import shift as sc_shift
 
 
+def tf_reconstruct_diffraction_pattern(amplitude_norm, phase_norm):
+
+    phase_norm *= 2*np.pi
+    phase_norm -= np.pi
+
+    amplitude_object_retrieved = tf.complex(real=amplitude_norm, imag=tf.zeros_like(amplitude_norm))
+    complex_object_retrieved = amplitude_object_retrieved * tf.exp(tf.complex(imag=phase_norm, real=tf.zeros_like(phase_norm)))
+    diffraction_pattern = tf.abs(tf_fft2(complex_object_retrieved, dimmensions=[1,2]))
+    return diffraction_pattern
+
 def construct_diffraction_pattern(normalized_amplitude, normalized_phase):
     """
     construct diffraction pattern from normalized (retrieved object)
@@ -44,13 +54,19 @@ def tf_fft2(image_in, dimmensions):
     for _i in dimmensions:
         assert int(image_in.shape[_i]) % 2 == 0
         dim_shift = int(int(image_in.shape[_i]) / 2)
-        image_in = tf.manip.roll(image_in, shift=dim_shift, axis=dimmensions[_i])
+        image_in = tf.manip.roll(image_in, shift=dim_shift, axis=_i)
 
+    # function is only made for inner two dimmensions to be fourier transformed
+    # assert image_in.shape[0] == 1
+    assert image_in.shape[3] == 1
+
+    image_in = tf.transpose(image_in, perm=[0,3,1,2])
     image_in = tf.fft2d(image_in)
+    image_in = tf.transpose(image_in, perm=[0,2,3,1])
 
     for _i in dimmensions:
         dim_shift = int(int(image_in.shape[_i]) / 2)
-        image_in = tf.manip.roll(image_in, shift=dim_shift, axis=dimmensions[_i])
+        image_in = tf.manip.roll(image_in, shift=dim_shift, axis=_i)
 
     return image_in
 
