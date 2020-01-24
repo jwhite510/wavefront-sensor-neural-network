@@ -1,4 +1,5 @@
 import numpy as np
+import tensorflow as tf
 import matplotlib.pyplot as plt
 import tables
 import diffraction_functions
@@ -109,11 +110,11 @@ def make_dataset(filename, N, samples):
                 # plt.savefig("./"+str(num))
                 # os.system("display "+str(num)+".png & disown")
 
-            # object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
+            object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
             # plot_thing(object_phase, 0)
             # plot_thing(object_amplitude, 1)
 
-            object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/")
+            # object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/")
             # plot_thing(object_phase, 2)
             # plot_thing(object_amplitude, 3)
 
@@ -137,6 +138,30 @@ def make_dataset(filename, N, samples):
             diffraction_pattern = np.abs(diffraction_pattern)
             # normalize the diffraction pattern
             diffraction_pattern = diffraction_pattern / np.max(diffraction_pattern)
+
+            image_ph = tf.placeholder(tf.complex64, shape=[40,40])
+            tf_diffraction_pattern = diffraction_functions.tf_fft2(image_ph, dimmensions=[0,1])
+
+            with tf.Session() as sess:
+                out = sess.run(tf_diffraction_pattern, feed_dict={image_ph:complex_object})
+
+            plt.figure()
+            plt.imshow(np.abs(complex_object))
+            # plt.figure()
+            # plt.imshow(np.angle(complex_object))
+
+            plt.figure()
+            plt.imshow(np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))))
+            plt.figure()
+            plt.imshow(np.angle(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))))
+
+            plt.figure()
+            plt.imshow(np.abs(out))
+            plt.figure()
+            plt.imshow(np.angle(out))
+
+            plt.show()
+            exit()
 
             # plt.figure()
             # plt.imshow(object_phase)

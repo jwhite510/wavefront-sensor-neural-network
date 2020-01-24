@@ -3,6 +3,7 @@ import os
 import math
 from PIL import Image, ImageDraw
 from PIL import ImagePath
+import tensorflow as tf
 import matplotlib.pyplot as plt
 from scipy.ndimage.interpolation import rotate
 from scipy.ndimage.filters import gaussian_filter
@@ -30,6 +31,28 @@ def construct_diffraction_pattern(normalized_amplitude, normalized_phase):
 
     return diffraction_pattern
 
+def tf_fft2(image_in, dimmensions):
+    """
+        2D fourer transform matrix along dimmensions
+
+        image_in: n-dimmensional complex tensor
+        dimmensions: the dimmensions to do 2D FFt
+    """
+    assert len(dimmensions) == 2
+
+    # image_shifted = np.array(image_in)
+    for _i in dimmensions:
+        assert int(image_in.shape[_i]) % 2 == 0
+        dim_shift = int(int(image_in.shape[_i]) / 2)
+        image_in = tf.manip.roll(image_in, shift=dim_shift, axis=dimmensions[_i])
+
+    image_in = tf.fft2d(image_in)
+
+    for _i in dimmensions:
+        dim_shift = int(int(image_in.shape[_i]) / 2)
+        image_in = tf.manip.roll(image_in, shift=dim_shift, axis=dimmensions[_i])
+
+    return image_in
 
 
 def f_position_shift(mat, shift_value, axis):
