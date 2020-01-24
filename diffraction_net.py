@@ -429,7 +429,7 @@ class PlotAxes():
         self.phase_actual.set_xticks([])
         self.phase_actual.set_yticks([])
 
-        self.tf_reconstructed_diff = self.fig.add_subplot(self.gs[3:4,0:1])
+        self.tf_reconstructed_diff = self.fig.add_subplot(self.gs[3:4,1:2])
         self.tf_reconstructed_diff.set_title("tf_reconstructed_diff")
         self.tf_reconstructed_diff.set_xticks([])
         self.tf_reconstructed_diff.set_yticks([])
@@ -443,7 +443,7 @@ if __name__ == "__main__":
     # getdata.next_batch()
     # del getdata
 
-    diffraction_net = DiffractionNet(name="one_network_b")
+    diffraction_net = DiffractionNet(name="tf_reconstruction1test")
     diffraction_net.supervised_learn()
     del diffraction_net
     # pass
