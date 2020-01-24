@@ -99,25 +99,23 @@ def make_dataset(filename, N, samples):
             if i % 100 == 0:
                 print("Generating sample %i of %i" % (i, samples))
 
-            def plot_thing(arr, num):
-                arr = np.array(arr)
-                # make the center visible
-                arr[int(N/2), int(N/2)] = np.max(arr)
-                plt.figure()
-                plt.imshow(arr)
-                plt.colorbar()
-                plt.savefig("./"+str(num))
-                os.system("display "+str(num)+".png & disown")
+            # def plot_thing(arr, num):
+                # arr = np.array(arr)
+                # # make the center visible
+                # arr[int(N/2), int(N/2)] = np.max(arr)
+                # plt.figure()
+                # plt.imshow(arr)
+                # plt.colorbar()
+                # plt.savefig("./"+str(num))
+                # os.system("display "+str(num)+".png & disown")
 
-            object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
-            plot_thing(object_phase, 0)
-            plot_thing(object_amplitude, 1)
+            # object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
+            # plot_thing(object_phase, 0)
+            # plot_thing(object_amplitude, 1)
 
             object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/")
-            plot_thing(object_phase, 2)
-            plot_thing(object_amplitude, 3)
-
-            exit()
+            # plot_thing(object_phase, 2)
+            # plot_thing(object_amplitude, 3)
 
             complex_object = object_amplitude * np.exp(1j * object_phase)
             complex_object[np.abs(complex_object)<0.01] = 0
@@ -162,8 +160,14 @@ def make_dataset(filename, N, samples):
             hd5file.root.object_phase.append(object_phase.reshape(1,-1))
             hd5file.root.diffraction.append(diffraction_pattern.reshape(1,-1))
 
-            # reconstruct diffraction pattern
+            # # reconstruct diffraction pattern
             # recons_diff = diffraction_functions.construct_diffraction_pattern(object_amplitude, object_phase)
+            # plt.figure()
+            # plt.imshow(recons_diff)
+            # plt.colorbar()
+            # plt.savefig("./4.png")
+            # os.system("display 4.png & disown")
+            # exit()
 
 
 if __name__ == "__main__":
