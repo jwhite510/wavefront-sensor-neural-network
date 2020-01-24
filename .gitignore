@@ -1,0 +1,11 @@
+*.out
+*.png
+*.jpg
+*.vim
+coco_dataset/
+tags
+tensorboard_graph/
+*.hdf5
+.grep*
+models/
+
