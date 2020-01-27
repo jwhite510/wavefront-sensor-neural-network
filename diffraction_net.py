@@ -94,8 +94,9 @@ class DiffractionNet():
         #####################
         # self.nn_nodes["recons_loss"] = TODO
         self.nn_nodes["recons_diffraction_pattern"] = diffraction_functions.tf_reconstruct_diffraction_pattern(amplitude_norm=self.nn_nodes["amplitude_out"], phase_norm=self.nn_nodes["phase_out"])
+        self.nn_nodes["reconstruction_loss"] = tf.losses.mean_squared_error(labels=self.x, predictions=self.nn_nodes["recons_diffraction_pattern"])
 
-        self.nn_nodes["cost_function"] = self.nn_nodes["amplitude_loss"] + self.nn_nodes["phase_loss"]
+        self.nn_nodes["cost_function"] = self.nn_nodes["amplitude_loss"] + self.nn_nodes["phase_loss"] + self.nn_nodes["reconstruction_loss"]
 
         optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
         self.nn_nodes["train"] = optimizer.minimize(self.nn_nodes["cost_function"])
@@ -201,6 +202,8 @@ class DiffractionNet():
         self.tf_loggers["amplitude_loss_validation"] = tf.summary.scalar("amplitude_loss_validation", self.nn_nodes["amplitude_loss"])
         self.tf_loggers["phase_loss_training"] = tf.summary.scalar("phase_loss_training", self.nn_nodes["phase_loss"])
         self.tf_loggers["phase_loss_validation"] = tf.summary.scalar("phase_loss_validation", self.nn_nodes["phase_loss"])
+        self.tf_loggers["reconstruction_loss_training"] = tf.summary.scalar("reconstruction_loss_training", self.nn_nodes["reconstruction_loss"])
+        self.tf_loggers["reconstruction_loss_validation"] = tf.summary.scalar("reconstruction_loss_validation", self.nn_nodes["reconstruction_loss"])
 
     def supervised_learn(self):
         for self.i in range(self.epochs):
@@ -269,6 +272,10 @@ class DiffractionNet():
         summ = self.sess.run(self.tf_loggers["phase_loss_training"], feed_dict={self.x:diffraction_samples, self.phase_actual:object_phase_samples})
         self.writer.add_summary(summ, global_step=self.epoch)
 
+        # reconstruction
+        summ = self.sess.run(self.tf_loggers["reconstruction_loss_training"], feed_dict={self.x:diffraction_samples, self.phase_actual:object_phase_samples})
+        self.writer.add_summary(summ, global_step=self.epoch)
+
 
         # # # # # # # # # # # # # # # #
         # loss on the validation data #
@@ -291,6 +298,10 @@ class DiffractionNet():
         self.writer.add_summary(summ, global_step=self.epoch)
 
         summ = self.sess.run(self.tf_loggers["phase_loss_validation"], feed_dict={self.x:diffraction_samples, self.phase_actual:object_phase_samples})
+        self.writer.add_summary(summ, global_step=self.epoch)
+
+        # reconstruction
+        summ = self.sess.run(self.tf_loggers["reconstruction_loss_validation"], feed_dict={self.x:diffraction_samples, self.phase_actual:object_phase_samples})
         self.writer.add_summary(summ, global_step=self.epoch)
 
         self.writer.flush()
@@ -443,7 +454,7 @@ if __name__ == "__main__":
     # getdata.next_batch()
     # del getdata
 
-    diffraction_net = DiffractionNet(name="tf_reconstruction1test")
+    diffraction_net = DiffractionNet(name="tf_reconstruction1test_coco_pictures_reconscostfunction1")
     diffraction_net.supervised_learn()
     del diffraction_net
     # pass
