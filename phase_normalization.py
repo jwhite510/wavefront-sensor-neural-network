@@ -30,9 +30,9 @@ def convert_to_label(_phi, _x):
     ax.plot(_x, _phi)
     ax.plot([_x[49], _x[49]], [1, -1])
     ax.plot([-1, 1], [0, 0])
-    ax.text(0.9, 0.5,"S:"+str(_norm_factor), fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="yellow")
+    ax.text(0.9, 0.1,"S:"+str(_norm_factor), fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="yellow")
     ax.set_ylim([-2, 2])
-    ax.text(0.9, 0.9,"divide by max", fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="red")
+    ax.text(0.9, 0.9,r"divide by max($\|\phi\|$)", fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="red")
 
     # set between 0 and 1
     _phi+=1
@@ -42,6 +42,7 @@ def convert_to_label(_phi, _x):
     ax.plot([_x[49], _x[49]], [1, -1])
     ax.plot([-1, 1], [0, 0])
     ax.set_ylim([-2, 2])
+    ax.text(0.9, 0.9,"set between 0 and 1", fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="red")
 
     return _norm_factor, _phi
 
@@ -77,14 +78,30 @@ def convert_from_label(_phi, _x, _norm_factor):
     ax.set_ylim([-2, 2])
     ax.text(0.9, 0.9,"Original (phase subtracted)", fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="red")
 
+    return _phi
+
 
 if __name__ == "__main__":
 
     x = np.linspace(-10, 10, 100)
 
-    phi = np.sin(x + 10*np.random.rand()) + (2*np.random.rand()-1)*0.01*x**2 + (2*np.random.rand()-1)*0.1*x**3 + (2*np.random.rand()-1)*0.9
+    phi = np.sin(x + 10*np.random.rand()) + (2*np.random.rand()-1)*0.01*x**2 + (2*np.random.rand()-1)*0.001*x**3 + (2*np.random.rand()-1)*0.9
+    # phi = np.sin(x + 10*np.random.rand())
+
+    phi_original = np.array(phi)
+    phi_original -= phi_original[49]
     norm_factor, phi = convert_to_label(phi, x)
-    convert_from_label(phi, x, norm_factor)
+    phi_converted = convert_from_label(phi, x, norm_factor)
+
+    plt.figure(3)
+    plt.plot(x, phi_original, "r")
+    plt.plot(x, phi_converted, "b--")
+    plt.plot(x, np.abs(phi_converted-phi_original), "c")
+    plt.plot([x[49],x[49]], [-1,1], "c")
+
+
+
+
 
 
     plt.show()
