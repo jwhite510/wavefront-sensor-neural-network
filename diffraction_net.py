@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import shutil
 import tables
 import diffraction_functions
+import pickle
 
 
 class GetData():
@@ -117,7 +118,7 @@ class DiffractionNet():
         self.writer = tf.summary.FileWriter("./tensorboard_graph/" + self.name)
 
         # number of epochs to run
-        self.epochs = 99999
+        self.epochs = 100
         self.i = None
         self.epoch = None
         self.dots = None
@@ -331,6 +332,16 @@ class DiffractionNet():
         phase_output = self.sess.run(self.nn_nodes["phase_out"], feed_dict={self.x:diffraction_samples})
         tf_reconstructed_diff = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:diffraction_samples})
 
+        # check the output
+        with open("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/samples.p") as file:
+            obj = {}
+            obj["amplitude_output"] = amplitude_output
+            obj["phase_output"] = phase_output
+            obj["tf_reconstructed_diff"] = tf_reconstructed_diff
+            obj["diffraction_samples"] = diffraction_samples
+            pickle.dump(obj, file)
+
+
         # multiply by amplitude_output
 
         # phase_output = phase_output * amplitude_output #TODO maybe remove this
@@ -454,7 +465,7 @@ if __name__ == "__main__":
     # getdata.next_batch()
     # del getdata
 
-    diffraction_net = DiffractionNet(name="tf_reconstruction1test_coco_pictures_reconscostfunction1")
+    diffraction_net = DiffractionNet(name="normalized_diffraction_cost_function_1_with")
     diffraction_net.supervised_learn()
     del diffraction_net
     # pass

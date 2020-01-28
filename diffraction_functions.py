@@ -18,6 +18,8 @@ def tf_reconstruct_diffraction_pattern(amplitude_norm, phase_norm):
     amplitude_object_retrieved = tf.complex(real=amplitude_norm, imag=tf.zeros_like(amplitude_norm))
     complex_object_retrieved = amplitude_object_retrieved * tf.exp(tf.complex(imag=phase_norm, real=tf.zeros_like(phase_norm)))
     diffraction_pattern = tf.abs(tf_fft2(complex_object_retrieved, dimmensions=[1,2]))
+
+    diffraction_pattern = diffraction_pattern / tf.reduce_max(diffraction_pattern, keepdims=True, axis=[1,2]) # normalize the diffraction pattern
     return diffraction_pattern
 
 def construct_diffraction_pattern(normalized_amplitude, normalized_phase):
