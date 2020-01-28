@@ -333,7 +333,7 @@ class DiffractionNet():
         tf_reconstructed_diff = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:diffraction_samples})
 
         # check the output
-        with open("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/samples.p") as file:
+        with open("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/samples.p", "wb") as file:
             obj = {}
             obj["amplitude_output"] = amplitude_output
             obj["phase_output"] = phase_output
