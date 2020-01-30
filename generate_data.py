@@ -206,7 +206,7 @@ def make_dataset(filename, N, samples):
 
 if __name__ == "__main__":
     # generate a data set
-    N = 40
+    N = 128
 
     make_dataset("train_data.hdf5", N=N, samples=40000)
 
