@@ -71,7 +71,7 @@ class DiffractionNet():
 
         # amplitude retrieval network
         self.nn_nodes = {}
-        self.setup_network(self.nn_nodes)
+        self.setup_network_2(self.nn_nodes)
 
         # learning rate
         self.s_LR = tf.placeholder(tf.float32, shape=[])
@@ -123,7 +123,7 @@ class DiffractionNet():
         self.epoch = None
         self.dots = None
 
-    def setup_network(self, _nodes):
+    def setup_network_1(self, _nodes):
         # convolutional layer down sampling
 
         # _nodes["conv1"] = convolutional_layer(self.x, shape=[3,3,1,32], activate='relu', stride=[1,1])
@@ -197,6 +197,45 @@ class DiffractionNet():
         # _nodes["out_logits"] = _nodes["conv19"]
         _nodes["phase_out"] = tf.nn.sigmoid(_nodes["phase_logits"])
         _nodes["amplitude_out"] = tf.nn.sigmoid(_nodes["amplitude_logits"])
+
+    def setup_network_2(self, _nodes):
+
+        print("self.x =>", self.x)
+
+
+        _nodes["conv1"] = tf.keras.layers.Conv2D(filters=64, kernel_size=4, padding='SAME', strides=2)(self.x)
+        _nodes["leakyrelu2"] = tf.keras.layers.LeakyReLU(alpha=0.2)(_nodes["conv1"])
+
+        _nodes["conv3"] = tf.keras.layers.Conv2D(filters=128, kernel_size=4, padding='SAME', strides=2)(_nodes['leakyrelu2'])
+        _nodes["leakyrelu4"] = tf.keras.layers.LeakyReLU(alpha=0.2)(_nodes["conv3"])
+        _nodes["batch_norm5"] = tf.keras.layers.BatchNormalization()(_nodes["leakyrelu4"])
+
+        _nodes["conv6"] = tf.keras.layers.Conv2D(filters=256, kernel_size=4, padding='SAME', strides=2)(_nodes['batch_norm5'])
+        _nodes["leakyrelu7"] = tf.keras.layers.LeakyReLU(alpha=0.2)(_nodes["conv6"])
+        _nodes["batch_norm8"] = tf.keras.layers.BatchNormalization()(_nodes["leakyrelu7"])
+
+        _nodes["conv9"] = tf.keras.layers.Conv2D(filters=512, kernel_size=4, padding='SAME', strides=2)(_nodes['batch_norm8'])
+        _nodes["batch_norm10"] = tf.keras.layers.BatchNormalization()(_nodes["conv9"])
+        _nodes["sigmoid11"] = tf.keras.activations.sigmoid(_nodes["batch_norm10"])
+
+        # feature encoded layer
+        print("_nodes['sigmoid11'] =>", _nodes['sigmoid11'])
+
+        _nodes["conv_t12"] = tf.keras.layers.Conv2DTranspose(filters=256, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["sigmoid11"])
+        _nodes["batch_norm13"] = tf.keras.layers.BatchNormalization()(_nodes["conv_t12"])
+
+        _nodes["conv_t14"] = tf.keras.layers.Conv2DTranspose(filters=128, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm13"])
+        _nodes["batch_norm15"] = tf.keras.layers.BatchNormalization()(_nodes["conv_t14"])
+
+        _nodes["conv_t16"] = tf.keras.layers.Conv2DTranspose(filters=64, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm15"])
+        _nodes["batch_norm17"] = tf.keras.layers.BatchNormalization()(_nodes["conv_t16"])
+
+        _nodes["conv_t18"] = tf.keras.layers.Conv2DTranspose(filters=2, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm17"])
+
+        print("_nodes['conv_t18'] =>", _nodes["conv_t18"])
+
+        exit()
+
 
     def setup_logging(self):
         self.tf_loggers["amplitude_loss_training"] = tf.summary.scalar("amplitude_loss_training", self.nn_nodes["amplitude_loss"])
@@ -465,7 +504,7 @@ if __name__ == "__main__":
     # getdata.next_batch()
     # del getdata
 
-    diffraction_net = DiffractionNet(name="normalized_diffraction_cost_function_1_with")
+    diffraction_net = DiffractionNet(name="test")
     diffraction_net.supervised_learn()
     del diffraction_net
     # pass
