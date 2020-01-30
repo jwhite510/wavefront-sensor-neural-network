@@ -229,10 +229,8 @@ class DiffractionNet():
         _nodes["conv_t16"] = tf.keras.layers.Conv2DTranspose(filters=64, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm15"])
         _nodes["batch_norm17"] = tf.keras.layers.BatchNormalization()(_nodes["conv_t16"])
 
-        _nodes["conv_t18"] = tf.keras.layers.Conv2DTranspose(filters=2, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm17"])
-
-        _nodes["phase_out"] = _nodes["conv_t18"][:,:,:,0]
-        _nodes["amplitude_out"] = _nodes["conv_t18"][:,:,:,1]
+        _nodes["amplitude_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm17"])
+        _nodes["phase_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm17"])
 
 
     def setup_logging(self):
