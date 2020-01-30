@@ -65,6 +65,7 @@ class DiffractionNet():
 
         # input image
         self.x = tf.placeholder(tf.float32, shape=[None, self.get_data.N , self.get_data.N, 1])
+        self.x = tf.placeholder(tf.float32, shape=[None, 128 , 128, 1])
         # label
         self.phase_actual = tf.placeholder(tf.float32, shape=[None, self.get_data.N, self.get_data.N, 1])
         self.amplitude_actual = tf.placeholder(tf.float32, shape=[None, self.get_data.N, self.get_data.N, 1])
@@ -200,8 +201,8 @@ class DiffractionNet():
 
     def setup_network_2(self, _nodes):
 
-        print("self.x =>", self.x)
-
+        assert int(self.x.shape[2]) == 128
+        assert int(self.x.shape[1]) == 128
 
         _nodes["conv1"] = tf.keras.layers.Conv2D(filters=64, kernel_size=4, padding='SAME', strides=2)(self.x)
         _nodes["leakyrelu2"] = tf.keras.layers.LeakyReLU(alpha=0.2)(_nodes["conv1"])
@@ -219,8 +220,6 @@ class DiffractionNet():
         _nodes["sigmoid11"] = tf.keras.activations.sigmoid(_nodes["batch_norm10"])
 
         # feature encoded layer
-        print("_nodes['sigmoid11'] =>", _nodes['sigmoid11'])
-
         _nodes["conv_t12"] = tf.keras.layers.Conv2DTranspose(filters=256, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["sigmoid11"])
         _nodes["batch_norm13"] = tf.keras.layers.BatchNormalization()(_nodes["conv_t12"])
 
@@ -232,9 +231,8 @@ class DiffractionNet():
 
         _nodes["conv_t18"] = tf.keras.layers.Conv2DTranspose(filters=2, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm17"])
 
-        print("_nodes['conv_t18'] =>", _nodes["conv_t18"])
-
-        exit()
+        _nodes["phase_out"] = _nodes["conv_t18"][:,:,:,0]
+        _nodes["amplitude_out"] = _nodes["conv_t18"][:,:,:,1]
 
 
     def setup_logging(self):
