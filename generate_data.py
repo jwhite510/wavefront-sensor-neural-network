@@ -121,6 +121,16 @@ def make_dataset(filename, N, samples):
             complex_object = object_amplitude * np.exp(1j * object_phase)
             complex_object[np.abs(complex_object)<0.01] = 0
 
+            # multpily by a circular beam amplitude
+            y = np.linspace(-10, 10, np.shape(complex_object)[0]).reshape(-1,1)
+            x = np.linspace(-10, 10, np.shape(complex_object)[1]).reshape(1,-1)
+            r = np.sqrt(x**2 + y**2)
+            beam = np.ones_like(np.abs(complex_object))
+            beam[r>5] = 0
+
+            # multiply the object by the beam
+            complex_object*=beam
+
             #TODO: decide to do this or not
             # set phase at center to 0
             # this makes the accuracy lower
