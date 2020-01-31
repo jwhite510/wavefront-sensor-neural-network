@@ -65,7 +65,7 @@ class DiffractionNet():
 
         # input image
         self.x = tf.placeholder(tf.float32, shape=[None, self.get_data.N , self.get_data.N, 1])
-        self.x = tf.placeholder(tf.float32, shape=[None, 128 , 128, 1])
+        # self.x = tf.placeholder(tf.float32, shape=[None, 128 , 128, 1])
         # label
         self.phase_actual = tf.placeholder(tf.float32, shape=[None, self.get_data.N, self.get_data.N, 1])
         self.amplitude_actual = tf.placeholder(tf.float32, shape=[None, self.get_data.N, self.get_data.N, 1])
@@ -216,21 +216,22 @@ class DiffractionNet():
         _nodes["batch_norm8"] = tf.keras.layers.BatchNormalization()(_nodes["leakyrelu7"])
 
         _nodes["conv9"] = tf.keras.layers.Conv2D(filters=512, kernel_size=4, padding='SAME', strides=2)(_nodes['batch_norm8'])
-        _nodes["batch_norm10"] = tf.keras.layers.BatchNormalization()(_nodes["conv9"])
-        _nodes["sigmoid11"] = tf.keras.activations.sigmoid(_nodes["batch_norm10"])
+        _nodes["leakyrelu10"] = tf.keras.layers.LeakyReLU(alpha=0.2)(_nodes["conv9"])
+        _nodes["batch_norm11"] = tf.keras.layers.BatchNormalization()(_nodes["leakyrelu10"])
+        _nodes["sigmoid12"] = tf.keras.activations.sigmoid(_nodes["batch_norm11"])
 
         # feature encoded layer
-        _nodes["conv_t12"] = tf.keras.layers.Conv2DTranspose(filters=256, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["sigmoid11"])
-        _nodes["batch_norm13"] = tf.keras.layers.BatchNormalization()(_nodes["conv_t12"])
+        _nodes["conv_t13"] = tf.keras.layers.Conv2DTranspose(filters=256, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["sigmoid12"])
+        _nodes["batch_norm14"] = tf.keras.layers.BatchNormalization()(_nodes["conv_t13"])
 
-        _nodes["conv_t14"] = tf.keras.layers.Conv2DTranspose(filters=128, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm13"])
-        _nodes["batch_norm15"] = tf.keras.layers.BatchNormalization()(_nodes["conv_t14"])
+        _nodes["conv_t15"] = tf.keras.layers.Conv2DTranspose(filters=128, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm14"])
+        _nodes["batch_norm16"] = tf.keras.layers.BatchNormalization()(_nodes["conv_t15"])
 
-        _nodes["conv_t16"] = tf.keras.layers.Conv2DTranspose(filters=64, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm15"])
-        _nodes["batch_norm17"] = tf.keras.layers.BatchNormalization()(_nodes["conv_t16"])
+        _nodes["conv_t17"] = tf.keras.layers.Conv2DTranspose(filters=64, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm16"])
+        _nodes["batch_norm18"] = tf.keras.layers.BatchNormalization()(_nodes["conv_t17"])
 
-        _nodes["amplitude_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm17"])
-        _nodes["phase_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm17"])
+        _nodes["amplitude_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm18"])
+        _nodes["phase_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm18"])
 
 
     def setup_logging(self):
@@ -500,7 +501,7 @@ if __name__ == "__main__":
     # getdata.next_batch()
     # del getdata
 
-    diffraction_net = DiffractionNet(name="test")
+    diffraction_net = DiffractionNet(name="HY5H_network2_test_coco_fixedencoderactivation")
     diffraction_net.supervised_learn()
     del diffraction_net
     # pass
