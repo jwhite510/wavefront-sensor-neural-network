@@ -119,7 +119,7 @@ def make_dataset(filename, N, samples):
             # plot_thing(object_amplitude, 3)
 
             complex_object = object_amplitude * np.exp(1j * object_phase)
-            complex_object[np.abs(complex_object)<0.01] = 0
+            # complex_object[np.abs(complex_object)<0.01] = 0
 
             # multpily by a circular beam amplitude
             y = np.linspace(-10, 10, np.shape(complex_object)[0]).reshape(-1,1)
@@ -128,6 +128,8 @@ def make_dataset(filename, N, samples):
 
             # multiply the object by the beam
             complex_object[r>5] = 0
+            # normalize amplitude
+            complex_object = complex_object / np.max(np.abs(complex_object))
 
             #TODO: decide to do this or not
             # set phase at center to 0
@@ -137,7 +139,10 @@ def make_dataset(filename, N, samples):
 
             # set the phase between 0:(0 pi) and 1:(2 pi)
             object_phase = np.angle(complex_object)
+            object_amplitude = np.abs(complex_object)
             # object_phase[int(N/2), int(N/2)] = -np.pi # make sure the center is 0, it might be 1 (0 or 2pi)
+
+            # set the phase between 0 and 1
             object_phase += np.pi
             object_phase /= 2*np.pi
 
