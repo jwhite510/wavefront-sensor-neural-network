@@ -100,21 +100,21 @@ def make_dataset(filename, N, samples):
             if i % 100 == 0:
                 print("Generating sample %i of %i" % (i, samples))
 
-            # def plot_thing(arr, num):
-                # arr = np.array(arr)
-                # # make the center visible
+            def plot_thing(arr, num):
+                arr = np.array(arr)
+                # make the center visible
                 # arr[int(N/2), int(N/2)] = np.max(arr)
-                # plt.figure()
-                # plt.imshow(arr)
-                # plt.colorbar()
-                # plt.savefig("./"+str(num))
+                plt.figure()
+                plt.imshow(arr)
+                plt.colorbar()
+                plt.savefig("./"+str(num))
                 # os.system("display "+str(num)+".png & disown")
 
-            object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
+            # object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
             # plot_thing(object_phase, 0)
             # plot_thing(object_amplitude, 1)
 
-            # object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/")
+            object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/")
             # plot_thing(object_phase, 2)
             # plot_thing(object_amplitude, 3)
 
@@ -125,11 +125,9 @@ def make_dataset(filename, N, samples):
             y = np.linspace(-10, 10, np.shape(complex_object)[0]).reshape(-1,1)
             x = np.linspace(-10, 10, np.shape(complex_object)[1]).reshape(1,-1)
             r = np.sqrt(x**2 + y**2)
-            beam = np.ones_like(np.abs(complex_object))
-            beam[r>5] = 0
 
             # multiply the object by the beam
-            complex_object*=beam
+            complex_object[r>5] = 0
 
             #TODO: decide to do this or not
             # set phase at center to 0
