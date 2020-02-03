@@ -120,9 +120,22 @@ class DiffractionNet():
 
         # number of epochs to run
         self.epochs = 100
-        self.i = None
+        self.i = 0
         self.epoch = None
         self.dots = None
+
+        # intialize saver
+        self.saver = tf.train.Saver()
+
+        # if the model already exists, load it into memory
+        if os.path.exists('./models/{}.ckpt'.format(self.name)):
+            self.saver.restore(self.sess, './models/{}.ckpt'.format(self.name))
+            with open("models/" + self.name + ".p", "rb") as file:
+                obj = pickle.load(file)
+                self.i = obj["i"]
+            print("restored saved model {}".format(self.name))
+            print("model loaded at epoch {}".format(self.i))
+
 
     def setup_network_1(self, _nodes):
         # convolutional layer down sampling
@@ -243,7 +256,8 @@ class DiffractionNet():
         self.tf_loggers["reconstruction_loss_validation"] = tf.summary.scalar("reconstruction_loss_validation", self.nn_nodes["reconstruction_loss"])
 
     def supervised_learn(self):
-        for self.i in range(self.epochs):
+        while self.i < self.epochs:
+        # for self.i in range(self.epochs):
             self.epoch = self.i + 1
             print("Epoch : {}".format(self.epoch))
             self.dots = 0
@@ -281,7 +295,15 @@ class DiffractionNet():
                 self.evaluate_performance(data, "validation")
 
 
+            # save the network
+            self.saver.save(self.sess, "models/" + self.name + ".ckpt")
+            training_parameters = {}
+            training_parameters["i"] = i
+            with open("models/" + self.name + ".p", "wb") as file:
+                pickle.dump(training_parameters, file)
+
             self.get_data.batch_index = 0
+            i+=1
 
     def add_tensorboard_values(self):
         # # # # # # # # # # # # # # #
