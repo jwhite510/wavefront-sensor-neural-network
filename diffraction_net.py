@@ -128,7 +128,7 @@ class DiffractionNet():
         self.saver = tf.train.Saver()
 
         # if the model already exists, load it into memory
-        if os.path.exists('./models/{}.ckpt'.format(self.name)):
+        if os.path.exists('./models/{}.ckpt.index'.format(self.name)):
             self.saver.restore(self.sess, './models/{}.ckpt'.format(self.name))
             with open("models/" + self.name + ".p", "rb") as file:
                 obj = pickle.load(file)
@@ -296,14 +296,15 @@ class DiffractionNet():
 
 
             # save the network
+            print("saving network models/" + self.name + ".ckpt")
             self.saver.save(self.sess, "models/" + self.name + ".ckpt")
             training_parameters = {}
-            training_parameters["i"] = i
+            training_parameters["i"] = self.i
             with open("models/" + self.name + ".p", "wb") as file:
                 pickle.dump(training_parameters, file)
 
             self.get_data.batch_index = 0
-            i+=1
+            self.i+=1
 
     def add_tensorboard_values(self):
         # # # # # # # # # # # # # # #
