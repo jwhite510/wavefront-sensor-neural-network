@@ -10,7 +10,14 @@ from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.interpolation import shift as sc_shift
 from scipy.misc import factorial
 
-def zernike_polynomial(N, m, n, even=True):
+def zernike_polynomial(N, m, n):
+
+    if m >= 0:
+        even = True
+    else:
+        even = False
+    n = np.abs(n)
+    m = np.abs(m)
 
     # assert (n-m)/2 is an integer
     assert float((n-m)/2) - int((n-m)/2) == 0
@@ -39,9 +46,9 @@ def zernike_polynomial(N, m, n, even=True):
     R = np.sum(R, axis=2)
 
     if even:
-        Z = R*np.sin(m*phi)
-    else:
         Z = R*np.cos(m*phi)
+    else:
+        Z = R*np.sin(m*phi)
 
     return Z
 

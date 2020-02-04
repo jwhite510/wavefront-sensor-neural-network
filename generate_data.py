@@ -28,11 +28,48 @@ def print_debug_variables(debug_locals):
 
 def make_wavefront_sensor_image(N):
 
+    def plot_zernike(N,m,n):
+        zernike = diffraction_functions.zernike_polynomial(N,m,n)
+        plt.figure()
+        plt.pcolormesh(zernike, cmap="jet")
+        plt.title("m:"+str(m)+" n:"+str(n))
+
+    m = 1
+    n = 1
+    plot_zernike(N,m,n)
+
+    m = -1
+    n = 1
+    plot_zernike(N,m,n)
+
+    m = -2
+    n = 2
+    plot_zernike(N,m,n)
+
+    m = 0
+    n = 2
+    plot_zernike(N,m,n)
+
+    m = 2
+    n = 2
+    plot_zernike(N,m,n)
+
+    m = -3
+    n = 3
+    plot_zernike(N,m,n)
+
+    m = -1
+    n = 3
+    plot_zernike(N,m,n)
+
+    m = 1
+    n = 3
+    plot_zernike(N,m,n)
+
     m = 3
     n = 3
-    zernike = diffraction_functions.zernike_polynomial(N,m,n,even=True)
-    plt.figure()
-    plt.pcolormesh(zernike, cmap="jet")
+    plot_zernike(N,m,n)
+
     plt.show()
     exit()
 
