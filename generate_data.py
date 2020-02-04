@@ -25,6 +25,17 @@ def print_debug_variables(debug_locals):
             print("")
     print("")
 
+
+def make_wavefront_sensor_image(N):
+
+    m = 3
+    n = 3
+    zernike = diffraction_functions.zernike_polynomial(N,m,n,even=True)
+    plt.figure()
+    plt.pcolormesh(zernike, cmap="jet")
+    plt.show()
+    exit()
+
 def make_simulated_object(N, min_indexes, max_indexes):
 
             # create object
@@ -113,6 +124,9 @@ def make_dataset(filename, N, samples):
             # object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
             # plot_thing(object_phase, 0)
             # plot_thing(object_amplitude, 1)
+
+            object_phase, object_amplitude = make_wavefront_sensor_image(N)
+            exit()
 
             object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/")
             # plot_thing(object_phase, 2)

@@ -8,6 +8,43 @@ import matplotlib.pyplot as plt
 from scipy.ndimage.interpolation import rotate
 from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.interpolation import shift as sc_shift
+from scipy.misc import factorial
+
+def zernike_polynomial(N, m, n, even=True):
+
+    # assert (n-m)/2 is an integer
+    assert float((n-m)/2) - int((n-m)/2) == 0
+
+    # make axes of rho and phi
+    x = np.linspace(-1,1,100).reshape(1,-1)
+    y = np.linspace(-1,1,100).reshape(-1,1)
+
+    rho = np.sqrt(x**2 + y**2)
+    rho = np.expand_dims(rho, axis=2)
+
+    phi = np.arctan2(y,x)
+
+    # define axes
+    # rho = np.linspace(0, 1, 100).reshape(1,-1)
+    k = np.arange(0, ((n-m)/2)+1 ).reshape(1,1,-1)
+
+    numerator = (-1)**k
+    numerator *= factorial(n-k)
+
+    denominator = factorial(k)
+    denominator *= factorial(((n+m)/2)-k)
+    denominator *= factorial(((n-m)/2)-k)
+
+    R = (numerator / denominator)*rho**(n-2*k)
+    R = np.sum(R, axis=2)
+
+    if even:
+        Z = R*np.sin(m*phi)
+    else:
+        Z = R*np.cos(m*phi)
+
+    return Z
+
 
 
 def tf_reconstruct_diffraction_pattern(amplitude_norm, phase_norm):
