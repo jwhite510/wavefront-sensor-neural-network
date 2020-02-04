@@ -304,6 +304,7 @@ class DiffractionNet():
             training_parameters["i"] = self.i
             with open("models/" + self.name + ".p", "wb") as file:
                 pickle.dump(training_parameters, file)
+            print("network saved" + self.name + ".ckpt")
 
 
     def add_tensorboard_values(self):
