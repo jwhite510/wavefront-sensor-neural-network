@@ -234,6 +234,12 @@ def make_dataset(filename, N, samples):
 
             # TODO: maybe not normalize diffraction_pattern?
 
+            # # verify phase is 0pi (0.5) at center
+            # plt.figure(19)
+            # plt.plot(object_phase[int(N/2),:])
+            # plt.plot([0,N], [0.5, 0.5])
+            # plt.plot([N/2,N/2], [0, 1])
+
             # plot_thing(object_phase, 20, "object_phase", range=[0,1])
             # plot_thing(object_amplitude, 21, "object_amplitude", range=[0,1])
             # plot_thing(diffraction_pattern, 22, "diffraction_pattern")
