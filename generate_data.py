@@ -6,6 +6,7 @@ import diffraction_functions
 import os
 import random
 from PIL import Image
+import PIL.ImageOps
 
 def print_debug_variables(debug_locals):
 
@@ -28,50 +29,61 @@ def print_debug_variables(debug_locals):
 
 def make_wavefront_sensor_image(N):
 
+    assert N==128
+
     def plot_zernike(N,m,n):
         zernike = diffraction_functions.zernike_polynomial(N,m,n)
         plt.figure()
         plt.pcolormesh(zernike, cmap="jet")
         plt.title("m:"+str(m)+" n:"+str(n))
 
-    m = 1
-    n = 1
-    plot_zernike(N,m,n)
+    # get the png image for amplitude
+    im = Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")
+    im = PIL.ImageOps.invert(im)
+    im = im.resize((64,64))
+    amplitude = np.array(im.getdata(), dtype=np.uint8).reshape(im.size[0], im.size[1], -1)
+    amplitude = np.sum(amplitude, axis=2)
 
-    m = -1
-    n = 1
-    plot_zernike(N,m,n)
+    # pad the amplitude image with zeros
+    amplitude = np.concatenate((amplitude, np.zeros((64,32))), axis=1)
+    amplitude = np.concatenate((np.zeros((64,32)), amplitude), axis=1)
+    amplitude = np.concatenate((np.zeros((32,128)), amplitude), axis=0)
+    amplitude = np.concatenate((amplitude, np.zeros((32,128))), axis=0)
+    amplitude *= 1/np.max(amplitude) # normalize
+    # amplitude[amplitude>0.5] = 1
+    # concat 32
 
-    m = -2
-    n = 2
-    plot_zernike(N,m,n)
+    zernike_coefficients = [
+            #(m,n)
+            (1,1),
+            (-1,1),
+            (-2,2),
+            (0,2),
+            (2,2),
+            (-3,3),
+            (-1,3),
+            (1,3),
+            (3,3),
+            ]
+    zernike_phase = np.zeros((N,N))
+    for z_coefs in zernike_coefficients:
+        zernike_phase += np.random.rand()*diffraction_functions.zernike_polynomial(N,z_coefs[0],z_coefs[1])
 
-    m = 0
-    n = 2
-    plot_zernike(N,m,n)
+    # normalize between -pi and +pi
+    zernike_phase -= np.min(zernike_phase)
+    zernike_phase *= 1/np.max(zernike_phase)
+    zernike_phase *= (2*np.pi)
+    zernike_phase -= (np.pi)
 
-    m = 2
-    n = 2
-    plot_zernike(N,m,n)
+    # plt.figure()
+    # plt.pcolormesh(amplitude, cmap="jet")
+    # plt.colorbar()
 
-    m = -3
-    n = 3
-    plot_zernike(N,m,n)
+    # plt.figure()
+    # plt.pcolormesh(zernike_phase, cmap="jet")
+    # plt.colorbar()
 
-    m = -1
-    n = 3
-    plot_zernike(N,m,n)
-
-    m = 1
-    n = 3
-    plot_zernike(N,m,n)
-
-    m = 3
-    n = 3
-    plot_zernike(N,m,n)
-
-    plt.show()
-    exit()
+    return zernike_phase, amplitude
 
 def make_simulated_object(N, min_indexes, max_indexes):
 
@@ -158,16 +170,20 @@ def make_dataset(filename, N, samples):
                 plt.savefig("./"+str(num))
                 # os.system("display "+str(num)+".png & disown")
 
-            # object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
-            # plot_thing(object_phase, 0)
-            # plot_thing(object_amplitude, 1)
+            object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
+            plot_thing(object_phase, 1)
+            plot_thing(object_amplitude, 2)
 
             object_phase, object_amplitude = make_wavefront_sensor_image(N)
-            exit()
+            plot_thing(object_phase, 2)
+            plot_thing(object_amplitude, 3)
 
             object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/")
-            # plot_thing(object_phase, 2)
-            # plot_thing(object_amplitude, 3)
+            plot_thing(object_phase, 4)
+            plot_thing(object_amplitude, 5)
+
+            plt.show()
+            exit()
 
             complex_object = object_amplitude * np.exp(1j * object_phase)
             # complex_object[np.abs(complex_object)<0.01] = 0

@@ -119,7 +119,7 @@ class DiffractionNet():
         self.writer = tf.summary.FileWriter("./tensorboard_graph/" + self.name)
 
         # number of epochs to run
-        self.epochs = 100
+        self.epochs = 90000
         self.i = 0
         self.epoch = None
         self.dots = None
@@ -278,6 +278,7 @@ class DiffractionNet():
                                                     self.phase_actual:object_phase_samples,
                                                     self.s_LR:0.0001})
 
+            print("add_tensorboard_values")
             self.add_tensorboard_values()
             if self.i % 5 == 0:
 
@@ -525,7 +526,7 @@ if __name__ == "__main__":
     # getdata.next_batch()
     # del getdata
 
-    diffraction_net = DiffractionNet(name="HY5H_network2_test_coco_fixedencoderactivation")
+    diffraction_net = DiffractionNet(name="A6BDrestoration_test1")
     diffraction_net.supervised_learn()
     del diffraction_net
     # pass

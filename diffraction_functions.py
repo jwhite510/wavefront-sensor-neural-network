@@ -23,8 +23,8 @@ def zernike_polynomial(N, m, n):
     assert float((n-m)/2) - int((n-m)/2) == 0
 
     # make axes of rho and phi
-    x = np.linspace(-1,1,100).reshape(1,-1)
-    y = np.linspace(-1,1,100).reshape(-1,1)
+    x = np.linspace(-1,1,N).reshape(1,-1)
+    y = np.linspace(-1,1,N).reshape(-1,1)
 
     rho = np.sqrt(x**2 + y**2)
     rho = np.expand_dims(rho, axis=2)
