@@ -167,54 +167,60 @@ def make_dataset(filename, N, samples):
             if i % 100 == 0:
                 print("Generating sample %i of %i" % (i, samples))
 
-            def plot_thing(arr, num):
+            def plot_thing(arr, num, title, range=None):
                 arr = np.array(arr)
                 # make the center visible
-                # arr[int(N/2), int(N/2)] = np.max(arr)
-                plt.figure()
+                arr[int(N/2), int(N/2)] = np.max(arr)
+                if range:
+                    arr[0,0] = range[0]
+                    arr[0,1] = range[1]
+                plt.figure(num)
                 plt.imshow(arr)
                 plt.colorbar()
+                plt.title(title)
                 plt.savefig("./"+str(num))
                 # os.system("display "+str(num)+".png & disown")
 
-            object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
+            # object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
             # plot_thing(object_phase, 1)
             # plot_thing(object_amplitude, 2)
 
-            object_phase, object_amplitude = make_wavefront_sensor_image(N)
+            # object_phase, object_amplitude = make_wavefront_sensor_image(N)
             # plot_thing(object_phase, 2)
             # plot_thing(object_amplitude, 3)
 
-            object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/", scale=0.05)
-            plot_thing(object_phase, 4)
-            plot_thing(object_amplitude, 5)
-
-            plt.show()
-            exit()
+            object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/", scale=0.15)
+            # plot_thing(object_phase, 4, "object_phase")
+            # plot_thing(object_amplitude, 5, "object_amplitude")
 
             complex_object = object_amplitude * np.exp(1j * object_phase)
-            # complex_object[np.abs(complex_object)<0.01] = 0
-
-            # multpily by a circular beam amplitude
-            y = np.linspace(-10, 10, np.shape(complex_object)[0]).reshape(-1,1)
-            x = np.linspace(-10, 10, np.shape(complex_object)[1]).reshape(1,-1)
-            r = np.sqrt(x**2 + y**2)
-
-            # multiply the object by the beam
-            complex_object[r>5] = 0
-            # normalize amplitude
-            complex_object = complex_object / np.max(np.abs(complex_object))
 
             #TODO: decide to do this or not
             # set phase at center to 0
-            # this makes the accuracy lower
-            # phase_at_center = np.angle(complex_object)[int(N/2), int(N/2)]
-            # complex_object *= np.exp(-1j*phase_at_center)
+            phase_at_center = np.angle(complex_object)[int(N/2), int(N/2)]
+            complex_object *= np.exp(-1j*phase_at_center)
+
+            """
+                    reduce parts of object below threshold
+            """
+            # complex_object[np.abs(complex_object)<0.01] = 0
+
+            """
+                    crop the complex_object in a circle
+            """
+            diffraction_functions.circular_crop(complex_object, 0.3)
+
+            """
+                    normalize amplitude
+            """
+            complex_object *= 1 / np.max(np.abs(complex_object))
 
             # set the phase between 0:(0 pi) and 1:(2 pi)
             object_phase = np.angle(complex_object)
             object_amplitude = np.abs(complex_object)
             # object_phase[int(N/2), int(N/2)] = -np.pi # make sure the center is 0, it might be 1 (0 or 2pi)
+
+            # plot_thing(object_phase, 4, "object_phase")
 
             # set the phase between 0 and 1
             object_phase += np.pi
@@ -226,56 +232,13 @@ def make_dataset(filename, N, samples):
             # normalize the diffraction pattern
             diffraction_pattern = diffraction_pattern / np.max(diffraction_pattern)
 
-            # plt.figure()
-            # complex_obj_arr = np.array(complex_object)
-            # print("np.shape(complex_obj_arr) => ",np.shape(complex_obj_arr))
-            # complex_obj_arr = np.fft.fftshift(complex_obj_arr)
-            # complex_obj_arr = np.fft.fft2(complex_obj_arr)
-            # complex_obj_arr = np.fft.fftshift(complex_obj_arr)
-            # complex_obj_arr = np.squeeze(complex_obj_arr)
-            # complex_obj_arr = np.abs(complex_obj_arr)
-            # plt.imshow(complex_obj_arr)
+            # TODO: maybe not normalize diffraction_pattern?
 
-            # complex_object = np.expand_dims(complex_object, 2)
-            # complex_object = np.expand_dims(complex_object, 0)
-
-            # plt.figure()
-            # complex_obj_arr = np.array(complex_object)
-            # print("np.shape(complex_obj_arr) => ",np.shape(complex_obj_arr))
-            # complex_obj_arr = np.fft.fftshift(complex_obj_arr, axes=(1,2))
-            # complex_obj_arr = np.fft.fft2(complex_obj_arr, axes=(1,2))
-            # complex_obj_arr = np.fft.fftshift(complex_obj_arr, axes=(1,2))
-            # complex_obj_arr = np.squeeze(complex_obj_arr)
-            # complex_obj_arr = np.abs(complex_obj_arr)
-            # plt.imshow(complex_obj_arr)
-
-            # image_ph = tf.placeholder(tf.complex64, shape=[1,40,40,1])
-            # tf_diffraction_pattern = diffraction_functions.tf_fft2(image_ph, dimmensions=[1,2])
-            # plt.figure()
-            # with tf.Session() as sess:
-                # out = sess.run(tf_diffraction_pattern, feed_dict={image_ph:complex_object})
-            # plt.imshow(np.abs(np.squeeze(out)))
-
+            # plot_thing(object_phase, 20, "object_phase", range=[0,1])
+            # plot_thing(object_amplitude, 21, "object_amplitude", range=[0,1])
+            # plot_thing(diffraction_pattern, 22, "diffraction_pattern")
             # plt.show()
             # exit()
-
-            # plt.figure()
-            # plt.imshow(object_phase)
-            # plt.colorbar()
-            # plt.savefig("./1.png")
-            # os.system("display 1.png & disown")
-
-            # plt.figure()
-            # plt.imshow(object_amplitude)
-            # plt.colorbar()
-            # plt.savefig("./2.png")
-            # os.system("display 2.png & disown")
-
-            # plt.figure()
-            # plt.imshow(diffraction_pattern)
-            # plt.colorbar()
-            # plt.savefig("./3.png")
-            # os.system("display 3.png & disown")
 
             hd5file.root.object_amplitude.append(object_amplitude.reshape(1,-1))
             hd5file.root.object_phase.append(object_phase.reshape(1,-1))

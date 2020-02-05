@@ -10,6 +10,16 @@ from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.interpolation import shift as sc_shift
 from scipy.misc import factorial
 
+def circular_crop(image, radius):
+
+    # multpily by a circular beam amplitude
+    y = np.linspace(-1, 1, np.shape(image)[0]).reshape(-1,1)
+    x = np.linspace(-1, 1, np.shape(image)[1]).reshape(1,-1)
+    r = np.sqrt(x**2 + y**2)
+    # multiply the object by the beam
+    image[r>radius] = 0
+
+
 def rescale_image(image, scale):
     new_img_size = (np.array(image.size) * scale).astype(int)  # (width, height)
     c_left = (image.size[0] / 2) - (new_img_size[0]/2)

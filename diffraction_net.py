@@ -407,7 +407,7 @@ class DiffractionNet():
 
         # phase_output = phase_output * amplitude_output #TODO maybe remove this
 
-        for index in range(0,5):
+        for index in range(0,10):
             axes_obj = PlotAxes("sample "+str(index))
             axes_obj.diffraction_input.pcolormesh(diffraction_samples[index,:,:,0])
             axes_obj.amplitude_actual.pcolormesh(object_amplitude_samples[index,:,:,0])
