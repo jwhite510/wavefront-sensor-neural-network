@@ -10,6 +10,16 @@ from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.interpolation import shift as sc_shift
 from scipy.misc import factorial
 
+def rescale_image(image, scale):
+    new_img_size = (np.array(image.size) * scale).astype(int)  # (width, height)
+    c_left = (image.size[0] / 2) - (new_img_size[0]/2)
+    c_upper = (image.size[1] / 2) - (new_img_size[1]/2)
+    c_right = (image.size[0] / 2) + (new_img_size[0]/2)
+    c_lower = (image.size[1] / 2) + (new_img_size[1]/2)
+    image = image.crop((c_left,c_upper,c_right,c_lower))# left , upper, right, lower
+    return image
+
+
 def zernike_polynomial(N, m, n):
 
     if m >= 0:

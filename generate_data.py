@@ -103,17 +103,24 @@ def make_simulated_object(N, min_indexes, max_indexes):
 
             return object_phase, object_amplitude
 
-def retrieve_coco_image(N, path):
+def retrieve_coco_image(N, path, scale):
+    """
+    N: resolution of output image
+    path: path to coco dataset image folder
+    scale: scaling to apply to image (zoom in to decrease high frequencies)
+    """
     coc_images = os.listdir(path)
 
     amplitude_filepath = os.path.join(path, random.choice(coc_images))
     amplitude_im = Image.open(amplitude_filepath).convert("LA")
+    amplitude_im = diffraction_functions.rescale_image(amplitude_im, scale)
     amplitude_im = amplitude_im.resize((N,N))
     amplitude_im = np.array(amplitude_im)
     amplitude_im = amplitude_im[:,:,0]
 
     phase_filepath = os.path.join(path, random.choice(coc_images))
     phase_im = Image.open(phase_filepath).convert("LA")
+    phase_im = diffraction_functions.rescale_image(phase_im, scale)
     phase_im = phase_im.resize((N,N))
     phase_im = np.array(phase_im)
     phase_im = phase_im[:,:,0]
@@ -171,14 +178,14 @@ def make_dataset(filename, N, samples):
                 # os.system("display "+str(num)+".png & disown")
 
             object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
-            plot_thing(object_phase, 1)
-            plot_thing(object_amplitude, 2)
+            # plot_thing(object_phase, 1)
+            # plot_thing(object_amplitude, 2)
 
             object_phase, object_amplitude = make_wavefront_sensor_image(N)
-            plot_thing(object_phase, 2)
-            plot_thing(object_amplitude, 3)
+            # plot_thing(object_phase, 2)
+            # plot_thing(object_amplitude, 3)
 
-            object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/")
+            object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/", scale=0.05)
             plot_thing(object_phase, 4)
             plot_thing(object_amplitude, 5)
 
