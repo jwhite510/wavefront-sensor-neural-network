@@ -15,17 +15,22 @@ def plot_sample(object_phase, object_amplitude, diffraction_pattern):
     gs = fig.add_gridspec(3,1)
 
     ax = fig.add_subplot(gs[0,0])
-    ax.imshow(object_phase)
+    im = ax.imshow(object_phase)
     ax.set_title("object_phase")
-
+    cax = fig.add_axes([0.8, 0.65, 0.05, 0.2])
+    fig.colorbar(im, cax=cax, orientation='vertical')
 
     ax = fig.add_subplot(gs[1,0])
-    ax.imshow(object_amplitude)
+    im = ax.imshow(object_amplitude)
     ax.set_title("object_amplitude")
+    cax = fig.add_axes([0.8, 0.39, 0.05, 0.2])
+    fig.colorbar(im, cax=cax, orientation='vertical')
 
     ax = fig.add_subplot(gs[2,0])
-    ax.imshow(diffraction_pattern)
+    im = ax.imshow(diffraction_pattern)
     ax.set_title("diffraction_pattern")
+    cax = fig.add_axes([0.8, 0.12, 0.05, 0.2])
+    fig.colorbar(im, cax=cax, orientation='vertical')
 
 
 def print_debug_variables(debug_locals):
