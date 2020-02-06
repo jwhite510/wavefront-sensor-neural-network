@@ -8,6 +8,26 @@ import random
 from PIL import Image
 import PIL.ImageOps
 
+def plot_sample(object_phase, object_amplitude, diffraction_pattern):
+
+    fig = plt.figure(1, figsize=(5,10))
+    fig.clf()
+    gs = fig.add_gridspec(3,1)
+
+    ax = fig.add_subplot(gs[0,0])
+    ax.imshow(object_phase)
+    ax.set_title("object_phase")
+
+
+    ax = fig.add_subplot(gs[1,0])
+    ax.imshow(object_amplitude)
+    ax.set_title("object_amplitude")
+
+    ax = fig.add_subplot(gs[2,0])
+    ax.imshow(diffraction_pattern)
+    ax.set_title("diffraction_pattern")
+
+
 def print_debug_variables(debug_locals):
 
     debug_x = None
@@ -240,11 +260,9 @@ def make_dataset(filename, N, samples):
             # plt.plot([0,N], [0.5, 0.5])
             # plt.plot([N/2,N/2], [0, 1])
 
-            # plot_thing(object_phase, 20, "object_phase", range=[0,1])
-            # plot_thing(object_amplitude, 21, "object_amplitude", range=[0,1])
-            # plot_thing(diffraction_pattern, 22, "diffraction_pattern")
-            # plt.show()
-            # exit()
+            if i % 100 == 0:
+                plot_sample(object_phase, object_amplitude, diffraction_pattern)
+                plt.pause(0.001)
 
             hd5file.root.object_amplitude.append(object_amplitude.reshape(1,-1))
             hd5file.root.object_phase.append(object_phase.reshape(1,-1))
