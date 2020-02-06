@@ -70,10 +70,11 @@ def make_wavefront_sensor_image(N):
         zernike_phase += np.random.rand()*diffraction_functions.zernike_polynomial(N,z_coefs[0],z_coefs[1])
 
     # normalize between -pi and +pi
-    zernike_phase -= np.min(zernike_phase)
-    zernike_phase *= 1/np.max(zernike_phase)
+    zernike_phase -= np.min(zernike_phase*amplitude)
+    zernike_phase *= 1/np.max(zernike_phase*amplitude)
     zernike_phase *= (2*np.pi)
     zernike_phase -= (np.pi)
+    zernike_phase[amplitude<0.1] = 0
 
     # plt.figure()
     # plt.pcolormesh(amplitude, cmap="jet")
@@ -185,20 +186,24 @@ def make_dataset(filename, N, samples):
             # plot_thing(object_phase, 1)
             # plot_thing(object_amplitude, 2)
 
-            # object_phase, object_amplitude = make_wavefront_sensor_image(N)
-            # plot_thing(object_phase, 2)
-            # plot_thing(object_amplitude, 3)
+            object_phase, object_amplitude = make_wavefront_sensor_image(N)
+            plot_thing(object_phase, 2, "object_phase")
+            plot_thing(object_amplitude, 3, "object_amplitude")
 
-            object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/", scale=0.15)
+            # object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/", scale=0.15)
             # plot_thing(object_phase, 4, "object_phase")
             # plot_thing(object_amplitude, 5, "object_amplitude")
 
             complex_object = object_amplitude * np.exp(1j * object_phase)
 
+            plot_thing(np.angle(complex_object), 4, "np.angle(complex_object)")
+            plt.show()
+            exit()
+
             #TODO: decide to do this or not
             # set phase at center to 0
-            phase_at_center = np.angle(complex_object)[int(N/2), int(N/2)]
-            complex_object *= np.exp(-1j*phase_at_center)
+            # phase_at_center = np.angle(complex_object)[int(N/2), int(N/2)]
+            # complex_object *= np.exp(-1j*phase_at_center)
 
             """
                     reduce parts of object below threshold
@@ -208,7 +213,7 @@ def make_dataset(filename, N, samples):
             """
                     crop the complex_object in a circle
             """
-            diffraction_functions.circular_crop(complex_object, 0.3)
+            # diffraction_functions.circular_crop(complex_object, 0.3)
 
             """
                     normalize amplitude
@@ -240,11 +245,11 @@ def make_dataset(filename, N, samples):
             # plt.plot([0,N], [0.5, 0.5])
             # plt.plot([N/2,N/2], [0, 1])
 
-            # plot_thing(object_phase, 20, "object_phase", range=[0,1])
-            # plot_thing(object_amplitude, 21, "object_amplitude", range=[0,1])
-            # plot_thing(diffraction_pattern, 22, "diffraction_pattern")
-            # plt.show()
-            # exit()
+            plot_thing(object_phase, 20, "object_phase", range=[0,1])
+            plot_thing(object_amplitude, 21, "object_amplitude", range=[0,1])
+            plot_thing(diffraction_pattern, 22, "diffraction_pattern")
+            plt.show()
+            exit()
 
             hd5file.root.object_amplitude.append(object_amplitude.reshape(1,-1))
             hd5file.root.object_phase.append(object_phase.reshape(1,-1))
