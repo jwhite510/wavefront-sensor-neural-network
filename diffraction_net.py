@@ -6,6 +6,7 @@ import shutil
 import tables
 import diffraction_functions
 import pickle
+import sys
 
 
 class GetData():
@@ -526,7 +527,7 @@ if __name__ == "__main__":
     # getdata.next_batch()
     # del getdata
 
-    diffraction_net = DiffractionNet(name="A6BDrestoration_test1")
+    diffraction_net = DiffractionNet(name=sys.argv[1])
     diffraction_net.supervised_learn()
     del diffraction_net
     # pass
