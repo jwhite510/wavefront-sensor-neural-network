@@ -8,7 +8,9 @@ import random
 from PIL import Image
 import PIL.ImageOps
 
-def plot_sample(object_phase, object_amplitude, diffraction_pattern):
+def plot_sample(N, object_phase, object_amplitude, diffraction_pattern):
+
+    print("object_phase[int(N/2) , int(N/2) ] =>", object_phase[int(N/2) , int(N/2) ])
 
     fig = plt.figure(1, figsize=(5,10))
     fig.clf()
@@ -214,16 +216,25 @@ def make_dataset(filename, N, samples):
             # plot_thing(object_phase, 2)
             # plot_thing(object_amplitude, 3)
 
-            object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/", scale=0.15)
+            object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/", scale=1.0)
             # plot_thing(object_phase, 4, "object_phase")
-            # plot_thing(object_amplitude, 5, "object_amplitude")
+
+            # set phase at center to 0 (introduces phase discontinuity)
+            object_phase-=object_phase[int(N/2), int(N/2)]
+            object_phase += np.pi
+            object_phase = np.mod(object_phase, 2*np.pi)
+            object_phase -= np.pi
+
+            # circular crop the phase
+            diffraction_functions.circular_crop(object_phase, 0.3)
+            diffraction_functions.circular_crop(object_amplitude, 0.3)
 
             complex_object = object_amplitude * np.exp(1j * object_phase)
 
             #TODO: decide to do this or not
             # set phase at center to 0
-            phase_at_center = np.angle(complex_object)[int(N/2), int(N/2)]
-            complex_object *= np.exp(-1j*phase_at_center)
+            # phase_at_center = np.angle(complex_object)[int(N/2), int(N/2)]
+            # complex_object *= np.exp(-1j*phase_at_center)
 
             """
                     reduce parts of object below threshold
@@ -233,7 +244,7 @@ def make_dataset(filename, N, samples):
             """
                     crop the complex_object in a circle
             """
-            diffraction_functions.circular_crop(complex_object, 0.3)
+            # diffraction_functions.circular_crop(complex_object, 0.3)
 
             """
                     normalize amplitude
@@ -241,7 +252,7 @@ def make_dataset(filename, N, samples):
             complex_object *= 1 / np.max(np.abs(complex_object))
 
             # set the phase between 0:(0 pi) and 1:(2 pi)
-            object_phase = np.angle(complex_object)
+            # object_phase = np.angle(complex_object)
             object_amplitude = np.abs(complex_object)
             # object_phase[int(N/2), int(N/2)] = -np.pi # make sure the center is 0, it might be 1 (0 or 2pi)
 
@@ -266,7 +277,7 @@ def make_dataset(filename, N, samples):
             # plt.plot([N/2,N/2], [0, 1])
 
             if i % 100 == 0:
-                plot_sample(object_phase, object_amplitude, diffraction_pattern)
+                plot_sample(N, object_phase, object_amplitude, diffraction_pattern)
                 plt.pause(0.001)
 
             hd5file.root.object_amplitude.append(object_amplitude.reshape(1,-1))
@@ -287,7 +298,7 @@ if __name__ == "__main__":
     # generate a data set
     N = 128
 
-    make_dataset("train_data.hdf5", N=N, samples=40000)
+    make_dataset("train_data.hdf5", N=N, samples=1000)
 
     make_dataset("test_data.hdf5", N=N, samples=200)
 
@@ -302,11 +313,11 @@ if __name__ == "__main__":
         object_phase = hdf5file.root.object_phase[index,:].reshape(N,N)
         diffraction = hdf5file.root.diffraction[index,:].reshape(N,N)
 
-        plt.figure(1)
-        plt.pcolormesh(object)
         plt.figure(2)
-        plt.pcolormesh(object_phase)
+        plt.pcolormesh(object)
         plt.figure(3)
+        plt.pcolormesh(object_phase)
+        plt.figure(4)
         plt.pcolormesh(diffraction)
         plt.show()
 
