@@ -89,7 +89,7 @@ def make_figure():
 
 
     fig.subplots_adjust(hspace=0.0, left=0.2)
-    gs = fig.add_gridspec(2,1)
+    gs = fig.add_gridspec(3,1)
 
     # phase loss plotting
     ax = fig.add_subplot(gs[0,0])
@@ -101,6 +101,8 @@ def make_figure():
     error, epochs = get_values("phase_loss_validation.csv" )
     ax.plot(epochs, error, label="validation")
     ax.set_yscale("log")
+    ax.set_xticks([])
+    ax.set_ylim([2e-4, 0.03])
     ax.legend()
 
 
@@ -113,6 +115,20 @@ def make_figure():
     error, epochs = get_values("amplitude_loss_validation.csv" )
     ax.plot(epochs, error, label="validation")
     ax.set_yscale("log")
+    ax.set_xticks([])
+    ax.set_ylim([2e-4, 0.03])
+    ax.legend()
+
+    # reconstruction loss plotting
+    ax = fig.add_subplot(gs[2,0])
+    error, epochs = get_values("reconstruction_loss_training.csv" )
+    ax.plot(epochs, error, label="training")
+    ax.set_ylabel("reconstruction loss")
+    ax.set_xlabel("Epoch")
+    error, epochs = get_values("reconstruction_loss_validation.csv" )
+    ax.plot(epochs, error, label="validation")
+    ax.set_yscale("log")
+    ax.set_ylim([2e-4, 0.03])
     ax.legend()
 
 
@@ -120,7 +136,8 @@ def make_figure():
     error, epochs = get_values("amplitude_loss_training.csv")
 
     plt.savefig(str(run_name)+'.png')
-    plt.pause(0.5)
+    # plt.pause(0.5)
+    # plt.show()
 
 
 if __name__ == '__main__':

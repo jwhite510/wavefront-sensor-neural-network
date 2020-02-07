@@ -5,9 +5,9 @@ declare -a run_names=(
 "AHGNKL_withphasesubtraction1"
 "AHGNKL_withphasesubtraction2"
 "AHGNKL_withOUTphasesubtraction1"
-# "AHGNKL_withOUTphasesubtraction2"
-# "AHGNKL_withphasesubtraction_increaseradius1"
-# "AHGNKL_withphasesubtraction_increaseradius2"
+"AHGNKL_withOUTphasesubtraction2"
+"AHGNKL_withphasesubtraction_increaseradius1"
+"AHGNKL_withphasesubtraction_increaseradius2"
 )
 for run_name in "${run_names[@]}"
 do
