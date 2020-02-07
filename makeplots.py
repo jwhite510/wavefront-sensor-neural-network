@@ -120,7 +120,7 @@ def make_figure():
     error, epochs = get_values("amplitude_loss_training.csv")
 
     plt.savefig(str(run_name)+'.png')
-    plt.show()
+    plt.pause(0.5)
 
 
 if __name__ == '__main__':
