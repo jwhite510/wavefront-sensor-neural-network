@@ -11,6 +11,9 @@ import PIL.ImageOps
 def plot_sample(N, object_phase, object_amplitude, diffraction_pattern):
 
     print("object_phase[int(N/2) , int(N/2) ] =>", object_phase[int(N/2) , int(N/2) ])
+    object_phase = np.array(object_phase)
+    object_phase[0,0] = 0
+    object_phase[0,1] = 1
 
     fig = plt.figure(1, figsize=(5,10))
     fig.clf()
@@ -61,8 +64,37 @@ def make_wavefront_sensor_image(N):
     def plot_zernike(N,m,n):
         zernike = diffraction_functions.zernike_polynomial(N,m,n)
         plt.figure()
-        plt.pcolormesh(zernike, cmap="jet")
+        plt.imshow(zernike, cmap="jet")
         plt.title("m:"+str(m)+" n:"+str(n))
+        plt.colorbar()
+        # value at center
+        zernike -= zernike[int(N/2), int(N/2)]
+        for i in range(np.shape(zernike)[0]):
+            for j in range(np.shape(zernike)[1]):
+                if zernike[i,j] < 0.01 and zernike[i,j] > -0.01:
+                    zernike[i,j] = 1.0
+
+        plt.figure()
+        plt.imshow(zernike, cmap="jet")
+        plt.colorbar()
+        plt.title("m:"+str(m)+" n:"+str(n))
+
+    def plot_zeros(array):
+        array = np.array(array)
+        # set near to max to see where the zeros are just for plotting
+        # print("array[int(N/2), int(N/2)] =>", array[int(N/2), int(N/2)])
+        for i in range(np.shape(array)[0]):
+            for j in range(np.shape(array)[1]):
+                if array[i,j] < 0.01 and array[i,j] > -0.01:
+                    array[i,j] = np.max(array)
+        # plt.figure()
+        # plt.imshow(array, cmap="jet")
+        # plt.colorbar()
+        array[int(N/2), :] = np.max(array)
+        array[:, int(N/2)] = np.max(array)
+        plt.figure()
+        plt.imshow(array, cmap="jet")
+        plt.colorbar()
 
     # get the png image for amplitude
     im = Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")
@@ -82,30 +114,40 @@ def make_wavefront_sensor_image(N):
 
     zernike_coefficients = [
             #(m,n)
-            (1,1),
-            (-1,1),
-            (-2,2),
-            (0,2),
-            (2,2),
-            (-3,3),
+            # (1,1), # linear phase
+            # (-1,1), # linear phase
+
+            (-2,2), # zero at center
+            (0,2), # not zero at center
+            (2,2), # zero at center
+
+            (-3,3), # zero at center
             (-1,3),
             (1,3),
-            (3,3),
+            (3,3), # zero at center
             ]
     zernike_phase = np.zeros((N,N))
     for z_coefs in zernike_coefficients:
-        zernike_phase += np.random.rand()*diffraction_functions.zernike_polynomial(N,z_coefs[0],z_coefs[1])
+        # plot_zernike(N, z_coefs[0], z_coefs[1])
+        zernike_coef_phase = np.random.rand()*diffraction_functions.zernike_polynomial(N,z_coefs[0],z_coefs[1])
+        # zernike_coef_phase -= zernike_coef_phase[int(N/2), int(N/2)]
+        zernike_phase += zernike_coef_phase
 
-    # normalize between -pi and +pi
-    # zernike_phase *= amplitude
-    zernike_phase -= np.min(amplitude*zernike_phase)
-    zernike_phase *= 1/np.max(amplitude*zernike_phase) # between 0 and 1
-    zernike_phase *= 2*np.pi
-    zernike_phase -= np.pi
-    zernike_phase *= amplitude
+    # subtract phase at center
+    zernike_phase -= zernike_phase[int(N/2), int(N/2)] # subtract phase at center
+    # normalize the zernike phase
+    nonzero_amplitude = np.zeros_like(amplitude)
+    nonzero_amplitude[amplitude>0.001] = 1
+    zernike_phase *= 1 / np.max(np.abs(nonzero_amplitude*zernike_phase)) # this is between -1 and 1 (random)
+    zernike_phase*=np.pi
+    # plot_zeros(zernike_phase)
+    zernike_phase*=nonzero_amplitude
+
 
     # plt.figure()
-    # plt.pcolormesh(zernike_phase)
+    # plt.imshow(zernike_phase)
+    # print("np.min(zernike_phase) =>", np.min(zernike_phase))
+    # print("np.max(zernike_phase) =>", np.max(zernike_phase))
     # plt.colorbar()
     # plt.show()
     # exit()
