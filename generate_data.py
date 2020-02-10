@@ -97,18 +97,18 @@ def make_wavefront_sensor_image(N):
         zernike_phase += np.random.rand()*diffraction_functions.zernike_polynomial(N,z_coefs[0],z_coefs[1])
 
     # normalize between -pi and +pi
-    zernike_phase -= np.min(zernike_phase)
-    zernike_phase *= 1/np.max(zernike_phase)
-    zernike_phase *= (2*np.pi)
-    zernike_phase -= (np.pi)
+    # zernike_phase *= amplitude
+    zernike_phase -= np.min(amplitude*zernike_phase)
+    zernike_phase *= 1/np.max(amplitude*zernike_phase) # between 0 and 1
+    zernike_phase *= 2*np.pi
+    zernike_phase -= np.pi
+    zernike_phase *= amplitude
 
     # plt.figure()
-    # plt.pcolormesh(amplitude, cmap="jet")
+    # plt.pcolormesh(zernike_phase)
     # plt.colorbar()
-
-    # plt.figure()
-    # plt.pcolormesh(zernike_phase, cmap="jet")
-    # plt.colorbar()
+    # plt.show()
+    # exit()
 
     return zernike_phase, amplitude
 
@@ -209,27 +209,32 @@ def make_dataset(filename, N, samples):
                 # os.system("display "+str(num)+".png & disown")
 
             # object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
-            # plot_thing(object_phase, 1)
-            # plot_thing(object_amplitude, 2)
 
-            # object_phase, object_amplitude = make_wavefront_sensor_image(N)
-            # plot_thing(object_phase, 2)
-            # plot_thing(object_amplitude, 3)
+            # plot_thing(object_phase, 1, "object_phase")
+            # plot_thing(object_amplitude, 2, "object_amplitude")
 
-            object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/", scale=1.0)
+            object_phase, object_amplitude = make_wavefront_sensor_image(N)
+
+            # plot_thing(object_phase, 3, "object_phase")
+            # plot_thing(object_amplitude, 4, "object_amplitude")
+
+            # object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/", scale=1.0)
             # plot_thing(object_phase, 4, "object_phase")
 
-            # set phase at center to 0 (introduces phase discontinuity)
-            object_phase-=object_phase[int(N/2), int(N/2)]
-            object_phase += np.pi
-            object_phase = np.mod(object_phase, 2*np.pi)
-            object_phase -= np.pi
+            # # set phase at center to 0 (introduces phase discontinuity)
+            # object_phase-=object_phase[int(N/2), int(N/2)]
+            # object_phase += np.pi
+            # object_phase = np.mod(object_phase, 2*np.pi)
+            # object_phase -= np.pi
 
             # circular crop the phase
-            diffraction_functions.circular_crop(object_phase, 0.3)
-            diffraction_functions.circular_crop(object_amplitude, 0.3)
+            # diffraction_functions.circular_crop(object_phase, 0.3)
+            # diffraction_functions.circular_crop(object_amplitude, 0.3)
 
             complex_object = object_amplitude * np.exp(1j * object_phase)
+
+            # plot_thing(np.abs(complex_object), 5, "np.abs(complex_object)")
+            # plot_thing(np.angle(complex_object), 6, "np.angle(complex_object)")
 
             #TODO: decide to do this or not
             # set phase at center to 0
@@ -249,7 +254,7 @@ def make_dataset(filename, N, samples):
             """
                     normalize amplitude
             """
-            complex_object *= 1 / np.max(np.abs(complex_object))
+            # complex_object *= 1 / np.max(np.abs(complex_object))
 
             # set the phase between 0:(0 pi) and 1:(2 pi)
             # object_phase = np.angle(complex_object)
