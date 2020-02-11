@@ -143,6 +143,16 @@ def make_wavefront_sensor_image(N):
     # plot_zeros(zernike_phase)
     zernike_phase*=nonzero_amplitude
 
+    # multiply the amplitude mask by a random gaussian
+    x = np.linspace(-1,1,N).reshape(1,-1)
+    y = np.linspace(-1,1,N).reshape(-1,1)
+    w_x = 0.01 + (1.0 - 0.01)*np.random.rand()
+    w_y = 0.01 + (1.0 - 0.01)*np.random.rand()
+    s_x = -0.3 + (0.3 + 0.3)*np.random.rand()
+    s_y = -0.3 + (0.3 + 0.3)*np.random.rand()
+    # random gaussian
+    z = np.exp((-(x-s_x)**2)/w_x) * np.exp((-(y-s_y)**2)/w_y)
+    amplitude*=z
 
     # plt.figure()
     # plt.imshow(zernike_phase)
