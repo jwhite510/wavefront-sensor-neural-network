@@ -74,10 +74,11 @@ def zernike_polynomial(N, m, n):
 
 
 
-def tf_reconstruct_diffraction_pattern(amplitude_norm, phase_norm):
-
-    phase_norm *= 2*np.pi
-    phase_norm -= np.pi
+def tf_reconstruct_diffraction_pattern(amplitude_norm, phase_norm, scalar):
+    scalar = tf.reshape(scalar, [-1, 1, 1, 1])
+    phase_norm *= 2 # between 0 and 2
+    phase_norm -= 1 # between -1 and 1
+    phase_norm *= scalar
 
     amplitude_object_retrieved = tf.complex(real=amplitude_norm, imag=tf.zeros_like(amplitude_norm))
     complex_object_retrieved = amplitude_object_retrieved * tf.exp(tf.complex(imag=phase_norm, real=tf.zeros_like(phase_norm)))
@@ -86,7 +87,7 @@ def tf_reconstruct_diffraction_pattern(amplitude_norm, phase_norm):
     diffraction_pattern = diffraction_pattern / tf.reduce_max(diffraction_pattern, keepdims=True, axis=[1,2]) # normalize the diffraction pattern
     return diffraction_pattern
 
-def construct_diffraction_pattern(normalized_amplitude, normalized_phase):
+def construct_diffraction_pattern(normalized_amplitude, normalized_phase, scalar):
     """
     construct diffraction pattern from normalized (retrieved object)
 
@@ -94,8 +95,9 @@ def construct_diffraction_pattern(normalized_amplitude, normalized_phase):
     amplitude = np.array(normalized_amplitude)
     phase = np.array(normalized_phase)
 
-    phase *= 2*np.pi
-    phase -= np.pi
+    phase *= 2
+    phase -= 1
+    phase *= scalar
 
     complex_object = amplitude * np.exp(1j * phase)
 

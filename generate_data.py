@@ -129,7 +129,7 @@ def make_wavefront_sensor_image(N):
     zernike_phase = np.zeros((N,N))
     for z_coefs in zernike_coefficients:
         # plot_zernike(N, z_coefs[0], z_coefs[1])
-        zernike_coef_phase = np.random.rand()*diffraction_functions.zernike_polynomial(N,z_coefs[0],z_coefs[1])
+        zernike_coef_phase = 5*np.random.rand()*diffraction_functions.zernike_polynomial(N,z_coefs[0],z_coefs[1])
         # zernike_coef_phase -= zernike_coef_phase[int(N/2), int(N/2)]
         zernike_phase += zernike_coef_phase
 
@@ -138,7 +138,7 @@ def make_wavefront_sensor_image(N):
     # normalize the zernike phase
     nonzero_amplitude = np.zeros_like(amplitude)
     nonzero_amplitude[amplitude>0.001] = 1
-    zernike_phase *= 1 / np.max(np.abs(nonzero_amplitude*zernike_phase)) # this is between -1 and 1 (random)
+    # zernike_phase *= 1 / np.max(np.abs(nonzero_amplitude*zernike_phase)) # this is between -1 and 1 (random)
     zernike_phase*=np.pi
     # plot_zeros(zernike_phase)
     zernike_phase*=nonzero_amplitude
@@ -228,6 +228,9 @@ def make_dataset(filename, N, samples):
         # create array for the object phase
         hdf5file.create_earray(hdf5file.root, "object_phase", tables.Float64Atom(), shape=(0,N*N))
 
+        # create array for the object phase scalar
+        hdf5file.create_earray(hdf5file.root, "phase_norm_factor", tables.Float64Atom(), shape=(0,1))
+
         # create array for the image
         hdf5file.create_earray(hdf5file.root, "diffraction", tables.Float64Atom(), shape=(0,N*N))
 
@@ -316,33 +319,42 @@ def make_dataset(filename, N, samples):
             # plot_thing(object_phase, 4, "object_phase")
 
             # set the phase between 0 and 1
-            object_phase += np.pi
-            object_phase /= 2*np.pi
+
+            # arbitrarily large phase
+            # plot_thing(object_phase, 99, "object_phase")
+
+
+            # translate it to label
+            phase_norm_factor = np.max(np.abs(object_phase))
+            object_phase *= 1/phase_norm_factor  # now its between -1 and 1
+            object_phase += 1 # not its between 0 and 2
+            object_phase *= (1/2) # between 0 and 1
+            plot_thing(object_phase, 101, "object_phase label")
+
 
             diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))
             # absolute value
             diffraction_pattern = np.abs(diffraction_pattern)
             # normalize the diffraction pattern
             diffraction_pattern = diffraction_pattern / np.max(diffraction_pattern)
-
-            # TODO: maybe not normalize diffraction_pattern?
-
-            # # verify phase is 0pi (0.5) at center
-            # plt.figure(19)
-            # plt.plot(object_phase[int(N/2),:])
-            # plt.plot([0,N], [0.5, 0.5])
-            # plt.plot([N/2,N/2], [0, 1])
-
             if i % 100 == 0:
                 plot_sample(N, object_phase, object_amplitude, diffraction_pattern)
                 plt.pause(0.001)
 
             hd5file.root.object_amplitude.append(object_amplitude.reshape(1,-1))
             hd5file.root.object_phase.append(object_phase.reshape(1,-1))
+            hd5file.root.phase_norm_factor.append(phase_norm_factor.reshape(1,1))
             hd5file.root.diffraction.append(diffraction_pattern.reshape(1,-1))
 
+            # # reconstruct phase from label
+            # object_phase *= 2 # between 0 and 2
+            # object_phase -= 1 # between -1 and 1
+            # object_phase *= phase_norm_factor
+            # plot_thing(object_phase, 102, "object_phase reconstruct")
+
+
             # # reconstruct diffraction pattern
-            # recons_diff = diffraction_functions.construct_diffraction_pattern(object_amplitude, object_phase)
+            # recons_diff = diffraction_functions.construct_diffraction_pattern(object_amplitude, object_phase, phase_norm_factor)
             # plt.figure()
             # plt.imshow(recons_diff)
             # plt.colorbar()
