@@ -5,31 +5,22 @@
 # generate dataset
 rm ./*.hdf5
 echo generating dataset
-~/python_compiled/bin/python3 ~/projects/diffraction_run/with_phase_subtraction.py
-export batch_run_name=AUWNKL_withphasesubtraction1
+~/python_compiled/bin/python3 ~/projects/diffraction_run/generate_data_withphasesubtract.py
+export batch_run_name=LIUJH_scalar_phase_withphasesubtract1
 echo submtting network training job $batch_run_name
 sbatch --wait submit_gpu_job.slurm # start training network
-export batch_run_name=AUWNKL_withphasesubtraction2
-echo submtting network training job $batch_run_name
-sbatch --wait submit_gpu_job.slurm # start training network
-
-rm ./*.hdf5
-echo generating dataset
-~/python_compiled/bin/python3 ~/projects/diffraction_run/withOUT_phase_subtraction.py
-export batch_run_name=AUWNKL_withOUTphasesubtraction1
-echo submtting network training job $batch_run_name
-sbatch --wait submit_gpu_job.slurm # start training network
-export batch_run_name=AUWNKL_withOUTphasesubtraction2
+export batch_run_name=LIUJH_scalar_phase_withphasesubtract2
 echo submtting network training job $batch_run_name
 sbatch --wait submit_gpu_job.slurm # start training network
 
 rm ./*.hdf5
 echo generating dataset
-~/python_compiled/bin/python3 ~/projects/diffraction_run/with_phase_subtraction_increaseradius.py
-export batch_run_name=AUWNKL_withphasesubtraction_increaseradius1
+~/python_compiled/bin/python3 ~/projects/diffraction_run/generate_data_withoutphasesubtract.py
+export batch_run_name=LIUJH_scalar_phase_withoutphasesubtract1
 echo submtting network training job $batch_run_name
 sbatch --wait submit_gpu_job.slurm # start training network
-export batch_run_name=AUWNKL_withphasesubtraction_increaseradius2
+export batch_run_name=LIUJH_scalar_phase_withoutphasesubtract2
 echo submtting network training job $batch_run_name
 sbatch --wait submit_gpu_job.slurm # start training network
+
 
