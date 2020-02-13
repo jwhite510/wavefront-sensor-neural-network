@@ -441,20 +441,23 @@ class DiffractionNet():
 
         for index in range(0,10):
             axes_obj = PlotAxes("sample "+str(index))
-            axes_obj.diffraction_input.pcolormesh(diffraction_samples[index,:,:,0])
-            axes_obj.amplitude_actual.pcolormesh(object_amplitude_samples[index,:,:,0])
+            axes_obj.diffraction_samples.pcolormesh(diffraction_samples[index,:,:,0])
+            axes_obj.object_amplitude_samples.pcolormesh(object_amplitude_samples[index,:,:,0])
             axes_obj.amplitude_output.pcolormesh(amplitude_output[index,:,:,0])
-            axes_obj.phase_actual.pcolormesh(object_phase_samples[index,:,:,0])
+
+            axes_obj.object_phase_samples.pcolormesh(object_phase_samples[index,:,:,0])
+            axes_obj.object_phase_samples.text(0.9, 0.9,"Phase Scalar: {0:.5g}".format(phase_scalar_samples[index, 0]), fontsize=10, ha='center', transform=axes_obj.object_phase_samples.transAxes, backgroundcolor="red")
+
             axes_obj.phase_output.pcolormesh(phase_output[index,:,:,0])
+            axes_obj.phase_output.text(0.9, 0.9,"Phase Scalar: {0:.5g}".format(phase_scalar_output[index, 0]), fontsize=10, ha='center', transform=axes_obj.phase_output.transAxes, backgroundcolor="red")
 
             # reconstructed diffraction pattern
-            recons_diffraction = diffraction_functions.construct_diffraction_pattern(amplitude_output[index,:,:,0], phase_output[index,:,:,0], phase_scalar_output[index])
-            axes_obj.diffraction_recons.pcolormesh(recons_diffraction)
+            # recons_diffraction = diffraction_functions.construct_diffraction_pattern(amplitude_output[index,:,:,0], phase_output[index,:,:,0], phase_scalar_output[index])
+            # axes_obj.diffraction_recons.pcolormesh(recons_diffraction)
 
             # tensorflow reconstructed diffraction pattern
             axes_obj.tf_reconstructed_diff.pcolormesh(tf_reconstructed_diff[index,:,:,0])
 
-            # axes_obj.diffraction_recons.pcolormesh()
             axes_obj.save("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/sample_"+str(index))
             del axes_obj
 
@@ -509,45 +512,46 @@ class PlotAxes():
         """
         # create plot
         self.fig = plt.figure(figsize=(10,10))
-        self.gs = self.fig.add_gridspec(4,2)
+        self.gs = self.fig.add_gridspec(3,2)
 
         self.fig.text(0.5, 0.95,fig_title, fontsize=30, ha='center')
 
         self.axes = {}
-        self.diffraction_input = self.fig.add_subplot(self.gs[0:1,0:1])
-        self.diffraction_input.set_title("diffraction_input")
-        self.diffraction_input.set_xticks([])
-        self.diffraction_input.set_yticks([])
+        self.diffraction_samples = self.fig.add_subplot(self.gs[0:1,0:1])
+        self.diffraction_samples.set_title("Input Diffraction Pattern")
+        self.diffraction_samples.set_xticks([])
+        self.diffraction_samples.set_yticks([])
 
-        self.diffraction_recons = self.fig.add_subplot(self.gs[0:1,1:2])
-        self.diffraction_recons.set_title("diffraction_recons")
-        self.diffraction_recons.set_xticks([])
-        self.diffraction_recons.set_yticks([])
+        # self.diffraction_recons = self.fig.add_subplot(self.gs[0:1,1:2])
+        # self.diffraction_recons.set_title("diffraction_recons")
+        # self.diffraction_recons.set_xticks([])
+        # self.diffraction_recons.set_yticks([])
 
-        self.amplitude_actual = self.fig.add_subplot(self.gs[1:2,1:2])
-        self.amplitude_actual.set_title("amplitude_actual")
-        self.amplitude_actual.set_xticks([])
-        self.amplitude_actual.set_yticks([])
+        self.tf_reconstructed_diff = self.fig.add_subplot(self.gs[0:1,1:2])
+        self.tf_reconstructed_diff.set_title("Reconstructed Diffration Pattern")
+        self.tf_reconstructed_diff.set_xticks([])
+        self.tf_reconstructed_diff.set_yticks([])
 
-        self.amplitude_output = self.fig.add_subplot(self.gs[1:2,0:1])
-        self.amplitude_output.set_title("amplitude_output")
+        self.object_amplitude_samples = self.fig.add_subplot(self.gs[1:2,0:1])
+        self.object_amplitude_samples.set_title("Actual Object Amplitude")
+        self.object_amplitude_samples.set_xticks([])
+        self.object_amplitude_samples.set_yticks([])
+
+        self.amplitude_output = self.fig.add_subplot(self.gs[1:2,1:2])
+        self.amplitude_output.set_title("Retrieved Object Ampiltude")
         self.amplitude_output.set_xticks([])
         self.amplitude_output.set_yticks([])
 
-        self.phase_output = self.fig.add_subplot(self.gs[2:3,0:1])
-        self.phase_output.set_title("phase_output")
+        self.phase_output = self.fig.add_subplot(self.gs[2:3,1:2])
+        self.phase_output.set_title("Retrieved Phase (normalized)")
         self.phase_output.set_xticks([])
         self.phase_output.set_yticks([])
 
-        self.phase_actual = self.fig.add_subplot(self.gs[2:3,1:2])
-        self.phase_actual.set_title("phase_actual")
-        self.phase_actual.set_xticks([])
-        self.phase_actual.set_yticks([])
+        self.object_phase_samples = self.fig.add_subplot(self.gs[2:3,0:1])
+        self.object_phase_samples.set_title("Actual Phase (normalized)")
+        self.object_phase_samples.set_xticks([])
+        self.object_phase_samples.set_yticks([])
 
-        self.tf_reconstructed_diff = self.fig.add_subplot(self.gs[3:4,1:2])
-        self.tf_reconstructed_diff.set_title("tf_reconstructed_diff")
-        self.tf_reconstructed_diff.set_xticks([])
-        self.tf_reconstructed_diff.set_yticks([])
 
     def save(self, filename):
         self.fig.savefig(filename)
