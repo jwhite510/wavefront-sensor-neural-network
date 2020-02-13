@@ -329,7 +329,7 @@ def make_dataset(filename, N, samples):
             object_phase *= 1/phase_norm_factor  # now its between -1 and 1
             object_phase += 1 # not its between 0 and 2
             object_phase *= (1/2) # between 0 and 1
-            plot_thing(object_phase, 101, "object_phase label")
+            # plot_thing(object_phase, 101, "object_phase label")
 
 
             diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))

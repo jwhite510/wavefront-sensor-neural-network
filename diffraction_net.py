@@ -410,6 +410,7 @@ class DiffractionNet():
         object_amplitude_samples = _data["object_amplitude_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         object_phase_samples = _data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         diffraction_samples = _data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+        phase_scalar_samples = _data["phase_scalar_samples"].reshape(-1, 1)
 
         # plot the output
         amplitude_output = self.sess.run(self.nn_nodes["amplitude_out"], feed_dict={self.x:diffraction_samples})
@@ -420,10 +421,17 @@ class DiffractionNet():
         # check the output
         with open("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/samples.p", "wb") as file:
             obj = {}
+            # network output
             obj["amplitude_output"] = amplitude_output
             obj["phase_output"] = phase_output
+            obj["phase_scalar_output"] = phase_scalar_output
             obj["tf_reconstructed_diff"] = tf_reconstructed_diff
+
+            # training data
+            obj["object_amplitude_samples"] = object_amplitude_samples
+            obj["object_phase_samples"] = object_phase_samples
             obj["diffraction_samples"] = diffraction_samples
+            obj["phase_scalar_samples"] = phase_scalar_samples
             pickle.dump(obj, file)
 
 
