@@ -1,16 +1,27 @@
 #!/bin/bash
 
-dest_dir=$HOME/Documents/AHGNKL_run/
+dest_dir=$HOME/Documents/14_2_20_results/
 declare -a run_names=(
-"AHGNKL_withphasesubtraction1"
-"AHGNKL_withphasesubtraction2"
-"AHGNKL_withOUTphasesubtraction1"
-"AHGNKL_withOUTphasesubtraction2"
-"AHGNKL_withphasesubtraction_increaseradius1"
-"AHGNKL_withphasesubtraction_increaseradius2"
+"GHKWL_wavefrontsensor_with_phasesubtraction_gaussian1"
+"GHKWL_wavefrontsensor_with_phasesubtraction_gaussian2"
+"UIBKJBL_scalar_phase_withphasesubtract1"
+"UIBKJBL_scalar_phase_withphasesubtract2"
 )
 for run_name in "${run_names[@]}"
 do
+	# delete the older tf events files if there are more than one
+	items=($(ls -1v ~/ara_data/runs/tensorboard_graph/$run_name/events*))
+	if ((${#items[@]} > 1))
+	then
+		# iterate through items
+		for i in `seq 0 $((${#items[@]}-2))`
+		do
+			# echo $i
+			rm ${items[$i]}
+		done
+	fi
+
+
 	python makeplots.py ~/ara_data/runs/tensorboard_graph/$run_name/
 	mkdir $dest_dir
 	mkdir $dest_dir$run_name/
@@ -24,8 +35,8 @@ do
 	# convert string with whitespace to an array
 	arr=($photo_folders)
 
-	mkdir $dest_dir$run_name/pictures/${arr[-2]}
-	cp -r ~/ara_data/runs/nn_pictures/$run_name\_pictures/${arr[-2]}/* $dest_dir$run_name/pictures/${arr[-2]}
+	mkdir $dest_dir$run_name/pictures/${arr[-1]}
+	cp -r ~/ara_data/runs/nn_pictures/$run_name\_pictures/${arr[-1]}/* $dest_dir$run_name/pictures/${arr[-1]}
 
 done
 
