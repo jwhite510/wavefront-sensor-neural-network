@@ -141,7 +141,7 @@ def make_wavefront_sensor_image(N):
     # zernike_phase *= 1 / np.max(np.abs(nonzero_amplitude*zernike_phase)) # this is between -1 and 1 (random)
     # zernike_phase*=np.pi
     # plot_zeros(zernike_phase)
-    zernike_phase-=np.min(zernike_phase)
+    zernike_phase-=np.min(zernike_phase*nonzero_amplitude)
     zernike_phase*=nonzero_amplitude
 
     # multiply the amplitude mask by a random gaussian
