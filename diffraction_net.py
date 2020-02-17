@@ -250,7 +250,10 @@ class DiffractionNet():
         _nodes["batch_norm18"] = tf.keras.layers.BatchNormalization()(_nodes["conv_t17"])
 
         _nodes["amplitude_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm18"])
-        _nodes["phase_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm18"])
+        _nodes["phase_out_raw"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm18"])
+
+        # normalize the output from 0 to 1
+        _nodes["phase_out"] = _nodes["phase_out_raw"] / tf.reduce_max(_nodes["phase_out_raw"], keepdims=True, axis=[1,2])
 
         # split layer from encoded layer to get the phase factor output
         phase_factor_1 = tf.keras.layers.Conv2D(filters=4, kernel_size=4, padding='SAME', strides=1)(_nodes['batch_norm11'])
@@ -418,12 +421,18 @@ class DiffractionNet():
         phase_scalar_output = self.sess.run(self.nn_nodes["phase_scalar_out"], feed_dict={self.x:diffraction_samples})
         tf_reconstructed_diff = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:diffraction_samples})
 
+        # test
+        #TODO delete this
+        phase_out_raw = self.sess.run(self.nn_nodes["phase_out_raw"], feed_dict={self.x:diffraction_samples})
+
+
         # check the output
         with open("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/samples.p", "wb") as file:
             obj = {}
             # network output
             obj["amplitude_output"] = amplitude_output
             obj["phase_output"] = phase_output
+            obj["phase_out_raw"] = phase_out_raw
             obj["phase_scalar_output"] = phase_scalar_output
             obj["tf_reconstructed_diff"] = tf_reconstructed_diff
 

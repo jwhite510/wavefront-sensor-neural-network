@@ -134,13 +134,14 @@ def make_wavefront_sensor_image(N):
         zernike_phase += zernike_coef_phase
 
     # subtract phase at center
-    zernike_phase -= zernike_phase[int(N/2), int(N/2)] # subtract phase at center
+    # zernike_phase -= zernike_phase[int(N/2), int(N/2)] # subtract phase at center
     # normalize the zernike phase
     nonzero_amplitude = np.zeros_like(amplitude)
     nonzero_amplitude[amplitude>0.001] = 1
     # zernike_phase *= 1 / np.max(np.abs(nonzero_amplitude*zernike_phase)) # this is between -1 and 1 (random)
-    zernike_phase*=np.pi
+    # zernike_phase*=np.pi
     # plot_zeros(zernike_phase)
+    zernike_phase-=np.min(zernike_phase)
     zernike_phase*=nonzero_amplitude
 
     # multiply the amplitude mask by a random gaussian
@@ -269,6 +270,7 @@ def make_dataset(filename, N, samples):
             # plot_thing(object_amplitude, 2, "object_amplitude")
 
             object_phase, object_amplitude = make_wavefront_sensor_image(N)
+            # phase between 0 and some large number
 
             # plot_thing(object_phase, 3, "object_phase")
             # plot_thing(object_amplitude, 4, "object_amplitude")
@@ -325,12 +327,9 @@ def make_dataset(filename, N, samples):
 
 
             # translate it to label
-            phase_norm_factor = np.max(np.abs(object_phase))
-            object_phase *= 1/phase_norm_factor  # now its between -1 and 1
-            object_phase += 1 # not its between 0 and 2
-            object_phase *= (1/2) # between 0 and 1
+            phase_norm_factor = np.max(np.abs(object_phase)) # object_phase is positive only
+            object_phase *= 1/phase_norm_factor  # now its between 0 and 1
             # plot_thing(object_phase, 101, "object_phase label")
-
 
             diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))
             # absolute value
