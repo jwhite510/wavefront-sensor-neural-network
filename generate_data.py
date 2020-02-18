@@ -107,86 +107,106 @@ def make_wavefront_sensor_image(N, amplitude_mask):
             # (-3,3), # zero at center
             # (-1,3),
             # (1,3),
-            # (3,3), # zero at center
+            (3,3), # zero at center
             # (4,4)
             ]
-    zernike_phase = np.zeros((N,N))
-    for z_coefs in zernike_coefficients:
-        # plot_zernike(N, z_coefs[0], z_coefs[1])
-        zernike_coef_phase = -1*diffraction_functions.zernike_polynomial(N,z_coefs[0],z_coefs[1])
-        # zernike_coef_phase -= zernike_coef_phase[int(N/2), int(N/2)]
-        zernike_phase += zernike_coef_phase
 
-    # subtract phase at center
-    # zernike_phase -= zernike_phase[int(N/2), int(N/2)] # subtract phase at center
-    # normalize the zernike phase
 
-    nonzero_amplitude = np.zeros_like(amplitude_mask)
-    nonzero_amplitude[amplitude_mask>0.001] = 1
+    # scalef = 1
+    fig1 = None
+    fig2 = None
+    for scalef in np.linspace(0.5, 2.0, 40):
+        zernike_phase = np.zeros((N,N))
+        for z_coefs in zernike_coefficients:
+            # plot_zernike(N, z_coefs[0], z_coefs[1])
+            zernike_coef_phase, z_radius = diffraction_functions.zernike_polynomial(N,z_coefs[0],z_coefs[1], scalef)
+            zernike_coef_phase*=-1
+            # zernike_coef_phase -= zernike_coef_phase[int(N/2), int(N/2)]
+            zernike_phase += zernike_coef_phase
 
-    # zernike_phase *= 1 / np.max(np.abs(nonzero_amplitude*zernike_phase)) # this is between -1 and 1 (random)
-    # zernike_phase*=np.pi
-    # plot_zeros(zernike_phase)
+        # subtract phase at center
+        # zernike_phase -= zernike_phase[int(N/2), int(N/2)] # subtract phase at center
+        # normalize the zernike phase
 
-    # subtract phase from zernike_phase
-    zernike_phase-=np.min(zernike_phase*nonzero_amplitude)
-    # zernike_phase*=nonzero_amplitude
+        nonzero_amplitude = np.zeros_like(amplitude_mask)
+        nonzero_amplitude[amplitude_mask>0.001] = 1
 
-    # multiply the amplitude mask by a random gaussian
-    print("N =>", N)
+        # zernike_phase *= 1 / np.max(np.abs(nonzero_amplitude*zernike_phase)) # this is between -1 and 1 (random)
+        # zernike_phase*=np.pi
+        # plot_zeros(zernike_phase)
 
-    x = np.linspace(-1,1,N).reshape(-1,1)
-    y = np.linspace(-1,1,N).reshape(1,-1)
+        # subtract phase from zernike_phase
+        # zernike_phase-=np.min(zernike_phase*nonzero_amplitude)
+        # zernike_phase*=nonzero_amplitude
 
-    dx = x[1,0] - x[0,0]
-    dy = y[0,1] - y[0,0]
+        # multiply the amplitude mask by a random gaussian
+        print("N =>", N)
 
-    w_x = 0.01
-    w_y = 0.01
-    s_x = 0 + (dx)*0.5 # so the linear phase is 0
-    s_y = 0 + (dy)*0.5 # so the linear phase is 0
+        x = np.linspace(-1,1,N).reshape(-1,1)
+        y = np.linspace(-1,1,N).reshape(1,-1)
 
-    # random gaussian
-    z = np.exp((-(x-s_x)**2)/w_x) * np.exp((-(y-s_y)**2)/w_y)
+        dx = x[1,0] - x[0,0]
+        dy = y[0,1] - y[0,0]
 
-    z_compex = z*np.exp(1j*zernike_phase)
+        w_x = 0.01 *scalef
+        w_y = 0.01 *scalef
+        s_x = 0 + (dx)*0.5 # so the linear phase is 0
+        s_y = 0 + (dy)*0.5 # so the linear phase is 0
 
-    def plot_complex(title, complex_array, num):
-        assert isinstance(title, str)
-        assert isinstance(complex_array, np.ndarray)
-        # plt.figure(num)
-        # plt.clf()
-        fig, ax = plt.subplots(1,4, figsize=(15,5), num=num)
-        fig.text(0.5, 0.90,title, ha="center", size=30)
-        im = ax[0].imshow(np.abs(complex_array))
-        ax[0].set_title("abs")
-        fig.colorbar(im, ax=ax[0])
-        im = ax[1].imshow(np.real(complex_array))
-        ax[1].set_title("real")
-        fig.colorbar(im, ax=ax[1])
-        im = ax[2].imshow(np.imag(complex_array))
-        ax[2].set_title("imag")
-        fig.colorbar(im, ax=ax[2])
-        unwrapped_phase = unwrap_phase(np.angle(complex_array))
-        # unwrapped_phase[np.abs(complex_array)<0.01] = 0
-        im = ax[3].imshow(unwrapped_phase)
-        ax[3].set_title("angle")
-        fig.colorbar(im, ax=ax[3])
+        # random gaussian
+        z = np.exp((-(x-s_x)**2)/w_x) * np.exp((-(y-s_y)**2)/w_y)
 
-    # plot_zernike(N, 1,3)
-    # plt.show()
-    # exit()
-    plot_complex("Before FT", z_compex, 1)
-    prop = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(z_compex)))
-    plot_complex("After FT", prop, 2)
+        z_compex = z*np.exp(1j*zernike_phase)
 
-    masked_prop = amplitude_mask*prop
-    masked_prop = np.abs(masked_prop)
-    masked_prop *= 1/(np.max(masked_prop))
+        def plot_complex(title, complex_array, num, plot_z_radius=False):
+            assert isinstance(title, str)
+            assert isinstance(complex_array, np.ndarray)
+            # plt.figure(num)
+            # plt.clf()
+            fig, ax = plt.subplots(1,4, figsize=(15,5), num=num)
+            fig.figsize = (15,5)
+            fig.text(0.5, 0.90,title, ha="center", size=30)
+            im = ax[0].imshow(np.abs(complex_array))
+            ax[0].set_title("abs")
+            fig.colorbar(im, ax=ax[0])
+            im = ax[1].imshow(np.real(complex_array))
+            ax[1].set_title("real")
+            fig.colorbar(im, ax=ax[1])
+            im = ax[2].imshow(np.imag(complex_array))
+            ax[2].set_title("imag")
+            fig.colorbar(im, ax=ax[2])
+            unwrapped_phase = unwrap_phase(np.angle(complex_array))
+            # unwrapped_phase[np.abs(complex_array)<0.01] = 0
 
-    nonzero_phase = nonzero_amplitude*zernike_phase
+            if plot_z_radius:
+                unwrapped_phase[z_radius>1] = unwrapped_phase[int(N/2), int(N/2)]
 
-    plt.show()
+            im = ax[3].imshow(unwrapped_phase)
+            ax[3].set_title("angle")
+            fig.colorbar(im, ax=ax[3])
+            return fig
+
+        # plot_zernike(N, 1,3)
+        # plt.show()
+        # exit()
+
+        if fig1 is not None:
+            fig1.clf()
+        fig1 = plot_complex("Before FT {0:.5g}".format(scalef), z_compex, 1, plot_z_radius=True)
+
+        prop = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(z_compex)))
+
+        if fig2 is not None:
+            fig2.clf()
+        fig2 = plot_complex("After FT {0:.5g}".format(scalef), prop, 2)
+
+        masked_prop = amplitude_mask*prop
+        masked_prop = np.abs(masked_prop)
+        masked_prop *= 1/(np.max(masked_prop))
+
+        nonzero_phase = nonzero_amplitude*zernike_phase
+
+        plt.pause(0.1)
     exit()
 
     return nonzero_phase, masked_prop

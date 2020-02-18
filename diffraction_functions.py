@@ -30,7 +30,7 @@ def rescale_image(image, scale):
     return image
 
 
-def zernike_polynomial(N, m, n):
+def zernike_polynomial(N, m, n, scalef):
 
     if m >= 0:
         even = True
@@ -43,7 +43,7 @@ def zernike_polynomial(N, m, n):
     assert float((n-m)/2) - int((n-m)/2) == 0
 
     # make axes of rho and phi
-    scale = 10.0
+    scale = 10.0/scalef
     x = np.linspace(-1*scale,1*scale,N).reshape(1,-1)
     y = np.linspace(-1*scale,1*scale,N).reshape(-1,1)
 
@@ -79,7 +79,7 @@ def zernike_polynomial(N, m, n):
     # Z[r>1] = 0
 
 
-    return Z
+    return Z, r
 
 
 
