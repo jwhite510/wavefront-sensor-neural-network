@@ -43,8 +43,9 @@ def zernike_polynomial(N, m, n):
     assert float((n-m)/2) - int((n-m)/2) == 0
 
     # make axes of rho and phi
-    x = np.linspace(-1,1,N).reshape(1,-1)
-    y = np.linspace(-1,1,N).reshape(-1,1)
+    scale = 10.0
+    x = np.linspace(-1*scale,1*scale,N).reshape(1,-1)
+    y = np.linspace(-1*scale,1*scale,N).reshape(-1,1)
 
     rho = np.sqrt(x**2 + y**2)
     rho = np.expand_dims(rho, axis=2)
@@ -69,6 +70,14 @@ def zernike_polynomial(N, m, n):
         Z = R*np.cos(m*phi)
     else:
         Z = R*np.sin(m*phi)
+
+    # for checking the sampling
+    # the -1 <-> 1 range of the zernike polynomial should be approximately the width of the
+    # not propagated pulse
+    # use this to set scale
+    r = np.sqrt(x**2 + y**2)
+    # Z[r>1] = 0
+
 
     return Z
 

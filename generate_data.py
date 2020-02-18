@@ -3,6 +3,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import tables
 import diffraction_functions
+from skimage.restoration import unwrap_phase
 import os
 import random
 from PIL import Image
@@ -57,9 +58,7 @@ def print_debug_variables(debug_locals):
     print("")
 
 
-def make_wavefront_sensor_image(N):
-
-    assert N==128
+def make_wavefront_sensor_image(N, amplitude_mask):
 
     def plot_zernike(N,m,n):
         zernike = diffraction_functions.zernike_polynomial(N,m,n)
@@ -67,17 +66,17 @@ def make_wavefront_sensor_image(N):
         plt.imshow(zernike, cmap="jet")
         plt.title("m:"+str(m)+" n:"+str(n))
         plt.colorbar()
-        # value at center
-        zernike -= zernike[int(N/2), int(N/2)]
-        for i in range(np.shape(zernike)[0]):
-            for j in range(np.shape(zernike)[1]):
-                if zernike[i,j] < 0.01 and zernike[i,j] > -0.01:
-                    zernike[i,j] = 1.0
+        # # value at center
+        # zernike -= zernike[int(N/2), int(N/2)]
+        # for i in range(np.shape(zernike)[0]):
+            # for j in range(np.shape(zernike)[1]):
+                # if zernike[i,j] < 0.01 and zernike[i,j] > -0.01:
+                    # zernike[i,j] = 1.0
 
-        plt.figure()
-        plt.imshow(zernike, cmap="jet")
-        plt.colorbar()
-        plt.title("m:"+str(m)+" n:"+str(n))
+        # plt.figure()
+        # plt.imshow(zernike, cmap="jet")
+        # plt.colorbar()
+        # plt.title("m:"+str(m)+" n:"+str(n))
 
     def plot_zeros(array):
         array = np.array(array)
@@ -96,74 +95,101 @@ def make_wavefront_sensor_image(N):
         plt.imshow(array, cmap="jet")
         plt.colorbar()
 
-    # get the png image for amplitude
-    im = Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")
-    im = PIL.ImageOps.invert(im)
-    im = im.resize((64,64))
-    amplitude = np.array(im.getdata(), dtype=np.uint8).reshape(im.size[0], im.size[1], -1)
-    amplitude = np.sum(amplitude, axis=2)
-
-    # pad the amplitude image with zeros
-    amplitude = np.concatenate((amplitude, np.zeros((64,32))), axis=1)
-    amplitude = np.concatenate((np.zeros((64,32)), amplitude), axis=1)
-    amplitude = np.concatenate((np.zeros((32,128)), amplitude), axis=0)
-    amplitude = np.concatenate((amplitude, np.zeros((32,128))), axis=0)
-    amplitude *= 1/np.max(amplitude) # normalize
-    # amplitude[amplitude>0.5] = 1
-    # concat 32
-
     zernike_coefficients = [
             #(m,n)
             # (1,1), # linear phase
             # (-1,1), # linear phase
 
-            (-2,2), # zero at center
-            (0,2), # not zero at center
-            (2,2), # zero at center
+            # (-2,2), # zero at center
+            # (0,2), # not zero at center
+            # (2,2), # zero at center
 
-            (-3,3), # zero at center
-            (-1,3),
-            (1,3),
-            (3,3), # zero at center
+            # (-3,3), # zero at center
+            # (-1,3),
+            # (1,3),
+            # (3,3), # zero at center
+            # (4,4)
             ]
     zernike_phase = np.zeros((N,N))
     for z_coefs in zernike_coefficients:
         # plot_zernike(N, z_coefs[0], z_coefs[1])
-        zernike_coef_phase = 5*np.random.rand()*diffraction_functions.zernike_polynomial(N,z_coefs[0],z_coefs[1])
+        zernike_coef_phase = -1*diffraction_functions.zernike_polynomial(N,z_coefs[0],z_coefs[1])
         # zernike_coef_phase -= zernike_coef_phase[int(N/2), int(N/2)]
         zernike_phase += zernike_coef_phase
 
     # subtract phase at center
     # zernike_phase -= zernike_phase[int(N/2), int(N/2)] # subtract phase at center
     # normalize the zernike phase
-    nonzero_amplitude = np.zeros_like(amplitude)
-    nonzero_amplitude[amplitude>0.001] = 1
+
+    nonzero_amplitude = np.zeros_like(amplitude_mask)
+    nonzero_amplitude[amplitude_mask>0.001] = 1
+
     # zernike_phase *= 1 / np.max(np.abs(nonzero_amplitude*zernike_phase)) # this is between -1 and 1 (random)
     # zernike_phase*=np.pi
     # plot_zeros(zernike_phase)
+
+    # subtract phase from zernike_phase
     zernike_phase-=np.min(zernike_phase*nonzero_amplitude)
-    zernike_phase*=nonzero_amplitude
+    # zernike_phase*=nonzero_amplitude
 
     # multiply the amplitude mask by a random gaussian
-    x = np.linspace(-1,1,N).reshape(1,-1)
-    y = np.linspace(-1,1,N).reshape(-1,1)
-    w_x = 0.01 + (1.0 - 0.01)*np.random.rand()
-    w_y = 0.01 + (1.0 - 0.01)*np.random.rand()
-    s_x = -0.3 + (0.3 + 0.3)*np.random.rand()
-    s_y = -0.3 + (0.3 + 0.3)*np.random.rand()
+    print("N =>", N)
+
+    x = np.linspace(-1,1,N).reshape(-1,1)
+    y = np.linspace(-1,1,N).reshape(1,-1)
+
+    dx = x[1,0] - x[0,0]
+    dy = y[0,1] - y[0,0]
+
+    w_x = 0.01
+    w_y = 0.01
+    s_x = 0 + (dx)*0.5 # so the linear phase is 0
+    s_y = 0 + (dy)*0.5 # so the linear phase is 0
+
     # random gaussian
     z = np.exp((-(x-s_x)**2)/w_x) * np.exp((-(y-s_y)**2)/w_y)
-    amplitude*=z
 
-    # plt.figure()
-    # plt.imshow(zernike_phase)
-    # print("np.min(zernike_phase) =>", np.min(zernike_phase))
-    # print("np.max(zernike_phase) =>", np.max(zernike_phase))
-    # plt.colorbar()
+    z_compex = z*np.exp(1j*zernike_phase)
+
+    def plot_complex(title, complex_array, num):
+        assert isinstance(title, str)
+        assert isinstance(complex_array, np.ndarray)
+        # plt.figure(num)
+        # plt.clf()
+        fig, ax = plt.subplots(1,4, figsize=(15,5), num=num)
+        fig.text(0.5, 0.90,title, ha="center", size=30)
+        im = ax[0].imshow(np.abs(complex_array))
+        ax[0].set_title("abs")
+        fig.colorbar(im, ax=ax[0])
+        im = ax[1].imshow(np.real(complex_array))
+        ax[1].set_title("real")
+        fig.colorbar(im, ax=ax[1])
+        im = ax[2].imshow(np.imag(complex_array))
+        ax[2].set_title("imag")
+        fig.colorbar(im, ax=ax[2])
+        unwrapped_phase = unwrap_phase(np.angle(complex_array))
+        # unwrapped_phase[np.abs(complex_array)<0.01] = 0
+        im = ax[3].imshow(unwrapped_phase)
+        ax[3].set_title("angle")
+        fig.colorbar(im, ax=ax[3])
+
+    # plot_zernike(N, 1,3)
     # plt.show()
     # exit()
+    plot_complex("Before FT", z_compex, 1)
+    prop = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(z_compex)))
+    plot_complex("After FT", prop, 2)
 
-    return zernike_phase, amplitude
+    masked_prop = amplitude_mask*prop
+    masked_prop = np.abs(masked_prop)
+    masked_prop *= 1/(np.max(masked_prop))
+
+    nonzero_phase = nonzero_amplitude*zernike_phase
+
+    plt.show()
+    exit()
+
+    return nonzero_phase, masked_prop
 
 def make_simulated_object(N, min_indexes, max_indexes):
 
@@ -245,6 +271,24 @@ def make_dataset(filename, N, samples):
         # save the dimmensions of the data
         hd5file.root.N.append(np.array([[N]]))
         # plt.ion()
+
+        N = 128
+        # N must be divisible by 4
+        assert N/4 == int(N/4)
+        # get the png image for amplitude
+        im = Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")
+        im = PIL.ImageOps.invert(im)
+        im = im.resize((int(N/2),int(N/2)))
+        amplitude_mask = np.array(im.getdata(), dtype=np.uint8).reshape(im.size[0], im.size[1], -1)
+        amplitude_mask = np.sum(amplitude_mask, axis=2)
+        # pad the amplitude image with zeros
+        amplitude_mask = np.concatenate((amplitude_mask, np.zeros((int(N/2),int(N/4)))), axis=1)
+        amplitude_mask = np.concatenate((np.zeros((int(N/2),int(N/4))), amplitude_mask), axis=1)
+        amplitude_mask = np.concatenate((np.zeros((int(N/4),N)), amplitude_mask), axis=0)
+        amplitude_mask = np.concatenate((amplitude_mask, np.zeros((int(N/4),N))), axis=0)
+        amplitude_mask *= 1/np.max(amplitude_mask) # normalize
+        # amplitude_mask[amplitude_mask>0.5] = 1
+        # concat 32
         for i in range(samples):
 
             if i % 100 == 0:
@@ -269,7 +313,8 @@ def make_dataset(filename, N, samples):
             # plot_thing(object_phase, 1, "object_phase")
             # plot_thing(object_amplitude, 2, "object_amplitude")
 
-            object_phase, object_amplitude = make_wavefront_sensor_image(N)
+            object_phase, object_amplitude = make_wavefront_sensor_image(N, amplitude_mask)
+            continue
             # phase between 0 and some large number
 
             # plot_thing(object_phase, 3, "object_phase")
