@@ -7,7 +7,23 @@ from skimage.restoration import unwrap_phase
 import os
 import random
 from PIL import Image
+import imageio
 import PIL.ImageOps
+
+def save_gif_image(figure1, figure2, gif_images):
+
+        # save image to a gif
+        figure1.canvas.draw()
+        figure2.canvas.draw()
+        image3 = np.frombuffer(figure2.canvas.tostring_rgb(), dtype='uint8')
+        image3  = image3.reshape(figure2.canvas.get_width_height()[::-1] + (3,))
+        image1 = np.frombuffer(figure1.canvas.tostring_rgb(), dtype='uint8')
+        image1  = image1.reshape(figure1.canvas.get_width_height()[::-1] + (3,))
+        both_images = np.concatenate((image1, image3), axis=0)
+        gif_images.append(both_images)
+
+        return gif_images
+
 
 def plot_sample(N, object_phase, object_amplitude, diffraction_pattern):
 
@@ -115,12 +131,18 @@ def make_wavefront_sensor_image(N, amplitude_mask):
     # scalef = 1
     fig1 = None
     fig2 = None
-    for scalef in np.linspace(0.5, 2.0, 40):
+    fig3 = None
+    zero_pad = 0
+    scalef = 6.5
+    gif_images = []
+    for scalef in np.linspace(1.0, 0.1, 40):
+    # for zero_pad in np.linspace(100,300,100):
+        # zero_pad = int(zero_pad)
         zernike_phase = np.zeros((N,N))
         for z_coefs in zernike_coefficients:
             # plot_zernike(N, z_coefs[0], z_coefs[1])
             zernike_coef_phase, z_radius = diffraction_functions.zernike_polynomial(N,z_coefs[0],z_coefs[1], scalef)
-            zernike_coef_phase*=-1
+            zernike_coef_phase*=1
             # zernike_coef_phase -= zernike_coef_phase[int(N/2), int(N/2)]
             zernike_phase += zernike_coef_phase
 
@@ -158,7 +180,20 @@ def make_wavefront_sensor_image(N, amplitude_mask):
 
         z_compex = z*np.exp(1j*zernike_phase)
 
-        def plot_complex(title, complex_array, num, plot_z_radius=False):
+        def plot_complex(title, complex_array, num, plot_z_radius=False, zoom_in=None):
+            """
+                zoom_in: a float specifying the fraction of the peak value of absolute value to set the limits
+            """
+
+            if zoom_in is not None:
+                axis_limit = np.max(np.abs(complex_array)) * zoom_in
+                i = int(np.shape(complex_array)[0] / 2)
+                j = i
+                di = None
+                while np.abs(complex_array)[i, j] > axis_limit:
+                    i+=5
+                    di = i - j
+
             assert isinstance(title, str)
             assert isinstance(complex_array, np.ndarray)
             # plt.figure(num)
@@ -169,13 +204,26 @@ def make_wavefront_sensor_image(N, amplitude_mask):
             im = ax[0].imshow(np.abs(complex_array))
             ax[0].set_title("abs")
             fig.colorbar(im, ax=ax[0])
+            if zoom_in is not None:
+                ax[0].set_xlim(j - di, j + di)
+                ax[0].set_ylim(j - di, j + di)
+
             im = ax[1].imshow(np.real(complex_array))
             ax[1].set_title("real")
             fig.colorbar(im, ax=ax[1])
+            if zoom_in is not None:
+                ax[1].set_xlim(j - di, j + di)
+                ax[1].set_ylim(j - di, j + di)
+
             im = ax[2].imshow(np.imag(complex_array))
             ax[2].set_title("imag")
             fig.colorbar(im, ax=ax[2])
-            unwrapped_phase = unwrap_phase(np.angle(complex_array))
+            if zoom_in is not None:
+                ax[2].set_xlim(j - di, j + di)
+                ax[2].set_ylim(j - di, j + di)
+
+            # unwrapped_phase = unwrap_phase(np.angle(complex_array))
+            unwrapped_phase = np.angle(complex_array)
             # unwrapped_phase[np.abs(complex_array)<0.01] = 0
 
             if plot_z_radius:
@@ -184,6 +232,10 @@ def make_wavefront_sensor_image(N, amplitude_mask):
             im = ax[3].imshow(unwrapped_phase)
             ax[3].set_title("angle")
             fig.colorbar(im, ax=ax[3])
+            if zoom_in is not None:
+                ax[3].set_xlim(j - di, j + di)
+                ax[3].set_ylim(j - di, j + di)
+
             return fig
 
         # plot_zernike(N, 1,3)
@@ -192,21 +244,25 @@ def make_wavefront_sensor_image(N, amplitude_mask):
 
         if fig1 is not None:
             fig1.clf()
-        fig1 = plot_complex("Before FT {0:.5g}".format(scalef), z_compex, 1, plot_z_radius=True)
+        fig1 = plot_complex("Before FT {0:.5g}".format(scalef), z_compex, 1, zoom_in=0.2)
+
+        # zero pad z_compex
+        z_compex = np.pad(z_compex, pad_width=zero_pad, mode="constant")
+
+        # if fig2 is not None:
+            # fig2.clf()
+        # fig2 = plot_complex("PADDED, Before FT {0:.5g}".format(scalef), z_compex, 2)
 
         prop = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(z_compex)))
 
-        if fig2 is not None:
-            fig2.clf()
-        fig2 = plot_complex("After FT {0:.5g}".format(scalef), prop, 2)
+        if fig3 is not None:
+            fig3.clf()
+        fig3 = plot_complex("After FT {0:.5g}".format(scalef), prop, 3, zoom_in=0.2)
 
-        masked_prop = amplitude_mask*prop
-        masked_prop = np.abs(masked_prop)
-        masked_prop *= 1/(np.max(masked_prop))
+        gif_images = save_gif_image(fig1, fig3, gif_images)
+        print("saving image {}".format(str(scalef)))
 
-        nonzero_phase = nonzero_amplitude*zernike_phase
-
-        plt.pause(0.1)
+    imageio.mimsave('./animationN1024.gif', gif_images, fps=5)
     exit()
 
     return nonzero_phase, masked_prop
@@ -333,6 +389,7 @@ def make_dataset(filename, N, samples):
             # plot_thing(object_phase, 1, "object_phase")
             # plot_thing(object_amplitude, 2, "object_amplitude")
 
+            N = 1024
             object_phase, object_amplitude = make_wavefront_sensor_image(N, amplitude_mask)
             continue
             # phase between 0 and some large number
