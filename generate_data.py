@@ -123,8 +123,12 @@ def make_wavefront_sensor_image(N, amplitude_mask):
             # (-3,3), # zero at center
             # (-1,3),
             # (1,3),
-            (3,3), # zero at center
-            # (4,4)
+            # (3,3), # zero at center
+            # (-4,4)
+            # (-2,4)
+            # (0,4)
+            # (2,4)
+            (4,4)
             ]
 
 
@@ -135,8 +139,9 @@ def make_wavefront_sensor_image(N, amplitude_mask):
     zero_pad = 0
     scalef = 6.5
     gif_images = []
-    for scalef in np.linspace(1.0, 0.1, 40):
+    for scalef in np.linspace(1.0, 0.01, 40):
     # for zero_pad in np.linspace(100,300,100):
+        # scalef = 3.0
         # zero_pad = int(zero_pad)
         zernike_phase = np.zeros((N,N))
         for z_coefs in zernike_coefficients:
@@ -170,13 +175,13 @@ def make_wavefront_sensor_image(N, amplitude_mask):
         dx = x[1,0] - x[0,0]
         dy = y[0,1] - y[0,0]
 
-        w_x = 0.01 *scalef
-        w_y = 0.01 *scalef
+        w_x = 0.1 *scalef
+        w_y = 0.1 *scalef
         s_x = 0 + (dx)*0.5 # so the linear phase is 0
         s_y = 0 + (dy)*0.5 # so the linear phase is 0
 
         # random gaussian
-        z = np.exp((-(x-s_x)**2)/w_x) * np.exp((-(y-s_y)**2)/w_y)
+        z = np.exp((-(x-s_x)**2)/w_x**2) * np.exp((-(y-s_y)**2)/w_y**2)
 
         z_compex = z*np.exp(1j*zernike_phase)
 
@@ -184,15 +189,18 @@ def make_wavefront_sensor_image(N, amplitude_mask):
             """
                 zoom_in: a float specifying the fraction of the peak value of absolute value to set the limits
             """
-
+            complex_array_intg = np.sum(np.abs(complex_array), axis=0)
             if zoom_in is not None:
-                axis_limit = np.max(np.abs(complex_array)) * zoom_in
-                i = int(np.shape(complex_array)[0] / 2)
+                axis_limit = np.max(complex_array_intg) * zoom_in
+                i = int(len(complex_array_intg) / 2)
                 j = i
                 di = None
-                while np.abs(complex_array)[i, j] > axis_limit:
-                    i+=5
+                while complex_array_intg[i] > axis_limit:
+                    i+=1
                     di = i - j
+
+                    if i > 1020:
+                        break
 
             assert isinstance(title, str)
             assert isinstance(complex_array, np.ndarray)
@@ -244,7 +252,7 @@ def make_wavefront_sensor_image(N, amplitude_mask):
 
         if fig1 is not None:
             fig1.clf()
-        fig1 = plot_complex("Before FT {0:.5g}".format(scalef), z_compex, 1, zoom_in=0.2)
+        fig1 = plot_complex("Before FT {0:.5g}".format(scalef), z_compex, 1, zoom_in=0.01)
 
         # zero pad z_compex
         z_compex = np.pad(z_compex, pad_width=zero_pad, mode="constant")
@@ -257,12 +265,12 @@ def make_wavefront_sensor_image(N, amplitude_mask):
 
         if fig3 is not None:
             fig3.clf()
-        fig3 = plot_complex("After FT {0:.5g}".format(scalef), prop, 3, zoom_in=0.2)
+        fig3 = plot_complex("After FT {0:.5g}".format(scalef), prop, 3, zoom_in=0.01)
 
         gif_images = save_gif_image(fig1, fig3, gif_images)
         print("saving image {}".format(str(scalef)))
 
-    imageio.mimsave('./animationN1024.gif', gif_images, fps=5)
+    imageio.mimsave('./animationN1024_4_4.gif', gif_images, fps=5)
     exit()
 
     return nonzero_phase, masked_prop
