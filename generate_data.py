@@ -392,10 +392,8 @@ def make_dataset(filename, N, samples):
             object_phase, object_amplitude = make_wavefront_sensor_image(N, N_zernike, amplitude_mask)
             # phase between 0 and some large number
 
-            plot_thing(object_phase, 3, "object_phase")
-            plot_thing(object_amplitude, 4, "object_amplitude")
-            plt.show()
-            exit()
+            # plot_thing(object_phase, 3, "object_phase")
+            # plot_thing(object_amplitude, 4, "object_amplitude")
 
             # object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/", scale=1.0)
             # plot_thing(object_phase, 4, "object_phase")
