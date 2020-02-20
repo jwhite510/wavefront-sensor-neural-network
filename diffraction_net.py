@@ -31,7 +31,7 @@ class GetData():
         samples["object_amplitude_samples"] = self.hdf5_file_train.root.object_amplitude[self.batch_index:self.batch_index + self.batch_size, :]
         samples["object_phase_samples"] = self.hdf5_file_train.root.object_phase[self.batch_index:self.batch_index + self.batch_size, :]
         samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction[self.batch_index:self.batch_index + self.batch_size, :]
-        samples["phase_scalar_samples"] = self.hdf5_file_train.root.phase_norm_factor[self.batch_index:self.batch_index + self.batch_size, :]
+        # samples["phase_scalar_samples"] = self.hdf5_file_train.root.phase_norm_factor[self.batch_index:self.batch_index + self.batch_size, :]
 
         self.batch_index += self.batch_size
 
@@ -42,7 +42,7 @@ class GetData():
         samples["object_amplitude_samples"] = self.hdf5_file_train.root.object_amplitude[:n_samples, :]
         samples["object_phase_samples"] = self.hdf5_file_train.root.object_phase[:n_samples, :]
         samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction[:n_samples, :]
-        samples["phase_scalar_samples"] = self.hdf5_file_train.root.phase_norm_factor[:n_samples, :]
+        # samples["phase_scalar_samples"] = self.hdf5_file_train.root.phase_norm_factor[:n_samples, :]
 
         return samples
 
@@ -51,7 +51,7 @@ class GetData():
         samples["object_amplitude_samples"] = self.hdf5_file_validation.root.object_amplitude[:n_samples, :]
         samples["object_phase_samples"] = self.hdf5_file_validation.root.object_phase[:n_samples, :]
         samples["diffraction_samples"] = self.hdf5_file_validation.root.diffraction[:n_samples, :]
-        samples["phase_scalar_samples"] = self.hdf5_file_train.root.phase_norm_factor[:n_samples, :]
+        # samples["phase_scalar_samples"] = self.hdf5_file_train.root.phase_norm_factor[:n_samples, :]
 
         return samples
 
@@ -72,7 +72,7 @@ class DiffractionNet():
         # self.x = tf.placeholder(tf.float32, shape=[None, 128 , 128, 1])
         # label
         self.phase_actual = tf.placeholder(tf.float32, shape=[None, self.get_data.N, self.get_data.N, 1])
-        self.phase_scalar_actual = tf.placeholder(tf.float32, shape=[None, 1])
+        # self.phase_scalar_actual = tf.placeholder(tf.float32, shape=[None, 1])
         self.amplitude_actual = tf.placeholder(tf.float32, shape=[None, self.get_data.N, self.get_data.N, 1])
 
         # amplitude retrieval network
@@ -89,7 +89,7 @@ class DiffractionNet():
         #####################
         self.nn_nodes["amplitude_loss"] = tf.losses.mean_squared_error(labels=self.amplitude_actual, predictions=self.nn_nodes["amplitude_out"])
         self.nn_nodes["phase_loss"] = tf.losses.mean_squared_error(labels=self.phase_actual, predictions=self.nn_nodes["phase_out"])
-        self.nn_nodes["phase_norm_factor_loss"] = tf.losses.mean_squared_error(labels=self.phase_scalar_actual, predictions=self.nn_nodes["phase_scalar_out"])
+        # self.nn_nodes["phase_norm_factor_loss"] = tf.losses.mean_squared_error(labels=self.phase_scalar_actual, predictions=self.nn_nodes["phase_scalar_out"])
 
         #####################
         # cross entropy loss
@@ -101,10 +101,11 @@ class DiffractionNet():
         # reconstruction loss
         #####################
         # self.nn_nodes["recons_loss"] = TODO
-        self.nn_nodes["recons_diffraction_pattern"] = diffraction_functions.tf_reconstruct_diffraction_pattern(amplitude_norm=self.nn_nodes["amplitude_out"], phase_norm=self.nn_nodes["phase_out"], scalar=self.nn_nodes["phase_scalar_out"])
+        self.nn_nodes["recons_diffraction_pattern"] = diffraction_functions.tf_reconstruct_diffraction_pattern(amplitude_norm=self.nn_nodes["amplitude_out"], phase_norm=self.nn_nodes["phase_out"])
         self.nn_nodes["reconstruction_loss"] = tf.losses.mean_squared_error(labels=self.x, predictions=self.nn_nodes["recons_diffraction_pattern"])
 
-        self.nn_nodes["cost_function"] = self.nn_nodes["amplitude_loss"] + self.nn_nodes["phase_loss"] + self.nn_nodes["reconstruction_loss"] + self.nn_nodes["phase_norm_factor_loss"]
+        self.nn_nodes["cost_function"] = self.nn_nodes["amplitude_loss"] + self.nn_nodes["phase_loss"] + self.nn_nodes["reconstruction_loss"]
+        # + self.nn_nodes["phase_norm_factor_loss"]
 
         optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
         self.nn_nodes["train"] = optimizer.minimize(self.nn_nodes["cost_function"])
@@ -250,23 +251,23 @@ class DiffractionNet():
         _nodes["batch_norm18"] = tf.keras.layers.BatchNormalization()(_nodes["conv_t17"])
 
         _nodes["amplitude_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm18"])
-        _nodes["phase_out_raw"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm18"])
+        _nodes["phase_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm18"])
 
-        # normalize the output from 0 to 1
-        _nodes["phase_out"] = _nodes["phase_out_raw"] / tf.reduce_max(_nodes["phase_out_raw"], keepdims=True, axis=[1,2])
+        # # normalize the output from 0 to 1
+        # _nodes["phase_out"] = _nodes["phase_out_raw"] / tf.reduce_max(_nodes["phase_out_raw"], keepdims=True, axis=[1,2])
 
-        # split layer from encoded layer to get the phase factor output
-        phase_factor_1 = tf.keras.layers.Conv2D(filters=4, kernel_size=4, padding='SAME', strides=1)(_nodes['batch_norm11'])
-        phase_scalar_flattened = tf.keras.layers.Flatten()(phase_factor_1)
-        _nodes["phase_scalar_out"] = tf.keras.layers.Dense(1, activation="relu", use_bias=1)(phase_scalar_flattened)
+        # # split layer from encoded layer to get the phase factor output
+        # phase_factor_1 = tf.keras.layers.Conv2D(filters=4, kernel_size=4, padding='SAME', strides=1)(_nodes['batch_norm11'])
+        # phase_scalar_flattened = tf.keras.layers.Flatten()(phase_factor_1)
+        # _nodes["phase_scalar_out"] = tf.keras.layers.Dense(1, activation="relu", use_bias=1)(phase_scalar_flattened)
 
     def setup_logging(self):
         self.tf_loggers["amplitude_loss_training"] = tf.summary.scalar("amplitude_loss_training", self.nn_nodes["amplitude_loss"])
         self.tf_loggers["amplitude_loss_validation"] = tf.summary.scalar("amplitude_loss_validation", self.nn_nodes["amplitude_loss"])
         self.tf_loggers["phase_loss_training"] = tf.summary.scalar("phase_loss_training", self.nn_nodes["phase_loss"])
         self.tf_loggers["phase_loss_validation"] = tf.summary.scalar("phase_loss_validation", self.nn_nodes["phase_loss"])
-        self.tf_loggers["phase_norm_factor_loss_training"] = tf.summary.scalar("phase_norm_factor_loss_training", self.nn_nodes["phase_norm_factor_loss"])
-        self.tf_loggers["phase_norm_factor_loss_validation"] = tf.summary.scalar("phase_norm_factor_loss_validation", self.nn_nodes["phase_norm_factor_loss"])
+        # self.tf_loggers["phase_norm_factor_loss_training"] = tf.summary.scalar("phase_norm_factor_loss_training", self.nn_nodes["phase_norm_factor_loss"])
+        # self.tf_loggers["phase_norm_factor_loss_validation"] = tf.summary.scalar("phase_norm_factor_loss_validation", self.nn_nodes["phase_norm_factor_loss"])
         self.tf_loggers["reconstruction_loss_training"] = tf.summary.scalar("reconstruction_loss_training", self.nn_nodes["reconstruction_loss"])
         self.tf_loggers["reconstruction_loss_validation"] = tf.summary.scalar("reconstruction_loss_validation", self.nn_nodes["reconstruction_loss"])
 
@@ -285,14 +286,14 @@ class DiffractionNet():
                 # run training iteration
                 object_amplitude_samples = data["object_amplitude_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
                 object_phase_samples = data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-                phase_scalar_samples = data["phase_scalar_samples"].reshape(-1, 1)
+                # phase_scalar_samples = data["phase_scalar_samples"].reshape(-1, 1)
                 diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
 
                 # train network
                 self.sess.run(self.nn_nodes["train"], feed_dict={self.x:diffraction_samples,
                                                     self.amplitude_actual:object_amplitude_samples,
                                                     self.phase_actual:object_phase_samples,
-                                                    self.phase_scalar_actual:phase_scalar_samples,
+                                                    # self.phase_scalar_actual:phase_scalar_samples,
                                                     self.s_LR:0.0001})
 
             print("add_tensorboard_values")
@@ -333,7 +334,7 @@ class DiffractionNet():
         object_amplitude_samples = data["object_amplitude_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         object_phase_samples = data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-        phase_scalar_samples = data["phase_scalar_samples"].reshape(-1, 1)
+        # phase_scalar_samples = data["phase_scalar_samples"].reshape(-1, 1)
 
         # amplitude loss
         loss_value = self.sess.run(self.nn_nodes["amplitude_loss"], feed_dict={self.x:diffraction_samples, self.amplitude_actual:object_amplitude_samples})
@@ -353,7 +354,7 @@ class DiffractionNet():
         self.writer.add_summary(summ, global_step=self.epoch)
 
         # phase scalar
-        summ = self.sess.run(self.tf_loggers["phase_norm_factor_loss_training"], feed_dict={self.x:diffraction_samples, self.phase_scalar_actual:phase_scalar_samples})
+        # summ = self.sess.run(self.tf_loggers["phase_norm_factor_loss_training"], feed_dict={self.x:diffraction_samples, self.phase_scalar_actual:phase_scalar_samples})
         self.writer.add_summary(summ, global_step=self.epoch)
 
         # reconstruction
@@ -368,7 +369,7 @@ class DiffractionNet():
         object_amplitude_samples = data["object_amplitude_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         object_phase_samples = data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-        phase_scalar_samples = data["phase_scalar_samples"].reshape(-1, 1)
+        # phase_scalar_samples = data["phase_scalar_samples"].reshape(-1, 1)
 
         # amplitude loss
         loss_value = self.sess.run(self.nn_nodes["amplitude_loss"], feed_dict={self.x:diffraction_samples, self.amplitude_actual:object_amplitude_samples})
@@ -385,7 +386,7 @@ class DiffractionNet():
         summ = self.sess.run(self.tf_loggers["phase_loss_validation"], feed_dict={self.x:diffraction_samples, self.phase_actual:object_phase_samples})
         self.writer.add_summary(summ, global_step=self.epoch)
 
-        summ = self.sess.run(self.tf_loggers["phase_norm_factor_loss_validation"], feed_dict={self.x:diffraction_samples, self.phase_scalar_actual:phase_scalar_samples})
+        # summ = self.sess.run(self.tf_loggers["phase_norm_factor_loss_validation"], feed_dict={self.x:diffraction_samples, self.phase_scalar_actual:phase_scalar_samples})
         self.writer.add_summary(summ, global_step=self.epoch)
 
         # reconstruction
@@ -413,17 +414,17 @@ class DiffractionNet():
         object_amplitude_samples = _data["object_amplitude_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         object_phase_samples = _data["object_phase_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         diffraction_samples = _data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-        phase_scalar_samples = _data["phase_scalar_samples"].reshape(-1, 1)
+        # phase_scalar_samples = _data["phase_scalar_samples"].reshape(-1, 1)
 
         # plot the output
         amplitude_output = self.sess.run(self.nn_nodes["amplitude_out"], feed_dict={self.x:diffraction_samples})
         phase_output = self.sess.run(self.nn_nodes["phase_out"], feed_dict={self.x:diffraction_samples})
-        phase_scalar_output = self.sess.run(self.nn_nodes["phase_scalar_out"], feed_dict={self.x:diffraction_samples})
+        # phase_scalar_output = self.sess.run(self.nn_nodes["phase_scalar_out"], feed_dict={self.x:diffraction_samples})
         tf_reconstructed_diff = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:diffraction_samples})
 
         # test
         #TODO delete this
-        phase_out_raw = self.sess.run(self.nn_nodes["phase_out_raw"], feed_dict={self.x:diffraction_samples})
+        # phase_out_raw = self.sess.run(self.nn_nodes["phase_out_raw"], feed_dict={self.x:diffraction_samples})
 
 
         # check the output
@@ -432,15 +433,15 @@ class DiffractionNet():
             # network output
             obj["amplitude_output"] = amplitude_output
             obj["phase_output"] = phase_output
-            obj["phase_out_raw"] = phase_out_raw
-            obj["phase_scalar_output"] = phase_scalar_output
+            # obj["phase_out_raw"] = phase_out_raw
+            # obj["phase_scalar_output"] = phase_scalar_output
             obj["tf_reconstructed_diff"] = tf_reconstructed_diff
 
             # training data
             obj["object_amplitude_samples"] = object_amplitude_samples
             obj["object_phase_samples"] = object_phase_samples
             obj["diffraction_samples"] = diffraction_samples
-            obj["phase_scalar_samples"] = phase_scalar_samples
+            # obj["phase_scalar_samples"] = phase_scalar_samples
             pickle.dump(obj, file)
 
 
@@ -455,10 +456,10 @@ class DiffractionNet():
             axes_obj.amplitude_output.pcolormesh(amplitude_output[index,:,:,0])
 
             axes_obj.object_phase_samples.pcolormesh(object_phase_samples[index,:,:,0])
-            axes_obj.object_phase_samples.text(0.9, 0.9,"Phase Scalar: {0:.5g}".format(phase_scalar_samples[index, 0]), fontsize=10, ha='center', transform=axes_obj.object_phase_samples.transAxes, backgroundcolor="red")
+            # axes_obj.object_phase_samples.text(0.9, 0.9,"Phase Scalar: {0:.5g}".format(phase_scalar_samples[index, 0]), fontsize=10, ha='center', transform=axes_obj.object_phase_samples.transAxes, backgroundcolor="red")
 
             axes_obj.phase_output.pcolormesh(phase_output[index,:,:,0])
-            axes_obj.phase_output.text(0.9, 0.9,"Phase Scalar: {0:.5g}".format(phase_scalar_output[index, 0]), fontsize=10, ha='center', transform=axes_obj.phase_output.transAxes, backgroundcolor="red")
+            # axes_obj.phase_output.text(0.9, 0.9,"Phase Scalar: {0:.5g}".format(phase_scalar_output[index, 0]), fontsize=10, ha='center', transform=axes_obj.phase_output.transAxes, backgroundcolor="red")
 
             # reconstructed diffraction pattern
             # recons_diffraction = diffraction_functions.construct_diffraction_pattern(amplitude_output[index,:,:,0], phase_output[index,:,:,0], phase_scalar_output[index])

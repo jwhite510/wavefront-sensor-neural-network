@@ -125,7 +125,7 @@ def make_wavefront_sensor_image(N, N_zernike, amplitude_mask):
     # zernike_phase*=nonzero_amplitude
 
     # multiply the amplitude mask by a random gaussian
-    print("N_zernike =>", N_zernike)
+    # print("N_zernike =>", N_zernike)
 
     x = np.linspace(-1,1,N_zernike).reshape(-1,1)
     y = np.linspace(-1,1,N_zernike).reshape(1,-1)
@@ -331,7 +331,7 @@ def make_dataset(filename, N, samples):
         hdf5file.create_earray(hdf5file.root, "object_phase", tables.Float64Atom(), shape=(0,N*N))
 
         # create array for the object phase scalar
-        hdf5file.create_earray(hdf5file.root, "phase_norm_factor", tables.Float64Atom(), shape=(0,1))
+        # hdf5file.create_earray(hdf5file.root, "phase_norm_factor", tables.Float64Atom(), shape=(0,1))
 
         # create array for the image
         hdf5file.create_earray(hdf5file.root, "diffraction", tables.Float64Atom(), shape=(0,N*N))
@@ -446,9 +446,13 @@ def make_dataset(filename, N, samples):
             # plot_thing(object_phase, 99, "object_phase")
 
 
-            # translate it to label
-            phase_norm_factor = np.max(np.abs(object_phase)) # object_phase is positive only
-            object_phase *= 1/phase_norm_factor  # now its between 0 and 1
+             # translate it to label
+            # phase_norm_factor = np.max(np.abs(object_phase)) # object_phase is positive only
+
+            # object_phase *= 1/phase_norm_factor  # now its between 0 and 1
+            object_phase += np.pi
+            object_phase *= 1/(2*np.pi)
+
             # plot_thing(object_phase, 101, "object_phase label")
 
             diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))
@@ -462,7 +466,7 @@ def make_dataset(filename, N, samples):
 
             hd5file.root.object_amplitude.append(object_amplitude.reshape(1,-1))
             hd5file.root.object_phase.append(object_phase.reshape(1,-1))
-            hd5file.root.phase_norm_factor.append(phase_norm_factor.reshape(1,1))
+            # hd5file.root.phase_norm_factor.append(phase_norm_factor.reshape(1,1))
             hd5file.root.diffraction.append(diffraction_pattern.reshape(1,-1))
 
             # # reconstruct phase from label
@@ -486,7 +490,7 @@ if __name__ == "__main__":
     # generate a data set
     N = 128
 
-    make_dataset("train_data.hdf5", N=N, samples=1000)
+    make_dataset("train_data.hdf5", N=N, samples=200)
 
     make_dataset("test_data.hdf5", N=N, samples=200)
 
