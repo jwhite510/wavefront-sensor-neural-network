@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import tables
 import diffraction_functions
 from skimage.restoration import unwrap_phase
+from skimage.transform import resize
 import os
 import random
 from PIL import Image
@@ -74,222 +75,194 @@ def print_debug_variables(debug_locals):
     print("")
 
 
-def make_wavefront_sensor_image(N, amplitude_mask):
-
-    def plot_zernike(N,m,n):
-        zernike = diffraction_functions.zernike_polynomial(N,m,n)
-        plt.figure()
-        plt.imshow(zernike, cmap="jet")
-        plt.title("m:"+str(m)+" n:"+str(n))
-        plt.colorbar()
-        # # value at center
-        # zernike -= zernike[int(N/2), int(N/2)]
-        # for i in range(np.shape(zernike)[0]):
-            # for j in range(np.shape(zernike)[1]):
-                # if zernike[i,j] < 0.01 and zernike[i,j] > -0.01:
-                    # zernike[i,j] = 1.0
-
-        # plt.figure()
-        # plt.imshow(zernike, cmap="jet")
-        # plt.colorbar()
-        # plt.title("m:"+str(m)+" n:"+str(n))
-
-    def plot_zeros(array):
-        array = np.array(array)
-        # set near to max to see where the zeros are just for plotting
-        # print("array[int(N/2), int(N/2)] =>", array[int(N/2), int(N/2)])
-        for i in range(np.shape(array)[0]):
-            for j in range(np.shape(array)[1]):
-                if array[i,j] < 0.01 and array[i,j] > -0.01:
-                    array[i,j] = np.max(array)
-        # plt.figure()
-        # plt.imshow(array, cmap="jet")
-        # plt.colorbar()
-        array[int(N/2), :] = np.max(array)
-        array[:, int(N/2)] = np.max(array)
-        plt.figure()
-        plt.imshow(array, cmap="jet")
-        plt.colorbar()
+def make_wavefront_sensor_image(N, N_zernike, amplitude_mask):
 
     zernike_coefficients = [
             #(m,n)
             # (1,1), # linear phase
             # (-1,1), # linear phase
 
-            # (-2,2), # zero at center
-            # (0,2), # not zero at center
-            # (2,2), # zero at center
+            (-2,2), # zero at center
+            (0,2), # not zero at center
+            (2,2), # zero at center
 
-            # (-3,3), # zero at center
-            # (-1,3),
-            # (1,3),
-            # (3,3), # zero at center
-            # (-4,4)
-            # (-2,4)
-            # (0,4)
-            # (2,4)
+            (-3,3), # zero at center
+            (-1,3),
+            (1,3),
+            (3,3), # zero at center
+            (-4,4),
+            (-2,4),
+            (0,4),
+            (2,4),
             (4,4)
             ]
 
-
     # scalef = 1
-    fig1 = None
-    fig2 = None
-    fig3 = None
     zero_pad = 0
     gif_images = []
     # for scalef in np.linspace(1.0, 0.01, 40):
-    for phase_value in np.linspace(0.0, 1.0, 40):
-        scalef = 0.3
-        zernike_phase = np.zeros((N,N))
-        for z_coefs in zernike_coefficients:
-            # plot_zernike(N, z_coefs[0], z_coefs[1])
-            zernike_coef_phase, z_radius = diffraction_functions.zernike_polynomial(N,z_coefs[0],z_coefs[1], scalef)
-            zernike_coef_phase*=phase_value
-            # zernike_coef_phase -= zernike_coef_phase[int(N/2), int(N/2)]
-            zernike_phase += zernike_coef_phase
+    scalef = 0.6
+    zernike_phase = np.zeros((N_zernike,N_zernike))
+    for z_coefs in zernike_coefficients:
+        zernike_coef_phase, z_radius = diffraction_functions.zernike_polynomial(N_zernike,z_coefs[0],z_coefs[1], scalef)
+        zernike_coef_phase*= (-1 + 2*np.random.rand()) # between -1 and 1
+        # zernike_coef_phase -= zernike_coef_phase[int(N_zernike/2), int(N_zernike/2)]
+        zernike_phase += zernike_coef_phase
 
-        # subtract phase at center
-        # zernike_phase -= zernike_phase[int(N/2), int(N/2)] # subtract phase at center
-        # normalize the zernike phase
+    # subtract phase at center
+    # zernike_phase -= zernike_phase[int(N_zernike/2), int(N_zernike/2)] # subtract phase at center
+    # normalize the zernike phase
 
-        nonzero_amplitude = np.zeros_like(amplitude_mask)
-        nonzero_amplitude[amplitude_mask>0.001] = 1
+    nonzero_amplitude = np.zeros_like(amplitude_mask)
+    nonzero_amplitude[amplitude_mask>0.001] = 1
 
-        # zernike_phase *= 1 / np.max(np.abs(nonzero_amplitude*zernike_phase)) # this is between -1 and 1 (random)
-        # zernike_phase*=np.pi
-        # plot_zeros(zernike_phase)
+    # zernike_phase *= 1 / np.max(np.abs(nonzero_amplitude*zernike_phase)) # this is between -1 and 1 (random)
+    # zernike_phase*=np.pi
+    # plot_zeros(zernike_phase)
 
-        # subtract phase from zernike_phase
-        # zernike_phase-=np.min(zernike_phase*nonzero_amplitude)
-        # zernike_phase*=nonzero_amplitude
+    # subtract phase from zernike_phase
+    # zernike_phase-=np.min(zernike_phase*nonzero_amplitude)
+    # zernike_phase*=nonzero_amplitude
 
-        # multiply the amplitude mask by a random gaussian
-        print("N =>", N)
+    # multiply the amplitude mask by a random gaussian
+    print("N_zernike =>", N_zernike)
 
-        x = np.linspace(-1,1,N).reshape(-1,1)
-        y = np.linspace(-1,1,N).reshape(1,-1)
+    x = np.linspace(-1,1,N_zernike).reshape(-1,1)
+    y = np.linspace(-1,1,N_zernike).reshape(1,-1)
 
-        dx = x[1,0] - x[0,0]
-        dy = y[0,1] - y[0,0]
+    dx = x[1,0] - x[0,0]
+    dy = y[0,1] - y[0,0]
 
-        w_x = 0.1 *scalef
-        w_y = 0.1 *scalef
-        s_x = 0 + (dx)*0.5 # so the linear phase is 0
-        s_y = 0 + (dy)*0.5 # so the linear phase is 0
+    w_x = 0.1 *scalef
+    w_y = 0.1 *scalef
+    s_x = 0 + (dx)*0.5 # so the linear phase is 0
+    s_y = 0 + (dy)*0.5 # so the linear phase is 0
 
-        # random gaussian
-        z = np.exp((-(x-s_x)**2)/w_x**2) * np.exp((-(y-s_y)**2)/w_y**2)
+    # random gaussian
+    z = np.exp((-(x-s_x)**2)/w_x**2) * np.exp((-(y-s_y)**2)/w_y**2)
 
-        z_compex = z*np.exp(1j*zernike_phase)
+    z_compex = z*np.exp(1j*zernike_phase)
 
-        def plot_complex(title, complex_array, num, plot_z_radius=False, zoom_in=None, axis_limit=None):
-            """
-                zoom_in: a float specifying the fraction of the peak value of absolute value to set the limits
-            """
-            complex_array_intg = np.sum(np.abs(complex_array), axis=0)
-            if zoom_in is not None:
-                axis_limit = np.max(complex_array_intg) * zoom_in
-                i = int(len(complex_array_intg) / 2)
-                j = i
-                di = None
-                while complex_array_intg[i] > axis_limit:
-                    i+=1
-                    di = i - j
+    def plot_complex(title, complex_array, num, plot_z_radius=False, zoom_in=None, axis_limit=None):
+        """
+            zoom_in: a float specifying the fraction of the peak value of absolute value to set the limits
+        """
+        complex_array_intg = np.sum(np.abs(complex_array), axis=0)
+        if zoom_in is not None:
+            axis_limit = np.max(complex_array_intg) * zoom_in
+            i = int(len(complex_array_intg) / 2)
+            j = i
+            di = None
+            while complex_array_intg[i] > axis_limit:
+                i+=1
+                di = i - j
 
-                    if i > 1020:
-                        break
+                if i > 1020:
+                    break
 
-            if axis_limit is not None:
-                ax_min = (np.shape(complex_array)[0] / 2) + axis_limit
-                ax_max = (np.shape(complex_array)[0] / 2) - axis_limit
+        if axis_limit is not None:
+            ax_min = (np.shape(complex_array)[0] / 2) - axis_limit
+            ax_max = (np.shape(complex_array)[0] / 2) + axis_limit
 
-            assert isinstance(title, str)
-            assert isinstance(complex_array, np.ndarray)
-            # plt.figure(num)
-            # plt.clf()
-            fig, ax = plt.subplots(1,4, figsize=(15,5), num=num)
-            fig.figsize = (15,5)
-            fig.text(0.5, 0.90,title, ha="center", size=30)
-            im = ax[0].imshow(np.abs(complex_array))
-            ax[0].set_title("abs")
-            fig.colorbar(im, ax=ax[0])
-            if zoom_in is not None:
-                ax[0].set_xlim(j - di, j + di)
-                ax[0].set_ylim(j - di, j + di)
-            elif axis_limit is not None:
-                ax[0].set_xlim(ax_min, ax_max)
-                ax[0].set_ylim(ax_min, ax_max)
+        assert isinstance(title, str)
+        assert isinstance(complex_array, np.ndarray)
+        # plt.figure(num)
+        # plt.clf()
+        fig, ax = plt.subplots(1,4, figsize=(15,5), num=num)
+        fig.figsize = (15,5)
+        fig.text(0.5, 0.90,title, ha="center", size=30)
+        im = ax[0].imshow(np.abs(complex_array))
+        ax[0].set_title("abs")
+        fig.colorbar(im, ax=ax[0])
+        if zoom_in is not None:
+            ax[0].set_xlim(j - di, j + di)
+            ax[0].set_ylim(j - di, j + di)
+        elif axis_limit is not None:
+            ax[0].set_xlim(ax_min, ax_max)
+            ax[0].set_ylim(ax_min, ax_max)
 
-            im = ax[1].imshow(np.real(complex_array))
-            ax[1].set_title("real")
-            fig.colorbar(im, ax=ax[1])
-            if zoom_in is not None:
-                ax[1].set_xlim(j - di, j + di)
-                ax[1].set_ylim(j - di, j + di)
-            elif axis_limit is not None:
-                ax[1].set_xlim(ax_min, ax_max)
-                ax[1].set_ylim(ax_min, ax_max)
+        im = ax[1].imshow(np.real(complex_array))
+        ax[1].set_title("real")
+        fig.colorbar(im, ax=ax[1])
+        if zoom_in is not None:
+            ax[1].set_xlim(j - di, j + di)
+            ax[1].set_ylim(j - di, j + di)
+        elif axis_limit is not None:
+            ax[1].set_xlim(ax_min, ax_max)
+            ax[1].set_ylim(ax_min, ax_max)
 
-            im = ax[2].imshow(np.imag(complex_array))
-            ax[2].set_title("imag")
-            fig.colorbar(im, ax=ax[2])
-            if zoom_in is not None:
-                ax[2].set_xlim(j - di, j + di)
-                ax[2].set_ylim(j - di, j + di)
-            elif axis_limit is not None:
-                ax[2].set_xlim(ax_min, ax_max)
-                ax[2].set_ylim(ax_min, ax_max)
+        im = ax[2].imshow(np.imag(complex_array))
+        ax[2].set_title("imag")
+        fig.colorbar(im, ax=ax[2])
+        if zoom_in is not None:
+            ax[2].set_xlim(j - di, j + di)
+            ax[2].set_ylim(j - di, j + di)
+        elif axis_limit is not None:
+            ax[2].set_xlim(ax_min, ax_max)
+            ax[2].set_ylim(ax_min, ax_max)
 
-            # unwrapped_phase = unwrap_phase(np.angle(complex_array))
-            unwrapped_phase = np.angle(complex_array)
-            # unwrapped_phase[np.abs(complex_array)<0.01] = 0
+        # unwrapped_phase = unwrap_phase(np.angle(complex_array))
+        unwrapped_phase = np.angle(complex_array)
+        # unwrapped_phase[np.abs(complex_array)<0.01] = 0
 
-            if plot_z_radius:
-                unwrapped_phase[z_radius>1] = unwrapped_phase[int(N/2), int(N/2)]
+        if plot_z_radius:
+            unwrapped_phase[z_radius>1] = unwrapped_phase[int(N_zernike/2), int(N_zernike/2)]
 
-            im = ax[3].imshow(unwrapped_phase)
-            ax[3].set_title("angle")
-            fig.colorbar(im, ax=ax[3])
-            if zoom_in is not None:
-                ax[3].set_xlim(j - di, j + di)
-                ax[3].set_ylim(j - di, j + di)
-            elif axis_limit is not None:
-                ax[3].set_xlim(ax_min, ax_max)
-                ax[3].set_ylim(ax_min, ax_max)
+        im = ax[3].imshow(unwrapped_phase)
+        ax[3].set_title("angle")
+        fig.colorbar(im, ax=ax[3])
+        if zoom_in is not None:
+            ax[3].set_xlim(j - di, j + di)
+            ax[3].set_ylim(j - di, j + di)
+        elif axis_limit is not None:
+            ax[3].set_xlim(ax_min, ax_max)
+            ax[3].set_ylim(ax_min, ax_max)
 
-            return fig
+        return fig
 
-        # plot_zernike(N, 1,3)
-        # plt.show()
-        # exit()
+    # plt.show()
+    # exit()
 
-        if fig1 is not None:
-            fig1.clf()
-        fig1 = plot_complex("Before FT {0:.5g}".format(scalef), z_compex, 1, zoom_in=None, axis_limit=100)
+    # fig1 = plot_complex("Before FT {0:.5g}".format(scalef), z_compex, 1, zoom_in=None, axis_limit=100)
 
-        # zero pad z_compex
-        z_compex = np.pad(z_compex, pad_width=zero_pad, mode="constant")
+    prop = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(z_compex)))
 
-        # if fig2 is not None:
-            # fig2.clf()
-        # fig2 = plot_complex("PADDED, Before FT {0:.5g}".format(scalef), z_compex, 2)
+    # fig3 = plot_complex("After FT {0:.5g}".format(scalef), prop, 3, zoom_in=None, axis_limit=100)
 
-        prop = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(z_compex)))
+    # gif_images = save_gif_image(fig1, fig3, gif_images)
 
-        if fig3 is not None:
-            fig3.clf()
-        fig3 = plot_complex("After FT {0:.5g}".format(scalef), prop, 3, zoom_in=None, axis_limit=100)
+    # take the center of propagated beam
+    random_shift = ( (-1 + 2*np.random.rand()), (-1 + 2*np.random.rand()) )
+    random_shift_scalar = 25
+    index_min = int((N_zernike/2) - 100)
+    index_max = int((N_zernike/2) + 100)
 
-        gif_images = save_gif_image(fig1, fig3, gif_images)
-        # plt.figure()
-        # plt.imshow(gif_images[0])
-        # plt.show()
-        # exit()
-        print("saving image {}".format(str(scalef)))
+    prop_center = prop[int(index_min+random_shift_scalar*random_shift[0]):int(index_max+random_shift_scalar*random_shift[0]), int(index_min+random_shift_scalar*random_shift[1]):int(index_max+random_shift_scalar*random_shift[1])]
 
-    imageio.mimsave('./animationN1024_4_4.gif', gif_images, fps=5)
-    exit()
+    # interpolate this onto a N by N grid
+    prop_center_N_real = resize(np.real(prop_center), (N,N))
+    prop_center_N_imag = resize(np.imag(prop_center), (N,N))
+    prop_center_N = prop_center_N_real + 1j * prop_center_N_imag
+
+    # plt.figure(12)
+    # plt.pcolormesh(np.abs(prop_center_N))
+
+    # plt.figure(13)
+    # plt.pcolormesh(amplitude_mask)
+
+    # plt.figure(14)
+    # plt.pcolormesh(nonzero_amplitude)
+
+    # plt.figure(15)
+    # plt.pcolormesh(nonzero_amplitude*np.angle(prop_center_N))
+
+    # plt.figure(16)
+    # plt.pcolormesh(amplitude_mask*np.abs(prop_center_N))
+    # # nonzero_amplitude
+
+    masked_prop = amplitude_mask*np.abs(prop_center_N)
+    masked_prop *= (1/np.max(masked_prop))
+    nonzero_phase = nonzero_amplitude*np.angle(prop_center_N)
 
     return nonzero_phase, masked_prop
 
@@ -415,13 +388,14 @@ def make_dataset(filename, N, samples):
             # plot_thing(object_phase, 1, "object_phase")
             # plot_thing(object_amplitude, 2, "object_amplitude")
 
-            N = 2048
-            object_phase, object_amplitude = make_wavefront_sensor_image(N, amplitude_mask)
-            continue
+            N_zernike = 1024
+            object_phase, object_amplitude = make_wavefront_sensor_image(N, N_zernike, amplitude_mask)
             # phase between 0 and some large number
 
-            # plot_thing(object_phase, 3, "object_phase")
-            # plot_thing(object_amplitude, 4, "object_amplitude")
+            plot_thing(object_phase, 3, "object_phase")
+            plot_thing(object_amplitude, 4, "object_amplitude")
+            plt.show()
+            exit()
 
             # object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/", scale=1.0)
             # plot_thing(object_phase, 4, "object_phase")
