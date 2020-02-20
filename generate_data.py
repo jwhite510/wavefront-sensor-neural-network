@@ -137,17 +137,15 @@ def make_wavefront_sensor_image(N, amplitude_mask):
     fig2 = None
     fig3 = None
     zero_pad = 0
-    scalef = 6.5
     gif_images = []
-    for scalef in np.linspace(1.0, 0.01, 40):
-    # for zero_pad in np.linspace(100,300,100):
-        # scalef = 3.0
-        # zero_pad = int(zero_pad)
+    # for scalef in np.linspace(1.0, 0.01, 40):
+    for phase_value in np.linspace(0.0, 1.0, 40):
+        scalef = 0.3
         zernike_phase = np.zeros((N,N))
         for z_coefs in zernike_coefficients:
             # plot_zernike(N, z_coefs[0], z_coefs[1])
             zernike_coef_phase, z_radius = diffraction_functions.zernike_polynomial(N,z_coefs[0],z_coefs[1], scalef)
-            zernike_coef_phase*=1
+            zernike_coef_phase*=phase_value
             # zernike_coef_phase -= zernike_coef_phase[int(N/2), int(N/2)]
             zernike_phase += zernike_coef_phase
 
@@ -185,7 +183,7 @@ def make_wavefront_sensor_image(N, amplitude_mask):
 
         z_compex = z*np.exp(1j*zernike_phase)
 
-        def plot_complex(title, complex_array, num, plot_z_radius=False, zoom_in=None):
+        def plot_complex(title, complex_array, num, plot_z_radius=False, zoom_in=None, axis_limit=None):
             """
                 zoom_in: a float specifying the fraction of the peak value of absolute value to set the limits
             """
@@ -202,6 +200,10 @@ def make_wavefront_sensor_image(N, amplitude_mask):
                     if i > 1020:
                         break
 
+            if axis_limit is not None:
+                ax_min = (np.shape(complex_array)[0] / 2) + axis_limit
+                ax_max = (np.shape(complex_array)[0] / 2) - axis_limit
+
             assert isinstance(title, str)
             assert isinstance(complex_array, np.ndarray)
             # plt.figure(num)
@@ -215,6 +217,9 @@ def make_wavefront_sensor_image(N, amplitude_mask):
             if zoom_in is not None:
                 ax[0].set_xlim(j - di, j + di)
                 ax[0].set_ylim(j - di, j + di)
+            elif axis_limit is not None:
+                ax[0].set_xlim(ax_min, ax_max)
+                ax[0].set_ylim(ax_min, ax_max)
 
             im = ax[1].imshow(np.real(complex_array))
             ax[1].set_title("real")
@@ -222,6 +227,9 @@ def make_wavefront_sensor_image(N, amplitude_mask):
             if zoom_in is not None:
                 ax[1].set_xlim(j - di, j + di)
                 ax[1].set_ylim(j - di, j + di)
+            elif axis_limit is not None:
+                ax[1].set_xlim(ax_min, ax_max)
+                ax[1].set_ylim(ax_min, ax_max)
 
             im = ax[2].imshow(np.imag(complex_array))
             ax[2].set_title("imag")
@@ -229,6 +237,9 @@ def make_wavefront_sensor_image(N, amplitude_mask):
             if zoom_in is not None:
                 ax[2].set_xlim(j - di, j + di)
                 ax[2].set_ylim(j - di, j + di)
+            elif axis_limit is not None:
+                ax[2].set_xlim(ax_min, ax_max)
+                ax[2].set_ylim(ax_min, ax_max)
 
             # unwrapped_phase = unwrap_phase(np.angle(complex_array))
             unwrapped_phase = np.angle(complex_array)
@@ -243,6 +254,9 @@ def make_wavefront_sensor_image(N, amplitude_mask):
             if zoom_in is not None:
                 ax[3].set_xlim(j - di, j + di)
                 ax[3].set_ylim(j - di, j + di)
+            elif axis_limit is not None:
+                ax[3].set_xlim(ax_min, ax_max)
+                ax[3].set_ylim(ax_min, ax_max)
 
             return fig
 
@@ -252,7 +266,7 @@ def make_wavefront_sensor_image(N, amplitude_mask):
 
         if fig1 is not None:
             fig1.clf()
-        fig1 = plot_complex("Before FT {0:.5g}".format(scalef), z_compex, 1, zoom_in=0.01)
+        fig1 = plot_complex("Before FT {0:.5g}".format(scalef), z_compex, 1, zoom_in=None, axis_limit=100)
 
         # zero pad z_compex
         z_compex = np.pad(z_compex, pad_width=zero_pad, mode="constant")
@@ -265,9 +279,13 @@ def make_wavefront_sensor_image(N, amplitude_mask):
 
         if fig3 is not None:
             fig3.clf()
-        fig3 = plot_complex("After FT {0:.5g}".format(scalef), prop, 3, zoom_in=0.01)
+        fig3 = plot_complex("After FT {0:.5g}".format(scalef), prop, 3, zoom_in=None, axis_limit=100)
 
         gif_images = save_gif_image(fig1, fig3, gif_images)
+        # plt.figure()
+        # plt.imshow(gif_images[0])
+        # plt.show()
+        # exit()
         print("saving image {}".format(str(scalef)))
 
     imageio.mimsave('./animationN1024_4_4.gif', gif_images, fps=5)
@@ -397,7 +415,7 @@ def make_dataset(filename, N, samples):
             # plot_thing(object_phase, 1, "object_phase")
             # plot_thing(object_amplitude, 2, "object_amplitude")
 
-            N = 1024
+            N = 2048
             object_phase, object_amplitude = make_wavefront_sensor_image(N, amplitude_mask)
             continue
             # phase between 0 and some large number
