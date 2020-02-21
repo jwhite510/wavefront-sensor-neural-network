@@ -121,7 +121,7 @@ def print_debug_variables(debug_locals):
     print("")
 
 
-def make_wavefront_sensor_image(N, N_zernike, amplitude_mask):
+def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, z_radius, scalef, sess):
 
     zernike_coefficients = [
             #(m,n)
@@ -143,52 +143,26 @@ def make_wavefront_sensor_image(N, N_zernike, amplitude_mask):
             (4,4)
             ]
 
-    # scalef = 1
-    zero_pad = 0
-    gif_images = []
-    # for scalef in np.linspace(1.0, 0.01, 40):
-    scalef = 0.6
     zernike_phase = np.zeros((N_zernike,N_zernike))
+    for z_coefs in zernike_coefficients:
 
-    tf_zernike_graph, z_radius = build_tf_zernike_graph(N_zernike, scalef)
+        # zernike_coef_phase, z_radius = diffraction_functions.zernike_polynomial(N_zernike,z_coefs[0],z_coefs[1], scalef)
+        if z_coefs[0] >= 0:
+            zernike_coef_phase = sess.run(tf_zernike_graph["Z_even"],
+                feed_dict={
+                    tf_zernike_graph["m_ph"]:np.abs(z_coefs[0]),
+                    tf_zernike_graph["n_ph"]:np.abs(z_coefs[1])
+                    })
+        else:
+            zernike_coef_phase = sess.run(tf_zernike_graph["Z_odd"],
+                feed_dict={
+                    tf_zernike_graph["m_ph"]:np.abs(z_coefs[0]),
+                    tf_zernike_graph["n_ph"]:np.abs(z_coefs[1])
+                    })
+        zernike_coef_phase*= (-1 + 2*np.random.rand()) # between -1 and 1
+        # zernike_coef_phase -= zernike_coef_phase[int(N_zernike/2), int(N_zernike/2)]
+        zernike_phase += zernike_coef_phase
 
-    with tf.Session() as sess:
-        for z_coefs in zernike_coefficients:
-
-            print("z_coefs:", z_coefs)
-            time1 = time.time()
-            zernike_coef_phase, z_radius = diffraction_functions.zernike_polynomial(N_zernike,z_coefs[0],z_coefs[1], scalef)
-            time2 = time.time()
-            print("numpy time: {}".format(time2-time1))
-
-            time1 = time.time()
-            if z_coefs[0] >= 0:
-                out = sess.run(tf_zernike_graph["Z_even"],
-                    feed_dict={
-                        tf_zernike_graph["m_ph"]:np.abs(z_coefs[0]),
-                        tf_zernike_graph["n_ph"]:np.abs(z_coefs[1])
-                        })
-            else:
-                out = sess.run(tf_zernike_graph["Z_odd"],
-                    feed_dict={
-                        tf_zernike_graph["m_ph"]:np.abs(z_coefs[0]),
-                        tf_zernike_graph["n_ph"]:np.abs(z_coefs[1])
-                        })
-
-            time2 = time.time()
-            print("tensorflow time: {}".format(time2-time1))
-
-            plt.figure()
-            plt.pcolormesh(out)
-            plt.figure()
-            plt.pcolormesh(zernike_coef_phase)
-            plt.show()
-
-            zernike_coef_phase*= (-1 + 2*np.random.rand()) # between -1 and 1
-            # zernike_coef_phase -= zernike_coef_phase[int(N_zernike/2), int(N_zernike/2)]
-            zernike_phase += zernike_coef_phase
-
-    exit()
     # subtract phase at center
     # zernike_phase -= zernike_phase[int(N_zernike/2), int(N_zernike/2)] # subtract phase at center
     # normalize the zernike phase
@@ -444,126 +418,135 @@ def make_dataset(filename, N, samples):
         amplitude_mask *= 1/np.max(amplitude_mask) # normalize
         # amplitude_mask[amplitude_mask>0.5] = 1
         # concat 32
-        for i in range(samples):
+        # prepare tensorflow zernike graph
 
-            if i % 100 == 0:
-                print("Generating sample %i of %i" % (i, samples))
+        N_zernike = 1024
+        scalef = 0.6
+        tf_zernike_graph, z_radius = build_tf_zernike_graph(N_zernike, scalef)
+        with tf.Session() as sess:
+            for i in range(samples):
 
-            def plot_thing(arr, num, title, range=None):
-                arr = np.array(arr)
-                # make the center visible
-                arr[int(N/2), int(N/2)] = np.max(arr)
-                if range:
-                    arr[0,0] = range[0]
-                    arr[0,1] = range[1]
-                plt.figure(num)
-                plt.imshow(arr)
-                plt.colorbar()
-                plt.title(title)
-                plt.savefig("./"+str(num))
-                # os.system("display "+str(num)+".png & disown")
+                if i % 100 == 0:
+                    print("Generating sample %i of %i" % (i, samples))
 
-            # object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
+                def plot_thing(arr, num, title, range=None):
+                    arr = np.array(arr)
+                    # make the center visible
+                    arr[int(N/2), int(N/2)] = np.max(arr)
+                    if range:
+                        arr[0,0] = range[0]
+                        arr[0,1] = range[1]
+                    plt.figure(num)
+                    plt.imshow(arr)
+                    plt.colorbar()
+                    plt.title(title)
+                    plt.savefig("./"+str(num))
+                    # os.system("display "+str(num)+".png & disown")
 
-            # plot_thing(object_phase, 1, "object_phase")
-            # plot_thing(object_amplitude, 2, "object_amplitude")
+                # object_phase, object_amplitude = make_simulated_object(N, min_indexes=4, max_indexes=8)
 
-            N_zernike = 1024
-            object_phase, object_amplitude = make_wavefront_sensor_image(N, N_zernike, amplitude_mask)
-            # phase between 0 and some large number
+                # plot_thing(object_phase, 1, "object_phase")
+                # plot_thing(object_amplitude, 2, "object_amplitude")
 
-            # plot_thing(object_phase, 3, "object_phase")
-            # plot_thing(object_amplitude, 4, "object_amplitude")
+                time1 = time.time()
+                object_phase, object_amplitude = make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, z_radius, scalef, sess)
+                time2 = time.time()
+                print("time: {}".format(time2 - time1))
+                exit()
+                # phase between 0 and some large number
 
-            # object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/", scale=1.0)
-            # plot_thing(object_phase, 4, "object_phase")
+                # plot_thing(object_phase, 3, "object_phase")
+                # plot_thing(object_amplitude, 4, "object_amplitude")
 
-            # # set phase at center to 0 (introduces phase discontinuity)
-            # object_phase-=object_phase[int(N/2), int(N/2)]
-            # object_phase += np.pi
-            # object_phase = np.mod(object_phase, 2*np.pi)
-            # object_phase -= np.pi
+                # object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/", scale=1.0)
+                # plot_thing(object_phase, 4, "object_phase")
 
-            # circular crop the phase
-            # diffraction_functions.circular_crop(object_phase, 0.3)
-            # diffraction_functions.circular_crop(object_amplitude, 0.3)
+                # # set phase at center to 0 (introduces phase discontinuity)
+                # object_phase-=object_phase[int(N/2), int(N/2)]
+                # object_phase += np.pi
+                # object_phase = np.mod(object_phase, 2*np.pi)
+                # object_phase -= np.pi
 
-            complex_object = object_amplitude * np.exp(1j * object_phase)
+                # circular crop the phase
+                # diffraction_functions.circular_crop(object_phase, 0.3)
+                # diffraction_functions.circular_crop(object_amplitude, 0.3)
 
-            # plot_thing(np.abs(complex_object), 5, "np.abs(complex_object)")
-            # plot_thing(np.angle(complex_object), 6, "np.angle(complex_object)")
+                complex_object = object_amplitude * np.exp(1j * object_phase)
 
-            #TODO: decide to do this or not
-            # set phase at center to 0
-            # phase_at_center = np.angle(complex_object)[int(N/2), int(N/2)]
-            # complex_object *= np.exp(-1j*phase_at_center)
+                # plot_thing(np.abs(complex_object), 5, "np.abs(complex_object)")
+                # plot_thing(np.angle(complex_object), 6, "np.angle(complex_object)")
 
-            """
-                    reduce parts of object below threshold
-            """
-            # complex_object[np.abs(complex_object)<0.01] = 0
+                #TODO: decide to do this or not
+                # set phase at center to 0
+                # phase_at_center = np.angle(complex_object)[int(N/2), int(N/2)]
+                # complex_object *= np.exp(-1j*phase_at_center)
 
-            """
-                    crop the complex_object in a circle
-            """
-            # diffraction_functions.circular_crop(complex_object, 0.3)
+                """
+                        reduce parts of object below threshold
+                """
+                # complex_object[np.abs(complex_object)<0.01] = 0
 
-            """
-                    normalize amplitude
-            """
-            # complex_object *= 1 / np.max(np.abs(complex_object))
+                """
+                        crop the complex_object in a circle
+                """
+                # diffraction_functions.circular_crop(complex_object, 0.3)
 
-            # set the phase between 0:(0 pi) and 1:(2 pi)
-            # object_phase = np.angle(complex_object)
-            object_amplitude = np.abs(complex_object)
-            # object_phase[int(N/2), int(N/2)] = -np.pi # make sure the center is 0, it might be 1 (0 or 2pi)
+                """
+                        normalize amplitude
+                """
+                # complex_object *= 1 / np.max(np.abs(complex_object))
 
-            # plot_thing(object_phase, 4, "object_phase")
+                # set the phase between 0:(0 pi) and 1:(2 pi)
+                # object_phase = np.angle(complex_object)
+                object_amplitude = np.abs(complex_object)
+                # object_phase[int(N/2), int(N/2)] = -np.pi # make sure the center is 0, it might be 1 (0 or 2pi)
 
-            # set the phase between 0 and 1
+                # plot_thing(object_phase, 4, "object_phase")
 
-            # arbitrarily large phase
-            # plot_thing(object_phase, 99, "object_phase")
+                # set the phase between 0 and 1
 
-
-             # translate it to label
-            # phase_norm_factor = np.max(np.abs(object_phase)) # object_phase is positive only
-
-            # object_phase *= 1/phase_norm_factor  # now its between 0 and 1
-            object_phase += np.pi
-            object_phase *= 1/(2*np.pi)
-
-            # plot_thing(object_phase, 101, "object_phase label")
-
-            diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))
-            # absolute value
-            diffraction_pattern = np.abs(diffraction_pattern)
-            # normalize the diffraction pattern
-            diffraction_pattern = diffraction_pattern / np.max(diffraction_pattern)
-            if i % 100 == 0:
-                plot_sample(N, object_phase, object_amplitude, diffraction_pattern)
-                plt.pause(0.001)
-
-            hd5file.root.object_amplitude.append(object_amplitude.reshape(1,-1))
-            hd5file.root.object_phase.append(object_phase.reshape(1,-1))
-            # hd5file.root.phase_norm_factor.append(phase_norm_factor.reshape(1,1))
-            hd5file.root.diffraction.append(diffraction_pattern.reshape(1,-1))
-
-            # # reconstruct phase from label
-            # object_phase *= 2 # between 0 and 2
-            # object_phase -= 1 # between -1 and 1
-            # object_phase *= phase_norm_factor
-            # plot_thing(object_phase, 102, "object_phase reconstruct")
+                # arbitrarily large phase
+                # plot_thing(object_phase, 99, "object_phase")
 
 
-            # # reconstruct diffraction pattern
-            # recons_diff = diffraction_functions.construct_diffraction_pattern(object_amplitude, object_phase, phase_norm_factor)
-            # plt.figure()
-            # plt.imshow(recons_diff)
-            # plt.colorbar()
-            # plt.savefig("./4.png")
-            # os.system("display 4.png & disown")
-            # exit()
+                 # translate it to label
+                # phase_norm_factor = np.max(np.abs(object_phase)) # object_phase is positive only
+
+                # object_phase *= 1/phase_norm_factor  # now its between 0 and 1
+                object_phase += np.pi
+                object_phase *= 1/(2*np.pi)
+
+                # plot_thing(object_phase, 101, "object_phase label")
+
+                diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))
+                # absolute value
+                diffraction_pattern = np.abs(diffraction_pattern)
+                # normalize the diffraction pattern
+                diffraction_pattern = diffraction_pattern / np.max(diffraction_pattern)
+                if i % 100 == 0:
+                    plot_sample(N, object_phase, object_amplitude, diffraction_pattern)
+                    plt.pause(0.001)
+
+                hd5file.root.object_amplitude.append(object_amplitude.reshape(1,-1))
+                hd5file.root.object_phase.append(object_phase.reshape(1,-1))
+                # hd5file.root.phase_norm_factor.append(phase_norm_factor.reshape(1,1))
+                hd5file.root.diffraction.append(diffraction_pattern.reshape(1,-1))
+
+                # # reconstruct phase from label
+                # object_phase *= 2 # between 0 and 2
+                # object_phase -= 1 # between -1 and 1
+                # object_phase *= phase_norm_factor
+                # plot_thing(object_phase, 102, "object_phase reconstruct")
+
+
+                # # reconstruct diffraction pattern
+                # recons_diff = diffraction_functions.construct_diffraction_pattern(object_amplitude, object_phase, phase_norm_factor)
+                # plt.figure()
+                # plt.imshow(recons_diff)
+                # plt.colorbar()
+                # plt.savefig("./4.png")
+                # os.system("display 4.png & disown")
+                # exit()
 
 
 if __name__ == "__main__":
