@@ -9,7 +9,53 @@ import os
 import random
 from PIL import Image
 import imageio
+import tensorflow as tf
 import PIL.ImageOps
+import time
+
+def tf_factorial(x):
+    return tf.exp(tf.lgamma(x + 1)) # factorial of x
+
+
+def build_tf_zernike_graph(N_zernike, scalef):
+
+
+    m_ph = tf.placeholder(tf.float64, shape=[]) # placeholder
+    n_ph = tf.placeholder(tf.float64, shape=[]) # placeholder
+
+    scale = 10.0 / scalef
+    x = np.linspace(-1*scale,1*scale,N_zernike).reshape(1,-1)
+    y = np.linspace(-1*scale,1*scale,N_zernike).reshape(-1,1)
+
+    rho = np.sqrt(x**2 + y**2)
+    rho = np.expand_dims(rho, axis=2)
+
+    phi = np.arctan2(y,x)
+
+    k = tf.range(0, ((n_ph-m_ph)/2)+1)
+    k = tf.reshape(k, [1,1,-1])
+    numerator = (-1)**k
+    numerator *= tf_factorial(n_ph-k)
+
+    denominator = tf_factorial(k)
+    denominator *= tf_factorial(((n_ph+m_ph)/2)-k)
+    denominator *= tf_factorial(((n_ph-m_ph)/2)-k)
+
+    R = (numerator / denominator)*rho**(n_ph-2*k)
+    R = tf.reduce_sum(R, axis=2)
+    # R = np.sum(R, axis=2)
+    Z_even = R*tf.cos(m_ph*phi)
+    Z_odd = R*tf.sin(m_ph*phi)
+
+    r = np.sqrt(x**2 + y**2)
+    nodes = {}
+    nodes["m_ph"] = m_ph
+    nodes["n_ph"] = n_ph
+    nodes["Z_even"] = Z_even
+    nodes["Z_odd"] = Z_odd
+
+    return nodes, r
+
 
 def save_gif_image(figure1, figure2, gif_images):
 
@@ -103,12 +149,46 @@ def make_wavefront_sensor_image(N, N_zernike, amplitude_mask):
     # for scalef in np.linspace(1.0, 0.01, 40):
     scalef = 0.6
     zernike_phase = np.zeros((N_zernike,N_zernike))
-    for z_coefs in zernike_coefficients:
-        zernike_coef_phase, z_radius = diffraction_functions.zernike_polynomial(N_zernike,z_coefs[0],z_coefs[1], scalef)
-        zernike_coef_phase*= (-1 + 2*np.random.rand()) # between -1 and 1
-        # zernike_coef_phase -= zernike_coef_phase[int(N_zernike/2), int(N_zernike/2)]
-        zernike_phase += zernike_coef_phase
 
+    tf_zernike_graph, z_radius = build_tf_zernike_graph(N_zernike, scalef)
+
+    with tf.Session() as sess:
+        for z_coefs in zernike_coefficients:
+
+            print("z_coefs:", z_coefs)
+            time1 = time.time()
+            zernike_coef_phase, z_radius = diffraction_functions.zernike_polynomial(N_zernike,z_coefs[0],z_coefs[1], scalef)
+            time2 = time.time()
+            print("numpy time: {}".format(time2-time1))
+
+            time1 = time.time()
+            if z_coefs[0] >= 0:
+                out = sess.run(tf_zernike_graph["Z_even"],
+                    feed_dict={
+                        tf_zernike_graph["m_ph"]:np.abs(z_coefs[0]),
+                        tf_zernike_graph["n_ph"]:np.abs(z_coefs[1])
+                        })
+            else:
+                out = sess.run(tf_zernike_graph["Z_odd"],
+                    feed_dict={
+                        tf_zernike_graph["m_ph"]:np.abs(z_coefs[0]),
+                        tf_zernike_graph["n_ph"]:np.abs(z_coefs[1])
+                        })
+
+            time2 = time.time()
+            print("tensorflow time: {}".format(time2-time1))
+
+            plt.figure()
+            plt.pcolormesh(out)
+            plt.figure()
+            plt.pcolormesh(zernike_coef_phase)
+            plt.show()
+
+            zernike_coef_phase*= (-1 + 2*np.random.rand()) # between -1 and 1
+            # zernike_coef_phase -= zernike_coef_phase[int(N_zernike/2), int(N_zernike/2)]
+            zernike_phase += zernike_coef_phase
+
+    exit()
     # subtract phase at center
     # zernike_phase -= zernike_phase[int(N_zernike/2), int(N_zernike/2)] # subtract phase at center
     # normalize the zernike phase
