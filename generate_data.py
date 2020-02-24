@@ -72,26 +72,22 @@ def save_gif_image(figure1, figure2, gif_images):
         return gif_images
 
 
-def plot_sample(N, object_phase, object_amplitude, diffraction_pattern):
+def plot_sample(N, object_real, object_imag, diffraction_pattern):
 
-    print("object_phase[int(N/2) , int(N/2) ] =>", object_phase[int(N/2) , int(N/2) ])
-    object_phase = np.array(object_phase)
-    object_phase[0,0] = 0
-    object_phase[0,1] = 1
 
     fig = plt.figure(1, figsize=(5,10))
     fig.clf()
     gs = fig.add_gridspec(3,1)
 
     ax = fig.add_subplot(gs[0,0])
-    im = ax.imshow(object_phase)
-    ax.set_title("object_phase")
+    im = ax.imshow(object_real)
+    ax.set_title("object_real")
     cax = fig.add_axes([0.8, 0.65, 0.05, 0.2])
     fig.colorbar(im, cax=cax, orientation='vertical')
 
     ax = fig.add_subplot(gs[1,0])
-    im = ax.imshow(object_amplitude)
-    ax.set_title("object_amplitude")
+    im = ax.imshow(object_imag)
+    ax.set_title("object_imag")
     cax = fig.add_axes([0.8, 0.39, 0.05, 0.2])
     fig.colorbar(im, cax=cax, orientation='vertical')
 
@@ -297,28 +293,37 @@ def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, 
     prop_center_N_real = resize(np.real(prop_center), (N,N))
     prop_center_N_imag = resize(np.imag(prop_center), (N,N))
     prop_center_N = prop_center_N_real + 1j * prop_center_N_imag
+    prop_center_N *=1/(np.max(prop_center_N)) # normalize
+    prop_center_N *= amplitude_mask
 
-    # plt.figure(12)
-    # plt.pcolormesh(np.abs(prop_center_N))
+    real_masked_prop = np.real(prop_center_N)
+    imag_masked_prop = np.imag(prop_center_N)
 
-    # plt.figure(13)
-    # plt.pcolormesh(amplitude_mask)
+    # plt.figure(1)
+    # plt.pcolormesh(imag_masked_prop)
+    # plt.colorbar()
 
-    # plt.figure(14)
-    # plt.pcolormesh(nonzero_amplitude)
+    # plt.figure(2)
+    # plt.pcolormesh(real_masked_prop)
+    # plt.colorbar()
 
-    # plt.figure(15)
-    # plt.pcolormesh(nonzero_amplitude*np.angle(prop_center_N))
+    # prop_thing = real_masked_prop + 1j*imag_masked_prop
 
-    # plt.figure(16)
-    # plt.pcolormesh(amplitude_mask*np.abs(prop_center_N))
-    # # nonzero_amplitude
+    # plt.figure(3)
+    # plt.pcolormesh(np.abs(prop_thing))
+    # plt.colorbar()
 
-    masked_prop = amplitude_mask*np.abs(prop_center_N)
-    masked_prop *= (1/np.max(masked_prop))
-    nonzero_phase = nonzero_amplitude*np.angle(prop_center_N)
+    # plt.figure(4)
+    # plt.pcolormesh(np.angle(prop_thing))
+    # plt.colorbar()
 
-    return nonzero_phase, masked_prop
+    # plt.show()
+    # exit()
+
+    # masked_prop *= (1/np.max(masked_prop))
+    # nonzero_phase = nonzero_amplitude*np.angle(prop_center_N)
+
+    return real_masked_prop, imag_masked_prop
 
 def make_simulated_object(N, min_indexes, max_indexes):
 
@@ -379,13 +384,10 @@ def make_dataset(filename, N, samples):
     with tables.open_file(filename, "w") as hdf5file:
 
         # create array for the object
-        hdf5file.create_earray(hdf5file.root, "object_amplitude", tables.Float64Atom(), shape=(0,N*N))
+        hdf5file.create_earray(hdf5file.root, "object_real", tables.Float64Atom(), shape=(0,N*N))
 
         # create array for the object phase
-        hdf5file.create_earray(hdf5file.root, "object_phase", tables.Float64Atom(), shape=(0,N*N))
-
-        # create array for the object phase scalar
-        # hdf5file.create_earray(hdf5file.root, "phase_norm_factor", tables.Float64Atom(), shape=(0,1))
+        hdf5file.create_earray(hdf5file.root, "object_imag", tables.Float64Atom(), shape=(0,N*N))
 
         # create array for the image
         hdf5file.create_earray(hdf5file.root, "diffraction", tables.Float64Atom(), shape=(0,N*N))
@@ -448,75 +450,13 @@ def make_dataset(filename, N, samples):
                 # plot_thing(object_phase, 1, "object_phase")
                 # plot_thing(object_amplitude, 2, "object_amplitude")
 
-                time1 = time.time()
-                object_phase, object_amplitude = make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, z_radius, scalef, sess)
-                time2 = time.time()
-                print("time: {}".format(time2 - time1))
-                exit()
-                # phase between 0 and some large number
+                object_real, object_imag = make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, z_radius, scalef, sess)
 
-                # plot_thing(object_phase, 3, "object_phase")
-                # plot_thing(object_amplitude, 4, "object_amplitude")
-
-                # object_phase, object_amplitude = retrieve_coco_image(N, "./coco_dataset/val2014/", scale=1.0)
-                # plot_thing(object_phase, 4, "object_phase")
-
-                # # set phase at center to 0 (introduces phase discontinuity)
-                # object_phase-=object_phase[int(N/2), int(N/2)]
-                # object_phase += np.pi
-                # object_phase = np.mod(object_phase, 2*np.pi)
-                # object_phase -= np.pi
-
-                # circular crop the phase
-                # diffraction_functions.circular_crop(object_phase, 0.3)
-                # diffraction_functions.circular_crop(object_amplitude, 0.3)
-
-                complex_object = object_amplitude * np.exp(1j * object_phase)
+                complex_object = object_real + 1j*object_imag
+                # complex_object = object_amplitude * np.exp(1j * object_phase)
 
                 # plot_thing(np.abs(complex_object), 5, "np.abs(complex_object)")
                 # plot_thing(np.angle(complex_object), 6, "np.angle(complex_object)")
-
-                #TODO: decide to do this or not
-                # set phase at center to 0
-                # phase_at_center = np.angle(complex_object)[int(N/2), int(N/2)]
-                # complex_object *= np.exp(-1j*phase_at_center)
-
-                """
-                        reduce parts of object below threshold
-                """
-                # complex_object[np.abs(complex_object)<0.01] = 0
-
-                """
-                        crop the complex_object in a circle
-                """
-                # diffraction_functions.circular_crop(complex_object, 0.3)
-
-                """
-                        normalize amplitude
-                """
-                # complex_object *= 1 / np.max(np.abs(complex_object))
-
-                # set the phase between 0:(0 pi) and 1:(2 pi)
-                # object_phase = np.angle(complex_object)
-                object_amplitude = np.abs(complex_object)
-                # object_phase[int(N/2), int(N/2)] = -np.pi # make sure the center is 0, it might be 1 (0 or 2pi)
-
-                # plot_thing(object_phase, 4, "object_phase")
-
-                # set the phase between 0 and 1
-
-                # arbitrarily large phase
-                # plot_thing(object_phase, 99, "object_phase")
-
-
-                 # translate it to label
-                # phase_norm_factor = np.max(np.abs(object_phase)) # object_phase is positive only
-
-                # object_phase *= 1/phase_norm_factor  # now its between 0 and 1
-                object_phase += np.pi
-                object_phase *= 1/(2*np.pi)
-
-                # plot_thing(object_phase, 101, "object_phase label")
 
                 diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))
                 # absolute value
@@ -524,11 +464,11 @@ def make_dataset(filename, N, samples):
                 # normalize the diffraction pattern
                 diffraction_pattern = diffraction_pattern / np.max(diffraction_pattern)
                 if i % 100 == 0:
-                    plot_sample(N, object_phase, object_amplitude, diffraction_pattern)
+                    plot_sample(N, object_real, object_imag, diffraction_pattern)
                     plt.pause(0.001)
 
-                hd5file.root.object_amplitude.append(object_amplitude.reshape(1,-1))
-                hd5file.root.object_phase.append(object_phase.reshape(1,-1))
+                hd5file.root.object_real.append(object_real.reshape(1,-1))
+                hd5file.root.object_imag.append(object_imag.reshape(1,-1))
                 # hd5file.root.phase_norm_factor.append(phase_norm_factor.reshape(1,1))
                 hd5file.root.diffraction.append(diffraction_pattern.reshape(1,-1))
 
@@ -564,8 +504,8 @@ if __name__ == "__main__":
         # print("hdf5file.root.N =>", hdf5file.root.N[0,0])
         N = hdf5file.root.N[0,0]
 
-        object = hdf5file.root.object_amplitude[index,:].reshape(N,N)
-        object_phase = hdf5file.root.object_phase[index,:].reshape(N,N)
+        object_real = hdf5file.root.object_real[index,:].reshape(N,N)
+        object_imag = hdf5file.root.object_imag[index,:].reshape(N,N)
         diffraction = hdf5file.root.diffraction[index,:].reshape(N,N)
 
         # plt.figure(2)
