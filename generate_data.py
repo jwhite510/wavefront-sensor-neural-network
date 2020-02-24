@@ -126,7 +126,7 @@ def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, 
     zernike_coefficients = [
             #(m,n)
             # (1,1), # linear phase
-            # (-1,1), # linear phase
+            # (-1,1), linear phase
 
             (-2,2), # zero at center
             (0,2), # not zero at center
@@ -144,6 +144,7 @@ def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, 
             ]
 
     zernike_phase = np.zeros((N_zernike,N_zernike))
+    np.random.seed(247)
     for z_coefs in zernike_coefficients:
 
         # zernike_coef_phase, z_radius = diffraction_functions.zernike_polynomial(N_zernike,z_coefs[0],z_coefs[1], scalef)
@@ -257,6 +258,10 @@ def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, 
 
         # unwrapped_phase = unwrap_phase(np.angle(complex_array))
         unwrapped_phase = np.angle(complex_array)
+        unwrapped_phase[0:int(ax_min),:] = 0
+        unwrapped_phase[:,0:int(ax_min)] = 0
+        unwrapped_phase[:, int(ax_max):] = 0
+        unwrapped_phase[int(ax_max):, :] = 0
         # unwrapped_phase[np.abs(complex_array)<0.01] = 0
 
         if plot_z_radius:
@@ -277,13 +282,24 @@ def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, 
     # plt.show()
     # exit()
 
-    # fig1 = plot_complex("Before FT {0:.5g}".format(scalef), z_compex, 1, zoom_in=None, axis_limit=100)
+    # zernike_name = "_m4_n4"
+
+    fig1 = plot_complex("Before FT ", z_compex, 1, zoom_in=None, axis_limit=100)
 
     prop = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(z_compex)))
 
-    # fig3 = plot_complex("After FT {0:.5g}".format(scalef), prop, 3, zoom_in=None, axis_limit=100)
+    fig3 = plot_complex("After FT ", prop, 3, zoom_in=None, axis_limit=100)
 
-    # gif_images = save_gif_image(fig1, fig3, gif_images)
+    gif_images = []
+    gif_images = save_gif_image(fig1, fig3, gif_images)
+    # plt.figure()
+    # plt.imshow(gif_images[0])
+    im = Image.fromarray(gif_images[0])
+    im.show()
+    # im.save("randomized_sample3_WITH_UNWRAP.jpg", "JPEG")
+    im.save("randomized_sample3_WITHOUT_UNWRAP.jpg", "JPEG")
+    exit()
+
 
     # take the center of propagated beam
     random_shift = ( (-1 + 2*np.random.rand()), (-1 + 2*np.random.rand()) )
@@ -448,11 +464,11 @@ def make_dataset(filename, N, samples):
                 # plot_thing(object_phase, 1, "object_phase")
                 # plot_thing(object_amplitude, 2, "object_amplitude")
 
-                time1 = time.time()
+                # time1 = time.time()
                 object_phase, object_amplitude = make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, z_radius, scalef, sess)
-                time2 = time.time()
-                print("time: {}".format(time2 - time1))
-                exit()
+                # time2 = time.time()
+                # print("time: {}".format(time2 - time1))
+                # exit()
                 # phase between 0 and some large number
 
                 # plot_thing(object_phase, 3, "object_phase")
@@ -553,7 +569,7 @@ if __name__ == "__main__":
     # generate a data set
     N = 128
 
-    make_dataset("train_data.hdf5", N=N, samples=200)
+    make_dataset("train_data.hdf5", N=N, samples=40000)
 
     make_dataset("test_data.hdf5", N=N, samples=200)
 
