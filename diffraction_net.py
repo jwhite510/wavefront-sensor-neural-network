@@ -441,22 +441,25 @@ class DiffractionNet():
 
         for index in range(0,10):
             axes_obj = PlotAxes("sample "+str(index))
-            axes_obj.diffraction_samples.pcolormesh(diffraction_samples[index,:,:,0])
-            axes_obj.object_real_samples.pcolormesh(object_real_samples[index,:,:,0])
-            axes_obj.real_output.pcolormesh(real_output[index,:,:,0])
 
-            axes_obj.object_imag_samples.pcolormesh(object_imag_samples[index,:,:,0])
-            # axes_obj.object_imag_samples.text(0.9, 0.9,"imag Scalar: {0:.5g}".format(imag_scalar_samples[index, 0]), fontsize=10, ha='center', transform=axes_obj.object_imag_samples.transAxes, backgroundcolor="red")
+            im = axes_obj.diffraction_samples.pcolormesh(diffraction_samples[index,:,:,0])
+            axes_obj.fig.colorbar(im, ax=axes_obj.diffraction_samples)
 
-            axes_obj.imag_output.pcolormesh(imag_output[index,:,:,0])
-            # axes_obj.imag_output.text(0.9, 0.9,"imag Scalar: {0:.5g}".format(imag_scalar_output[index, 0]), fontsize=10, ha='center', transform=axes_obj.imag_output.transAxes, backgroundcolor="red")
+            im = axes_obj.object_real_samples.pcolormesh(object_real_samples[index,:,:,0])
+            axes_obj.fig.colorbar(im, ax=axes_obj.object_real_samples)
 
-            # reconstructed diffraction pattern
-            # recons_diffraction = diffraction_functions.construct_diffraction_pattern(real_output[index,:,:,0], imag_output[index,:,:,0], imag_scalar_output[index])
-            # axes_obj.diffraction_recons.pcolormesh(recons_diffraction)
+            im = axes_obj.real_output.pcolormesh(real_output[index,:,:,0])
+            axes_obj.fig.colorbar(im, ax=axes_obj.real_output)
+
+            im = axes_obj.object_imag_samples.pcolormesh(object_imag_samples[index,:,:,0])
+            axes_obj.fig.colorbar(im, ax=axes_obj.object_imag_samples)
+
+            im = axes_obj.imag_output.pcolormesh(imag_output[index,:,:,0])
+            axes_obj.fig.colorbar(im, ax=axes_obj.imag_output)
 
             # tensorflow reconstructed diffraction pattern
-            axes_obj.tf_reconstructed_diff.pcolormesh(tf_reconstructed_diff[index,:,:,0])
+            im = axes_obj.tf_reconstructed_diff.pcolormesh(tf_reconstructed_diff[index,:,:,0])
+            axes_obj.fig.colorbar(im, ax=axes_obj.tf_reconstructed_diff)
 
             axes_obj.save("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/sample_"+str(index))
             del axes_obj
@@ -543,12 +546,12 @@ class PlotAxes():
         self.real_output.set_yticks([])
 
         self.imag_output = self.fig.add_subplot(self.gs[2:3,1:2])
-        self.imag_output.set_title("Retrieved imag (normalized)")
+        self.imag_output.set_title("Retrieved imag")
         self.imag_output.set_xticks([])
         self.imag_output.set_yticks([])
 
         self.object_imag_samples = self.fig.add_subplot(self.gs[2:3,0:1])
-        self.object_imag_samples.set_title("Actual imag (normalized)")
+        self.object_imag_samples.set_title("Actual imag")
         self.object_imag_samples.set_xticks([])
         self.object_imag_samples.set_yticks([])
 
