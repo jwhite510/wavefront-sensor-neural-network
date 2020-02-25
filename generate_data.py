@@ -293,8 +293,8 @@ def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, 
     prop_center_N_real = resize(np.real(prop_center), (N,N))
     prop_center_N_imag = resize(np.imag(prop_center), (N,N))
     prop_center_N = prop_center_N_real + 1j * prop_center_N_imag
-    prop_center_N *=1/(np.max(prop_center_N)) # normalize
     prop_center_N *= amplitude_mask
+    prop_center_N *=1/(np.max(prop_center_N)) # normalize
 
     real_masked_prop = np.real(prop_center_N)
     imag_masked_prop = np.imag(prop_center_N)
@@ -452,17 +452,24 @@ def make_dataset(filename, N, samples):
 
                 object_real, object_imag = make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, z_radius, scalef, sess)
 
+                # plot_thing(object_real, 1, "object_real")
+                # plot_thing(object_imag, 2, "object_imag")
                 complex_object = object_real + 1j*object_imag
-                # complex_object = object_amplitude * np.exp(1j * object_phase)
-
-                # plot_thing(np.abs(complex_object), 5, "np.abs(complex_object)")
-                # plot_thing(np.angle(complex_object), 6, "np.angle(complex_object)")
 
                 diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))
                 # absolute value
                 diffraction_pattern = np.abs(diffraction_pattern)
                 # normalize the diffraction pattern
                 diffraction_pattern = diffraction_pattern / np.max(diffraction_pattern)
+
+                # adjust the real and imaginary parts to be between 0 and 1
+                # object_real: # between -1 and 1
+                # object_imag: # between -1 and 1
+                object_real += 1 # between 0 and 2
+                object_imag += 1 # between 0 and 2
+                object_real *= (1/2) # between 0 and 1
+                object_imag *= (1/2) # between 0 and 1
+
                 if i % 100 == 0:
                     plot_sample(N, object_real, object_imag, diffraction_pattern)
                     plt.pause(0.001)
