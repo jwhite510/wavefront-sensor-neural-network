@@ -458,7 +458,7 @@ def make_dataset(filename, N, samples):
 
                 diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))
                 # absolute value
-                diffraction_pattern = np.abs(diffraction_pattern)
+                diffraction_pattern = np.abs(diffraction_pattern)**2
                 # normalize the diffraction pattern
                 diffraction_pattern = diffraction_pattern / np.max(diffraction_pattern)
 
@@ -500,7 +500,7 @@ if __name__ == "__main__":
     # generate a data set
     N = 128
 
-    make_dataset("train_data.hdf5", N=N, samples=200)
+    make_dataset("train_data.hdf5", N=N, samples=40000)
 
     make_dataset("test_data.hdf5", N=N, samples=200)
 
