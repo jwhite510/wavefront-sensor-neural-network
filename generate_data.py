@@ -459,8 +459,12 @@ def make_dataset(filename, N, samples):
                 diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))
                 # absolute value
                 diffraction_pattern = np.abs(diffraction_pattern)**2
+
+                gaussian_noise = np.random.normal(scale=0.05*np.max(diffraction_pattern), size=diffraction_pattern.shape)
+                diffraction_pattern_with_noise = diffraction_pattern + gaussian_noise
+
                 # normalize the diffraction pattern
-                diffraction_pattern = diffraction_pattern / np.max(diffraction_pattern)
+                diffraction_pattern_with_noise = diffraction_pattern_with_noise / np.max(diffraction_pattern_with_noise)
 
                 # adjust the real and imaginary parts to be between 0 and 1
                 # object_real: # between -1 and 1
@@ -471,13 +475,13 @@ def make_dataset(filename, N, samples):
                 object_imag *= (1/2) # between 0 and 1
 
                 if i % 100 == 0:
-                    plot_sample(N, object_real, object_imag, diffraction_pattern)
+                    plot_sample(N, object_real, object_imag, diffraction_pattern_with_noise)
                     plt.pause(0.001)
 
                 hd5file.root.object_real.append(object_real.reshape(1,-1))
                 hd5file.root.object_imag.append(object_imag.reshape(1,-1))
                 # hd5file.root.phase_norm_factor.append(phase_norm_factor.reshape(1,1))
-                hd5file.root.diffraction.append(diffraction_pattern.reshape(1,-1))
+                hd5file.root.diffraction.append(diffraction_pattern_with_noise.reshape(1,-1))
 
                 # # reconstruct phase from label
                 # object_phase *= 2 # between 0 and 2
