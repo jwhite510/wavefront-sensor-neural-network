@@ -536,22 +536,22 @@ class PlotAxes():
         self.tf_reconstructed_diff.set_yticks([])
 
         self.object_real_samples = self.fig.add_subplot(self.gs[1:2,0:1])
-        self.object_real_samples.set_title("Actual Object real")
+        self.object_real_samples.set_title("Actual Real Object")
         self.object_real_samples.set_xticks([])
         self.object_real_samples.set_yticks([])
 
         self.real_output = self.fig.add_subplot(self.gs[1:2,1:2])
-        self.real_output.set_title("Retrieved Object Ampiltude")
+        self.real_output.set_title("Retrieved Real Object")
         self.real_output.set_xticks([])
         self.real_output.set_yticks([])
 
         self.imag_output = self.fig.add_subplot(self.gs[2:3,1:2])
-        self.imag_output.set_title("Retrieved imag")
+        self.imag_output.set_title("Retrieved Imag Object")
         self.imag_output.set_xticks([])
         self.imag_output.set_yticks([])
 
         self.object_imag_samples = self.fig.add_subplot(self.gs[2:3,0:1])
-        self.object_imag_samples.set_title("Actual imag")
+        self.object_imag_samples.set_title("Actual Imag Object")
         self.object_imag_samples.set_xticks([])
         self.object_imag_samples.set_yticks([])
 
