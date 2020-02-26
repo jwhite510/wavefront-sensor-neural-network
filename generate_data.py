@@ -13,12 +13,120 @@ import tensorflow as tf
 import PIL.ImageOps
 import time
 
+def plot_complex(title, complex_array, num, plot_z_radius=False, zoom_in=None, axis_limit=None):
+    """
+        zoom_in: a float specifying the fraction of the peak value of absolute value to set the limits
+    """
+    complex_array_intg = np.sum(np.abs(complex_array), axis=0)
+    if zoom_in is not None:
+        axis_limit = np.max(complex_array_intg) * zoom_in
+        i = int(len(complex_array_intg) / 2)
+        j = i
+        di = None
+        while complex_array_intg[i] > axis_limit:
+            i+=1
+            di = i - j
+
+            if i > 1020:
+                break
+
+    if axis_limit is not None:
+        ax_min = (np.shape(complex_array)[0] / 2) - axis_limit
+        ax_max = (np.shape(complex_array)[0] / 2) + axis_limit
+
+    assert isinstance(title, str)
+    assert isinstance(complex_array, np.ndarray)
+    # plt.figure(num)
+    # plt.clf()
+    fig, ax = plt.subplots(1,4, figsize=(15,5), num=num)
+    fig.figsize = (15,5)
+    fig.text(0.5, 0.90,title, ha="center", size=30)
+    im = ax[0].imshow(np.abs(complex_array))
+    ax[0].set_title("abs")
+    fig.colorbar(im, ax=ax[0])
+    if zoom_in is not None:
+        ax[0].set_xlim(j - di, j + di)
+        ax[0].set_ylim(j - di, j + di)
+    elif axis_limit is not None:
+        ax[0].set_xlim(ax_min, ax_max)
+        ax[0].set_ylim(ax_min, ax_max)
+
+    im = ax[1].imshow(np.real(complex_array))
+    ax[1].set_title("real")
+    fig.colorbar(im, ax=ax[1])
+    if zoom_in is not None:
+        ax[1].set_xlim(j - di, j + di)
+        ax[1].set_ylim(j - di, j + di)
+    elif axis_limit is not None:
+        ax[1].set_xlim(ax_min, ax_max)
+        ax[1].set_ylim(ax_min, ax_max)
+
+    im = ax[2].imshow(np.imag(complex_array))
+    ax[2].set_title("imag")
+    fig.colorbar(im, ax=ax[2])
+    if zoom_in is not None:
+        ax[2].set_xlim(j - di, j + di)
+        ax[2].set_ylim(j - di, j + di)
+    elif axis_limit is not None:
+        ax[2].set_xlim(ax_min, ax_max)
+        ax[2].set_ylim(ax_min, ax_max)
+
+    # unwrapped_phase = unwrap_phase(np.angle(complex_array))
+    unwrapped_phase = np.angle(complex_array)
+    # unwrapped_phase[np.abs(complex_array)<0.01] = 0
+
+    if plot_z_radius:
+        unwrapped_phase[z_radius>1] = unwrapped_phase[int(N_zernike/2), int(N_zernike/2)]
+
+    im = ax[3].imshow(unwrapped_phase)
+    ax[3].set_title("angle")
+    fig.colorbar(im, ax=ax[3])
+    if zoom_in is not None:
+        ax[3].set_xlim(j - di, j + di)
+        ax[3].set_ylim(j - di, j + di)
+    elif axis_limit is not None:
+        ax[3].set_xlim(ax_min, ax_max)
+        ax[3].set_ylim(ax_min, ax_max)
+
+    return fig
+
 def tf_factorial(x):
     return tf.exp(tf.lgamma(x + 1)) # factorial of x
 
+def build_tf_propagate_gaussian_graph(N_zernike, scalef):
+
+    x = np.linspace(-1,1,N_zernike).reshape(-1,1)
+    y = np.linspace(-1,1,N_zernike).reshape(1,-1)
+
+    dx = x[1,0] - x[0,0]
+    dy = y[0,1] - y[0,0]
+
+    w_x = 0.1 *scalef
+    w_y = 0.1 *scalef
+    s_x = 0 + (dx)*0.5 # so the linear phase is 0
+    s_y = 0 + (dy)*0.5 # so the linear phase is 0
+
+    z = np.exp((-(x-s_x)**2)/w_x**2) * np.exp((-(y-s_y)**2)/w_y**2)
+
+    # zernike_phase # place holder
+    zernike_phase = tf.placeholder(tf.float32, shape=[N_zernike , N_zernike])
+    zernike_phase_complex = tf.complex(imag=zernike_phase, real=tf.zeros_like(zernike_phase))
+    z_compex = z * tf.exp(zernike_phase_complex)
+
+    prop = tf.manip.roll(z_compex, shift=int(N_zernike/2), axis=0)
+    prop = tf.manip.roll(prop, shift=int(N_zernike/2), axis=1)
+    prop = tf.fft2d(prop)
+    prop = tf.manip.roll(prop, shift=int(N_zernike/2), axis=0)
+    prop = tf.manip.roll(prop, shift=int(N_zernike/2), axis=1)
+
+    nodes = {}
+    nodes["z_compex"] = z_compex
+    nodes["zernike_phase"] = zernike_phase
+    nodes["prop"] = prop
+
+    return nodes
 
 def build_tf_zernike_graph(N_zernike, scalef):
-
 
     m_ph = tf.placeholder(tf.float64, shape=[]) # placeholder
     n_ph = tf.placeholder(tf.float64, shape=[]) # placeholder
@@ -117,7 +225,7 @@ def print_debug_variables(debug_locals):
     print("")
 
 
-def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, z_radius, scalef, sess):
+def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, z_radius, scalef, tf_propagate_gaussian_graph, sess):
 
     zernike_coefficients = [
             #(m,n)
@@ -159,127 +267,11 @@ def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, 
         # zernike_coef_phase -= zernike_coef_phase[int(N_zernike/2), int(N_zernike/2)]
         zernike_phase += zernike_coef_phase
 
-    # subtract phase at center
-    # zernike_phase -= zernike_phase[int(N_zernike/2), int(N_zernike/2)] # subtract phase at center
-    # normalize the zernike phase
-
-    nonzero_amplitude = np.zeros_like(amplitude_mask)
-    nonzero_amplitude[amplitude_mask>0.001] = 1
-
-    # zernike_phase *= 1 / np.max(np.abs(nonzero_amplitude*zernike_phase)) # this is between -1 and 1 (random)
-    # zernike_phase*=np.pi
-    # plot_zeros(zernike_phase)
-
-    # subtract phase from zernike_phase
-    # zernike_phase-=np.min(zernike_phase*nonzero_amplitude)
-    # zernike_phase*=nonzero_amplitude
-
-    # multiply the amplitude mask by a random gaussian
-    # print("N_zernike =>", N_zernike)
-
-    x = np.linspace(-1,1,N_zernike).reshape(-1,1)
-    y = np.linspace(-1,1,N_zernike).reshape(1,-1)
-
-    dx = x[1,0] - x[0,0]
-    dy = y[0,1] - y[0,0]
-
-    w_x = 0.1 *scalef
-    w_y = 0.1 *scalef
-    s_x = 0 + (dx)*0.5 # so the linear phase is 0
-    s_y = 0 + (dy)*0.5 # so the linear phase is 0
-
-    # random gaussian
-    z = np.exp((-(x-s_x)**2)/w_x**2) * np.exp((-(y-s_y)**2)/w_y**2)
-
-    z_compex = z*np.exp(1j*zernike_phase)
-
-    def plot_complex(title, complex_array, num, plot_z_radius=False, zoom_in=None, axis_limit=None):
-        """
-            zoom_in: a float specifying the fraction of the peak value of absolute value to set the limits
-        """
-        complex_array_intg = np.sum(np.abs(complex_array), axis=0)
-        if zoom_in is not None:
-            axis_limit = np.max(complex_array_intg) * zoom_in
-            i = int(len(complex_array_intg) / 2)
-            j = i
-            di = None
-            while complex_array_intg[i] > axis_limit:
-                i+=1
-                di = i - j
-
-                if i > 1020:
-                    break
-
-        if axis_limit is not None:
-            ax_min = (np.shape(complex_array)[0] / 2) - axis_limit
-            ax_max = (np.shape(complex_array)[0] / 2) + axis_limit
-
-        assert isinstance(title, str)
-        assert isinstance(complex_array, np.ndarray)
-        # plt.figure(num)
-        # plt.clf()
-        fig, ax = plt.subplots(1,4, figsize=(15,5), num=num)
-        fig.figsize = (15,5)
-        fig.text(0.5, 0.90,title, ha="center", size=30)
-        im = ax[0].imshow(np.abs(complex_array))
-        ax[0].set_title("abs")
-        fig.colorbar(im, ax=ax[0])
-        if zoom_in is not None:
-            ax[0].set_xlim(j - di, j + di)
-            ax[0].set_ylim(j - di, j + di)
-        elif axis_limit is not None:
-            ax[0].set_xlim(ax_min, ax_max)
-            ax[0].set_ylim(ax_min, ax_max)
-
-        im = ax[1].imshow(np.real(complex_array))
-        ax[1].set_title("real")
-        fig.colorbar(im, ax=ax[1])
-        if zoom_in is not None:
-            ax[1].set_xlim(j - di, j + di)
-            ax[1].set_ylim(j - di, j + di)
-        elif axis_limit is not None:
-            ax[1].set_xlim(ax_min, ax_max)
-            ax[1].set_ylim(ax_min, ax_max)
-
-        im = ax[2].imshow(np.imag(complex_array))
-        ax[2].set_title("imag")
-        fig.colorbar(im, ax=ax[2])
-        if zoom_in is not None:
-            ax[2].set_xlim(j - di, j + di)
-            ax[2].set_ylim(j - di, j + di)
-        elif axis_limit is not None:
-            ax[2].set_xlim(ax_min, ax_max)
-            ax[2].set_ylim(ax_min, ax_max)
-
-        # unwrapped_phase = unwrap_phase(np.angle(complex_array))
-        unwrapped_phase = np.angle(complex_array)
-        # unwrapped_phase[np.abs(complex_array)<0.01] = 0
-
-        if plot_z_radius:
-            unwrapped_phase[z_radius>1] = unwrapped_phase[int(N_zernike/2), int(N_zernike/2)]
-
-        im = ax[3].imshow(unwrapped_phase)
-        ax[3].set_title("angle")
-        fig.colorbar(im, ax=ax[3])
-        if zoom_in is not None:
-            ax[3].set_xlim(j - di, j + di)
-            ax[3].set_ylim(j - di, j + di)
-        elif axis_limit is not None:
-            ax[3].set_xlim(ax_min, ax_max)
-            ax[3].set_ylim(ax_min, ax_max)
-
-        return fig
-
-    # plt.show()
-    # exit()
-
-    # fig1 = plot_complex("Before FT {0:.5g}".format(scalef), z_compex, 1, zoom_in=None, axis_limit=100)
-
-    prop = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(z_compex)))
+    prop = sess.run(tf_propagate_gaussian_graph["prop"],
+            feed_dict={tf_propagate_gaussian_graph["zernike_phase"]:zernike_phase}
+            )
 
     # fig3 = plot_complex("After FT {0:.5g}".format(scalef), prop, 3, zoom_in=None, axis_limit=100)
-
-    # gif_images = save_gif_image(fig1, fig3, gif_images)
 
     # take the center of propagated beam
     random_shift = ( (-1 + 2*np.random.rand()), (-1 + 2*np.random.rand()) )
@@ -298,30 +290,6 @@ def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, 
 
     real_masked_prop = np.real(prop_center_N)
     imag_masked_prop = np.imag(prop_center_N)
-
-    # plt.figure(1)
-    # plt.pcolormesh(imag_masked_prop)
-    # plt.colorbar()
-
-    # plt.figure(2)
-    # plt.pcolormesh(real_masked_prop)
-    # plt.colorbar()
-
-    # prop_thing = real_masked_prop + 1j*imag_masked_prop
-
-    # plt.figure(3)
-    # plt.pcolormesh(np.abs(prop_thing))
-    # plt.colorbar()
-
-    # plt.figure(4)
-    # plt.pcolormesh(np.angle(prop_thing))
-    # plt.colorbar()
-
-    # plt.show()
-    # exit()
-
-    # masked_prop *= (1/np.max(masked_prop))
-    # nonzero_phase = nonzero_amplitude*np.angle(prop_center_N)
 
     return real_masked_prop, imag_masked_prop
 
@@ -425,6 +393,7 @@ def make_dataset(filename, N, samples):
         N_zernike = 1024
         scalef = 0.6
         tf_zernike_graph, z_radius = build_tf_zernike_graph(N_zernike, scalef)
+        tf_propagate_gaussian_graph = build_tf_propagate_gaussian_graph(N_zernike, scalef)
         with tf.Session() as sess:
             for i in range(samples):
 
@@ -450,7 +419,8 @@ def make_dataset(filename, N, samples):
                 # plot_thing(object_phase, 1, "object_phase")
                 # plot_thing(object_amplitude, 2, "object_amplitude")
 
-                object_real, object_imag = make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, z_radius, scalef, sess)
+                object_real, object_imag = make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, z_radius, scalef, tf_propagate_gaussian_graph, sess)
+
 
                 # plot_thing(object_real, 1, "object_real")
                 # plot_thing(object_imag, 2, "object_imag")
