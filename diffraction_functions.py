@@ -92,7 +92,7 @@ def tf_reconstruct_diffraction_pattern(real_norm, imag_norm):
     imag_norm -= 1 # between -1 and 1
 
     complex_object_retrieved = tf.complex(real=real_norm, imag=imag_norm)
-    diffraction_pattern = tf.abs(tf_fft2(complex_object_retrieved, dimmensions=[1,2]))
+    diffraction_pattern = tf.abs(tf_fft2(complex_object_retrieved, dimmensions=[1,2]))**2
 
     diffraction_pattern = diffraction_pattern / tf.reduce_max(diffraction_pattern, keepdims=True, axis=[1,2]) # normalize the diffraction pattern
     return diffraction_pattern
