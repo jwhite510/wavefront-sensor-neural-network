@@ -13,6 +13,60 @@ import tensorflow as tf
 import PIL.ImageOps
 import time
 
+def detector(dp, num_phot, qe, io_noise, well_capac, el_per_DC, bit_depth, phot_energy, offset=None):
+    """
+    Treats the measured intensity of a diffration pattern to gain a physical dp.
+
+    Basically stolen from the matlab class.
+
+    :param dp: (numpy nd-array) Input diffraction pattern.
+    :param exp_time: (float) Exposure time in s.
+    :param flux: (float) Incident photon flux on the ccd.
+    :param qe: (float) Quantum efficency of the CCD for the given wavelength.
+    :param sci_qe: (float) Number of e- per incident XUV photon (Si: 3.65eV/e-).
+    :param io_noise: (float) Readout noise (std) in electrons rms.
+    :param well_capac: (float) Full well capacity of the detector, usually in the order of 1e5.
+    :param el_per_DC: (float) Number of electrons per digital count.
+    :param offset: (float) Baselineclamp.
+    :param bit_depth: Bit depth of the detector
+    :param phot_energy: Energy of the detected photons in eV.
+
+    :return: Measured diffraction pattern
+    """
+
+    sci_qe = phot_energy / 3.65
+
+    if np.sum(dp) != 0:
+        # norm
+        dp = dp / np.sum(dp)
+
+    # calculate the shot noise
+    dp_el = sci_qe * np.random.poisson(num_phot * dp * qe)  # diffraction pattern in electron counts
+    # print(np.sum(dp_el))
+
+    # Check if pixel well capacity is reached
+    dp_el[dp_el > well_capac] = well_capac
+    dp_el[dp_el < 0] = 0
+
+    # add the readout noise
+    dp_el += np.random.standard_normal(dp_el.shape) * io_noise
+
+    # calculate the the counts
+    dp_count = dp_el / el_per_DC
+
+    if offset is not None:
+        dp_count += offset
+    dp_count[dp_count < 0] = 0
+
+    dp_count[dp_count > 2 ** bit_depth] = 2 ** bit_depth
+
+    # dp_int = dp_count.astype(int)
+
+    
+
+    # return dp_int
+    return np.round(dp_count)
+
 def plot_complex(title, complex_array, num, plot_z_radius=False, zoom_in=None, axis_limit=None):
     """
         zoom_in: a float specifying the fraction of the peak value of absolute value to set the limits
@@ -429,6 +483,24 @@ def make_dataset(filename, N, samples):
                 diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))
                 # absolute value
                 diffraction_pattern = np.abs(diffraction_pattern)**2
+
+                # def detector(dp, num_phot, qe, io_noise, well_capac, el_per_DC, bit_depth, phot_energy, offset=None):
+                physical_dp = detector(diffraction_pattern,
+                        1e6, # num_phot
+                        1, # qe
+                        3, # io_noise
+                        1e6, # well_capac
+                        3, # el_per_DC
+                        16, # bit_depth
+                        1 # phot_energy
+                        )
+
+                # diffraction_pattern
+                plot_thing(diffraction_pattern, 888, "diffraction_pattern")
+                plot_thing(physical_dp, 889, "physical_dp")
+                plt.show()
+                exit()
+
 
                 gaussian_noise = np.random.normal(scale=0.05*np.max(diffraction_pattern), size=diffraction_pattern.shape)
                 diffraction_pattern_with_noise = diffraction_pattern + gaussian_noise
