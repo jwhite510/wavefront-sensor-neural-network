@@ -247,6 +247,7 @@ def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, 
             (4,4)
             ]
 
+    time1 = time.time()
     zernike_phase = np.zeros((N_zernike,N_zernike))
     for z_coefs in zernike_coefficients:
 
@@ -267,9 +268,18 @@ def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, 
         # zernike_coef_phase -= zernike_coef_phase[int(N_zernike/2), int(N_zernike/2)]
         zernike_phase += zernike_coef_phase
 
+    time2 = time.time()
+    duration = time2 - time1
+    print("generate zernike =>", duration)
+
+
+    time1 = time.time()
     prop = sess.run(tf_propagate_gaussian_graph["prop"],
             feed_dict={tf_propagate_gaussian_graph["zernike_phase"]:zernike_phase}
             )
+    time2 = time.time()
+    duration = time2 - time1
+    print("propagate =>", duration)
 
     # fig3 = plot_complex("After FT {0:.5g}".format(scalef), prop, 3, zoom_in=None, axis_limit=100)
 
@@ -419,7 +429,14 @@ def make_dataset(filename, N, samples):
                 # plot_thing(object_phase, 1, "object_phase")
                 # plot_thing(object_amplitude, 2, "object_amplitude")
 
+                print("====================")
+                time1 = time.time()
                 object_real, object_imag = make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, z_radius, scalef, tf_propagate_gaussian_graph, sess)
+                time2 = time.time()
+                duration = time2 - time1
+                print("total make_wavefront_sensor_image function duration =>", duration)
+                continue
+                exit()
 
 
                 # plot_thing(object_real, 1, "object_real")
