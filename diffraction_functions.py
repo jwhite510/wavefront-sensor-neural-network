@@ -10,6 +10,33 @@ from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.interpolation import shift as sc_shift
 from scipy.misc import factorial
 
+def make_image_square(image):
+
+    # make the image square
+    rows = np.shape(image)[0]
+    cols = np.shape(image)[1]
+    if rows > cols:
+        half_new_rows = int(cols / 2)
+        center_row = int(rows / 2)
+        im_new = image[center_row-half_new_rows:center_row+half_new_rows,:]
+    if cols > rows:
+        half_new_cols = int(rows / 2)
+        center_col = int(cols / 2)
+        im_new = image[:,center_col-half_new_cols:center_col+half_new_cols]
+
+    return im_new
+
+def bin_image(image, bin_shape):
+    im_shape = image.shape
+    image = image.reshape(
+            int(im_shape[0]/bin_shape[0]),
+            bin_shape[0],
+            int(im_shape[1]/bin_shape[1]),
+            bin_shape[1]
+            ).sum(3).sum(1)
+    return image
+
+
 def circular_crop(image, radius):
 
     # multpily by a circular beam amplitude

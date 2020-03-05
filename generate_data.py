@@ -448,6 +448,53 @@ def make_dataset(filename, N, samples):
         scalef = 0.6
         tf_zernike_graph, z_radius = build_tf_zernike_graph(N_zernike, scalef)
         tf_propagate_gaussian_graph = build_tf_propagate_gaussian_graph(N_zernike, scalef)
+
+        # open noise sample
+        measured_noise = Image.open("./noise_samples/5_3_20/1_12/Bild_1.png").convert("L")
+        measured_noise = np.array(measured_noise)
+
+        plt.figure()
+        plt.imshow(measured_noise)
+        plt.title("before cropping")
+        plt.colorbar()
+
+        # measured_noise[200:1000, 200:2000] = 255
+
+        plt.figure()
+        histogram = plt.hist(measured_noise.reshape(-1), bins=100)
+        plt.title("measured_noise, before binning")
+
+        # make the image square
+        measured_noise = diffraction_functions.make_image_square(measured_noise)
+
+        # bin the image
+        measured_noise = diffraction_functions.bin_image(measured_noise,(16,16))
+
+        plt.figure()
+        plt.imshow(measured_noise)
+        plt.title("np.shape(measured_noise) =>{}".format(np.shape(measured_noise)))
+        plt.colorbar()
+
+        generated_noise = np.random.choice(measured_noise.reshape(-1), size=measured_noise.size)
+        generated_noise = generated_noise.reshape(measured_noise.shape)
+
+        plt.figure()
+        histogram = plt.hist(generated_noise.reshape(-1), bins=100)
+        plt.title("generated_noise")
+
+        plt.figure()
+        plt.imshow(generated_noise)
+        plt.title("generated_noise")
+        plt.colorbar()
+
+        plt.figure()
+        histogram = plt.hist(measured_noise.reshape(-1), bins=100)
+        plt.title("measured_noise, after binning")
+        plt.show()
+        exit()
+
+
+
         with tf.Session() as sess:
             for i in range(samples):
 
