@@ -425,21 +425,24 @@ def make_dataset(filename, N, samples):
         hd5file.root.N.append(np.array([[N]]))
         # plt.ion()
 
-        N = 128
         # N must be divisible by 4
         assert N/4 == int(N/4)
         # get the png image for amplitude
         im = Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")
         im = PIL.ImageOps.invert(im)
-        im = im.resize((int(N/2),int(N/2)))
-        amplitude_mask = np.array(im.getdata(), dtype=np.uint8).reshape(im.size[0], im.size[1], -1)
-        amplitude_mask = np.sum(amplitude_mask, axis=2)
-        # pad the amplitude image with zeros
-        amplitude_mask = np.concatenate((amplitude_mask, np.zeros((int(N/2),int(N/4)))), axis=1)
-        amplitude_mask = np.concatenate((np.zeros((int(N/2),int(N/4))), amplitude_mask), axis=1)
-        amplitude_mask = np.concatenate((np.zeros((int(N/4),N)), amplitude_mask), axis=0)
-        amplitude_mask = np.concatenate((amplitude_mask, np.zeros((int(N/4),N))), axis=0)
+
+        # image_width = int(N/4)
+        image_width = int(N/2)
+        im = im.resize((image_width,image_width)).convert("L")
+        im = np.array(im)
+
+        # determine width of mask
+        pad_amount = int((N - image_width)/2)
+        amplitude_mask = np.pad(im, pad_width=pad_amount, mode="constant", constant_values=0)
+        amplitude_mask = amplitude_mask.astype(np.float64)
         amplitude_mask *= 1/np.max(amplitude_mask) # normalize
+        assert amplitude_mask.shape[0] == N
+
         # amplitude_mask[amplitude_mask>0.5] = 1
         # concat 32
         # prepare tensorflow zernike graph
@@ -448,52 +451,6 @@ def make_dataset(filename, N, samples):
         scalef = 0.6
         tf_zernike_graph, z_radius = build_tf_zernike_graph(N_zernike, scalef)
         tf_propagate_gaussian_graph = build_tf_propagate_gaussian_graph(N_zernike, scalef)
-
-        # open noise sample
-        measured_noise = Image.open("./noise_samples/5_3_20/1_12/Bild_1.png").convert("L")
-        measured_noise = np.array(measured_noise)
-
-        plt.figure()
-        plt.imshow(measured_noise)
-        plt.title("before cropping")
-        plt.colorbar()
-
-        # measured_noise[200:1000, 200:2000] = 255
-
-        plt.figure()
-        histogram = plt.hist(measured_noise.reshape(-1), bins=100)
-        plt.title("measured_noise, before binning")
-
-        # make the image square
-        measured_noise = diffraction_functions.make_image_square(measured_noise)
-
-        # bin the image
-        measured_noise = diffraction_functions.bin_image(measured_noise,(16,16))
-
-        plt.figure()
-        plt.imshow(measured_noise)
-        plt.title("np.shape(measured_noise) =>{}".format(np.shape(measured_noise)))
-        plt.colorbar()
-
-        generated_noise = np.random.choice(measured_noise.reshape(-1), size=measured_noise.size)
-        generated_noise = generated_noise.reshape(measured_noise.shape)
-
-        plt.figure()
-        histogram = plt.hist(generated_noise.reshape(-1), bins=100)
-        plt.title("generated_noise")
-
-        plt.figure()
-        plt.imshow(generated_noise)
-        plt.title("generated_noise")
-        plt.colorbar()
-
-        plt.figure()
-        histogram = plt.hist(measured_noise.reshape(-1), bins=100)
-        plt.title("measured_noise, after binning")
-        plt.show()
-        exit()
-
-
 
         with tf.Session() as sess:
             for i in range(samples):
@@ -527,29 +484,13 @@ def make_dataset(filename, N, samples):
                 # plot_thing(object_imag, 2, "object_imag")
                 complex_object = object_real + 1j*object_imag
 
+                # plot_thing(np.abs(complex_object), 87979, "np.abs(complex_object)")
+
                 diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))
                 # absolute value
                 diffraction_pattern = np.abs(diffraction_pattern)**2
 
-                # def detector(dp, num_phot, qe, io_noise, well_capac, el_per_DC, bit_depth, phot_energy, offset=None):
-                physical_dp = detector(diffraction_pattern,
-                        1e6, # num_phot
-                        1, # qe
-                        3, # io_noise
-                        1e6, # well_capac
-                        3, # el_per_DC
-                        16, # bit_depth
-                        1 # phot_energy
-                        )
-
-                # diffraction_pattern
-                plot_thing(diffraction_pattern, 888, "diffraction_pattern")
-                plot_thing(physical_dp, 889, "physical_dp")
-                plt.show()
-                exit()
-
-
-                gaussian_noise = np.random.normal(scale=0.05*np.max(diffraction_pattern), size=diffraction_pattern.shape)
+                gaussian_noise = np.random.normal(scale=0.00*np.max(diffraction_pattern), size=diffraction_pattern.shape)
                 diffraction_pattern_with_noise = diffraction_pattern + gaussian_noise
 
                 # normalize the diffraction pattern
