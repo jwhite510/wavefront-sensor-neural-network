@@ -41,7 +41,7 @@ def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
         size3 = np.shape(amplitude_mask)[0]
         ratio = size3 / size2
         print("ratio =>", ratio)
-        im_size_nm *= ratio # object image size [nm]
+        im_size_nm *= ratio # object image size [m]
 
         experimental_params = {}
         experimental_params["object"] = {}
@@ -53,9 +53,7 @@ def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
         experimental_params["diffraction_plane"]["fmax"] = (experimental_params["diffraction_plane"]["df"] * image_dimmension) / 2
         experimental_params["diffraction_plane"]["f"] = np.arange(-experimental_params["diffraction_plane"]["fmax"], experimental_params["diffraction_plane"]["fmax"], experimental_params["diffraction_plane"]["df"])
 
-        print("im_size_nm =>", im_size_nm)
-        print("experimental_params['diffraction_plane']['fmax'] =>", experimental_params['diffraction_plane']['fmax'])
-        exit()
+        return experimental_params, amplitude_mask
 
 def make_image_square(image):
 

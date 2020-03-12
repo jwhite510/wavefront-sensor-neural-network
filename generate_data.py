@@ -425,7 +425,17 @@ def make_dataset(filename, N, samples):
         hd5file.root.N.append(np.array([[N]]))
         # plt.ion()
 
-        diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
+        experimental_params, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
+
+        print("np.shape(experimental_params['object']['x']) => ",np.shape(experimental_params['object']['x']))
+        print("np.shape(experimental_params['diffraction_plane']['f']) => ",np.shape(experimental_params['diffraction_plane']['f']))
+
+        print("experimental_params['object']['xmax'] =>", experimental_params['object']['xmax'])
+        print("experimental_params['diffraction_plane']['fmax'] =>", experimental_params['diffraction_plane']['fmax'])
+
+        print("N =>", N)
+        exit()
+
         # diffraction_functions.get_amplitude_mask_and_imagesize(N, N)
         # amplitude_mask[amplitude_mask>0.5] = 1
         # concat 32
