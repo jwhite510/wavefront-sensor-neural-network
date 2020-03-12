@@ -4,11 +4,54 @@ import math
 from PIL import Image, ImageDraw
 from PIL import ImagePath
 import tensorflow as tf
+import PIL.ImageOps
 import matplotlib.pyplot as plt
 from scipy.ndimage.interpolation import rotate
 from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.interpolation import shift as sc_shift
 from scipy.misc import factorial
+
+def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
+
+        # image_dimmension must be divisible by 4
+        assert image_dimmension/4 == int(image_dimmension/4)
+        # get the png image for amplitude
+        im = Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")
+        im = PIL.ImageOps.invert(im)
+
+        size1 = im.size[0]
+        im_size_nm = 5*im.size[0] * 1e-9 # meters
+        print("im_size_nm =>", im_size_nm)
+
+        # scale down the image
+        im = im.resize((desired_mask_width,desired_mask_width)).convert("L")
+        size2 = im.size[0]
+        im = np.array(im)
+
+        # # # # # # # # # # # # #
+        # # # pad the image # # #
+        # # # # # # # # # # # # #
+
+        # determine width of mask
+        pad_amount = int((image_dimmension - desired_mask_width)/2)
+        amplitude_mask = np.pad(im, pad_width=pad_amount, mode="constant", constant_values=0)
+        amplitude_mask = amplitude_mask.astype(np.float64)
+        amplitude_mask *= 1/np.max(amplitude_mask) # normalize
+        assert amplitude_mask.shape[0] == image_dimmension
+        size3 = np.shape(amplitude_mask)[0]
+        ratio = size3 / size2
+        print("ratio =>", ratio)
+        im_size_nm *= ratio # object image size [nm]
+
+        object_dx = im_size_nm / image_dimmension
+        object_x = np.arange(-(im_size_nm/2), (im_size_nm/2), object_dx)
+        diffraction_plane_df = 1 / (image_dimmension * object_dx) # frequency axis in diffraction plane
+        diffraction_plane_fmax = (diffraction_plane_df * image_dimmension) / 2
+        diffraction_plane_f = np.arange(-diffraction_plane_fmax, diffraction_plane_fmax, diffraction_plane_df)
+
+        print("im_size_nm =>", im_size_nm)
+        print("diffraction_plane_fmax =>", diffraction_plane_fmax)
+        exit()
 
 def make_image_square(image):
 

@@ -425,24 +425,8 @@ def make_dataset(filename, N, samples):
         hd5file.root.N.append(np.array([[N]]))
         # plt.ion()
 
-        # N must be divisible by 4
-        assert N/4 == int(N/4)
-        # get the png image for amplitude
-        im = Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")
-        im = PIL.ImageOps.invert(im)
-
-        # image_width = int(N/4)
-        image_width = int(N/2)
-        im = im.resize((image_width,image_width)).convert("L")
-        im = np.array(im)
-
-        # determine width of mask
-        pad_amount = int((N - image_width)/2)
-        amplitude_mask = np.pad(im, pad_width=pad_amount, mode="constant", constant_values=0)
-        amplitude_mask = amplitude_mask.astype(np.float64)
-        amplitude_mask *= 1/np.max(amplitude_mask) # normalize
-        assert amplitude_mask.shape[0] == N
-
+        # diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
+        diffraction_functions.get_amplitude_mask_and_imagesize(N, N)
         # amplitude_mask[amplitude_mask>0.5] = 1
         # concat 32
         # prepare tensorflow zernike graph
