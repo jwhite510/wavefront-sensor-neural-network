@@ -28,11 +28,11 @@ if __name__ == "__main__":
     N = 256
     experimental_params, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
 
-    print("np.shape(experimental_params['object']['x']) => ",np.shape(experimental_params['object']['x']))
-    print("np.shape(experimental_params['diffraction_plane']['f']) => ",np.shape(experimental_params['diffraction_plane']['f']))
+    # print("np.shape(experimental_params['object']['x']) => ",np.shape(experimental_params['object']['x']))
+    # print("np.shape(experimental_params['diffraction_plane']['f']) => ",np.shape(experimental_params['diffraction_plane']['f']))
 
-    print("experimental_params['object']['xmax'] =>", experimental_params['object']['xmax'])
-    print("experimental_params['diffraction_plane']['fmax'] =>", experimental_params['diffraction_plane']['fmax'])
+    # print("experimental_params['object']['xmax'] =>", experimental_params['object']['xmax'])
+    # print("experimental_params['diffraction_plane']['fmax'] =>", experimental_params['diffraction_plane']['fmax'])
 
     plot_image("amplitude_mask", amplitude_mask, experimental_params['object']['x'], axeslabel="nm", scalef=1e9)
 
@@ -40,7 +40,22 @@ if __name__ == "__main__":
     # absolute value
     diffraction_pattern = np.abs(diffraction_pattern)**2
 
-    plot_image("diffraction_pattern", diffraction_pattern, experimental_params['diffraction_plane']['f'], axeslabel="1/m", scalef=1)
+    plot_image("diffraction_pattern", diffraction_pattern, experimental_params['diffraction_plane']['f'], axeslabel="1/m *1e7", scalef=(1/1e7))
+
+    # # # # # # # # # # # # # # #
+    # open the measured data  # #
+    # # # # # # # # # # # # # # #
+    fits_file_name = "/home/jonathon/Documents/test/windowshare/1.fits"
+    thing = fits.open(fits_file_name)
+    measured_diffraction_pattern = thing[0].data[0,:,:]
+
+    experimental_params = {}
+    experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
+    experimental_params['z_distance'] = 33e-2 # [meters] distance from camera
+    experimental_params['wavelength'] = 13.5e-9 #[meters] wavelength
+    diffraction_functions.get_measured_diffraction_pattern_grid(measured_diffraction_pattern, experimental_params)
 
     plt.show()
+    exit()
+
 

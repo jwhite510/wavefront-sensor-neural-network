@@ -11,6 +11,44 @@ from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.interpolation import shift as sc_shift
 from scipy.misc import factorial
 
+def get_measured_diffraction_pattern_grid(measured_pattern, experimental_params):
+    """
+    measured_pattern: (numpy array)
+
+    experimental_params: (dict)
+    experimental_params['pixel_size'] (meters)
+    experimental_params['z_distance'] (meters)
+    experimental_params['wavelength'] (meters)
+
+    """
+
+    assert np.shape(measured_pattern)[0] == np.shape(measured_pattern)[1]
+    # construct position (space) axis
+    print("np.shape(measured_pattern) => ",np.shape(measured_pattern))
+    N = np.shape(measured_pattern)[0]
+
+    # calculate delta frequency
+    diffraction_plane = {}
+
+    diffraction_plane["x_max"] = N * (experimental_params['pixel_size'] / 2)
+    diffraction_plane["x"] = np.arange(-(diffraction_plane["x_max"]), (diffraction_plane["x_max"]), experimental_params['pixel_size'])
+
+    diffraction_plane["f"] = diffraction_plane["x"] / (experimental_params['wavelength'] * experimental_params['z_distance'])
+    diffraction_plane["df"] = diffraction_plane["f"][-1] - diffraction_plane["f"][-2]
+
+    print("diffraction_plane['df'] =>", diffraction_plane['df'])
+
+    plt.figure()
+
+    scalef = (1/1e7)
+    axeslabel = "1/m * 1e7"
+    plt.pcolormesh(diffraction_plane["f"]*scalef, diffraction_plane["f"]*scalef, measured_pattern)
+
+    plt.xlabel(axeslabel)
+    plt.ylabel(axeslabel)
+
+
+
 def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
 
         # image_dimmension must be divisible by 4
@@ -21,7 +59,7 @@ def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
 
         size1 = im.size[0]
         im_size_nm = 5*im.size[0] * 1e-9 # meters
-        print("im_size_nm =>", im_size_nm)
+        # print("im_size_nm =>", im_size_nm)
 
         # scale down the image
         im = im.resize((desired_mask_width,desired_mask_width)).convert("L")
@@ -40,7 +78,7 @@ def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
         assert amplitude_mask.shape[0] == image_dimmension
         size3 = np.shape(amplitude_mask)[0]
         ratio = size3 / size2
-        print("ratio =>", ratio)
+        # print("ratio =>", ratio)
         im_size_nm *= ratio # object image size [m]
 
         experimental_params = {}
