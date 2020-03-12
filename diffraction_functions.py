@@ -43,14 +43,18 @@ def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
         print("ratio =>", ratio)
         im_size_nm *= ratio # object image size [nm]
 
-        object_dx = im_size_nm / image_dimmension
-        object_x = np.arange(-(im_size_nm/2), (im_size_nm/2), object_dx)
-        diffraction_plane_df = 1 / (image_dimmension * object_dx) # frequency axis in diffraction plane
-        diffraction_plane_fmax = (diffraction_plane_df * image_dimmension) / 2
-        diffraction_plane_f = np.arange(-diffraction_plane_fmax, diffraction_plane_fmax, diffraction_plane_df)
+        experimental_params = {}
+        experimental_params["object"] = {}
+        experimental_params["object"]["dx"] = im_size_nm / image_dimmension
+        experimental_params["object"]["xmax"] = im_size_nm/2
+        experimental_params["object"]["x"] = np.arange(-(experimental_params["object"]["xmax"]), (experimental_params["object"]["xmax"]), experimental_params["object"]["dx"])
+        experimental_params["diffraction_plane"] = {}
+        experimental_params["diffraction_plane"]["df"] = 1 / (image_dimmension * experimental_params["object"]["dx"]) # frequency axis in diffraction plane
+        experimental_params["diffraction_plane"]["fmax"] = (experimental_params["diffraction_plane"]["df"] * image_dimmension) / 2
+        experimental_params["diffraction_plane"]["f"] = np.arange(-experimental_params["diffraction_plane"]["fmax"], experimental_params["diffraction_plane"]["fmax"], experimental_params["diffraction_plane"]["df"])
 
         print("im_size_nm =>", im_size_nm)
-        print("diffraction_plane_fmax =>", diffraction_plane_fmax)
+        print("experimental_params['diffraction_plane']['fmax'] =>", experimental_params['diffraction_plane']['fmax'])
         exit()
 
 def make_image_square(image):

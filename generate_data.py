@@ -425,8 +425,8 @@ def make_dataset(filename, N, samples):
         hd5file.root.N.append(np.array([[N]]))
         # plt.ion()
 
-        # diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
-        diffraction_functions.get_amplitude_mask_and_imagesize(N, N)
+        diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
+        # diffraction_functions.get_amplitude_mask_and_imagesize(N, N)
         # amplitude_mask[amplitude_mask>0.5] = 1
         # concat 32
         # prepare tensorflow zernike graph
