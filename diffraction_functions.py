@@ -43,6 +43,10 @@ def get_measured_diffraction_pattern_grid(measured_pattern, experimental_params)
     scalef = (1/1e7)
     axeslabel = "1/m * 1e7"
     plt.pcolormesh(diffraction_plane["f"]*scalef, diffraction_plane["f"]*scalef, measured_pattern)
+    plt.axvline(x=0.05)
+    plt.axvline(x=-0.05)
+    plt.axhline(y=0.05)
+    plt.axhline(y=-0.05)
 
     plt.xlabel(axeslabel)
     plt.ylabel(axeslabel)

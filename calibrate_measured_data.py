@@ -156,7 +156,7 @@ if __name__ == "__main__":
     complex_object = object_real + 1j * object_imag
 
     # measured data
-    fits_file_name = "/home/jonathon/Documents/test/windowshare/1.fits"
+    fits_file_name = "m3_scan_0000.fits"
     thing = fits.open(fits_file_name)
     measured_diffraction_pattern = thing[0].data[0,:,:]
 
