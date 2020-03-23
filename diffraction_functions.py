@@ -9,9 +9,10 @@ import matplotlib.pyplot as plt
 from scipy.ndimage.interpolation import rotate
 from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.interpolation import shift as sc_shift
+from  astropy.io import fits
 from scipy.misc import factorial
 
-def get_measured_diffraction_pattern_grid(measured_pattern, experimental_params):
+def get_measured_diffraction_pattern_grid():
     """
     measured_pattern: (numpy array)
 
@@ -22,36 +23,32 @@ def get_measured_diffraction_pattern_grid(measured_pattern, experimental_params)
 
     """
 
+    fits_file_name = "m3_scan_0000.fits"
+    thing = fits.open(fits_file_name)
+    measured_pattern = thing[0].data[0,:,:]
+
+    experimental_params = {}
+    experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
+    experimental_params['z_distance'] = 33e-3 # [meters] distance from camera
+    experimental_params['wavelength'] = 13.5e-9 #[meters] wavelength
+
+
     assert np.shape(measured_pattern)[0] == np.shape(measured_pattern)[1]
     # construct position (space) axis
     print("np.shape(measured_pattern) => ",np.shape(measured_pattern))
     N = np.shape(measured_pattern)[0]
 
     # calculate delta frequency
-    diffraction_plane = {}
+    measured_axes = {}
+    measured_axes["diffraction_plane"] = {}
 
-    diffraction_plane["x_max"] = N * (experimental_params['pixel_size'] / 2)
-    diffraction_plane["x"] = np.arange(-(diffraction_plane["x_max"]), (diffraction_plane["x_max"]), experimental_params['pixel_size'])
+    measured_axes["diffraction_plane"]["xmax"] = N * (experimental_params['pixel_size'] / 2)
+    measured_axes["diffraction_plane"]["x"] = np.arange(-(measured_axes["diffraction_plane"]["xmax"]), (measured_axes["diffraction_plane"]["xmax"]), experimental_params['pixel_size'])
 
-    diffraction_plane["f"] = diffraction_plane["x"] / (experimental_params['wavelength'] * experimental_params['z_distance'])
-    diffraction_plane["df"] = diffraction_plane["f"][-1] - diffraction_plane["f"][-2]
+    measured_axes["diffraction_plane"]["f"] = measured_axes["diffraction_plane"]["x"] / (experimental_params['wavelength'] * experimental_params['z_distance'])
+    measured_axes["diffraction_plane"]["df"] = measured_axes["diffraction_plane"]["f"][-1] - measured_axes["diffraction_plane"]["f"][-2]
 
-    print("diffraction_plane['df'] =>", diffraction_plane['df'])
-
-    plt.figure()
-
-    scalef = (1/1e7)
-    axeslabel = "1/m * 1e7"
-    plt.pcolormesh(diffraction_plane["f"]*scalef, diffraction_plane["f"]*scalef, measured_pattern)
-    plt.axvline(x=0.05)
-    plt.axvline(x=-0.05)
-    plt.axhline(y=0.05)
-    plt.axhline(y=-0.05)
-
-    plt.xlabel(axeslabel)
-    plt.ylabel(axeslabel)
-
-
+    return measured_axes, measured_pattern
 
 def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
 
@@ -85,17 +82,17 @@ def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
         # print("ratio =>", ratio)
         im_size_nm *= ratio # object image size [m]
 
-        experimental_params = {}
-        experimental_params["object"] = {}
-        experimental_params["object"]["dx"] = im_size_nm / image_dimmension
-        experimental_params["object"]["xmax"] = im_size_nm/2
-        experimental_params["object"]["x"] = np.arange(-(experimental_params["object"]["xmax"]), (experimental_params["object"]["xmax"]), experimental_params["object"]["dx"])
-        experimental_params["diffraction_plane"] = {}
-        experimental_params["diffraction_plane"]["df"] = 1 / (image_dimmension * experimental_params["object"]["dx"]) # frequency axis in diffraction plane
-        experimental_params["diffraction_plane"]["fmax"] = (experimental_params["diffraction_plane"]["df"] * image_dimmension) / 2
-        experimental_params["diffraction_plane"]["f"] = np.arange(-experimental_params["diffraction_plane"]["fmax"], experimental_params["diffraction_plane"]["fmax"], experimental_params["diffraction_plane"]["df"])
+        measured_axes = {}
+        measured_axes["object"] = {}
+        measured_axes["object"]["dx"] = im_size_nm / image_dimmension
+        measured_axes["object"]["xmax"] = im_size_nm/2
+        measured_axes["object"]["x"] = np.arange(-(measured_axes["object"]["xmax"]), (measured_axes["object"]["xmax"]), measured_axes["object"]["dx"])
+        measured_axes["diffraction_plane"] = {}
+        measured_axes["diffraction_plane"]["df"] = 1 / (image_dimmension * measured_axes["object"]["dx"]) # frequency axis in diffraction plane
+        measured_axes["diffraction_plane"]["fmax"] = (measured_axes["diffraction_plane"]["df"] * image_dimmension) / 2
+        measured_axes["diffraction_plane"]["f"] = np.arange(-measured_axes["diffraction_plane"]["fmax"], measured_axes["diffraction_plane"]["fmax"], measured_axes["diffraction_plane"]["df"])
 
-        return experimental_params, amplitude_mask
+        return measured_axes, amplitude_mask
 
 def make_image_square(image):
 
