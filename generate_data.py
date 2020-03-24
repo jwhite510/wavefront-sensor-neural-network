@@ -425,16 +425,7 @@ def make_dataset(filename, N, samples):
         hd5file.root.N.append(np.array([[N]]))
         # plt.ion()
 
-        experimental_params, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
-
-        print("np.shape(experimental_params['object']['x']) => ",np.shape(experimental_params['object']['x']))
-        print("np.shape(experimental_params['diffraction_plane']['f']) => ",np.shape(experimental_params['diffraction_plane']['f']))
-
-        print("experimental_params['object']['xmax'] =>", experimental_params['object']['xmax'])
-        print("experimental_params['diffraction_plane']['fmax'] =>", experimental_params['diffraction_plane']['fmax'])
-
-        print("N =>", N)
-        exit()
+        obj_calculated_measured_axes, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
 
         # diffraction_functions.get_amplitude_mask_and_imagesize(N, N)
         # amplitude_mask[amplitude_mask>0.5] = 1
@@ -489,6 +480,26 @@ def make_dataset(filename, N, samples):
 
                 # normalize the diffraction pattern
                 diffraction_pattern_with_noise = diffraction_pattern_with_noise / np.max(diffraction_pattern_with_noise)
+
+                # center the centroid?
+                # diffraction_functions.plot_image_show_centroid_distance(diffraction_pattern_with_noise, "diffraction_pattern_with_noise", 1)
+                diffraction_pattern_with_noise = diffraction_functions.center_image_at_centroid(diffraction_pattern_with_noise)
+
+
+                # # # # # # # # # # # # # # # # # # # # #
+                # check that
+                # experimental data is in the same format
+                # # # # # # # # # # # # # # # # # # # # #
+
+                # diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(amplitude_mask)))
+                # # absolute value
+                # diffraction_pattern = np.abs(diffraction_pattern)**2
+                # diffraction_functions.plot_image_show_centroid_distance(diffraction_pattern, "diffraction_pattern", 2)
+                # diffraction_calculated_measured_axes, measured_pattern = diffraction_functions.get_measured_diffraction_pattern_grid()
+                # df_ratio = diffraction_calculated_measured_axes['diffraction_plane']['df'] / obj_calculated_measured_axes['diffraction_plane']['df']
+                # # diffraction_functions.plot_image_show_centroid_distance(measured_pattern, "measured_pattern", 2)
+                # measured_pattern = diffraction_functions.format_experimental_trace(N=N, df_ratio=df_ratio, measured_diffraction_pattern=measured_pattern, rotation_angle=3)
+                # diffraction_functions.plot_image_show_centroid_distance(measured_pattern, "measured_pattern", 3)
 
                 # adjust the real and imaginary parts to be between 0 and 1
                 # object_real: # between -1 and 1
