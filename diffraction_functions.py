@@ -12,6 +12,22 @@ from scipy.ndimage.interpolation import shift as sc_shift
 from  astropy.io import fits
 from scipy.misc import factorial
 
+
+def center_image_at_centroid(mat):
+
+    s_x, s_y = np.shape(mat)
+    assert s_y == s_x
+
+    c_y = calc_centroid(mat, axis=0)
+    c_x = calc_centroid(mat, axis=1)
+    # distance from centroid
+    dis_x = (s_x / 2) - c_x
+    dis_y = (s_x / 2) - c_y
+    mat = np.roll(mat, shift=int(dis_x), axis=1)
+    mat = np.roll(mat, shift=int(dis_y), axis=0)
+    return mat
+
+
 def get_measured_diffraction_pattern_grid():
     """
     measured_pattern: (numpy array)
