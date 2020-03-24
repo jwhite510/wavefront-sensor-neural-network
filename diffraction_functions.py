@@ -11,7 +11,51 @@ from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.interpolation import shift as sc_shift
 from  astropy.io import fits
 from scipy.misc import factorial
+from skimage.transform import resize
+from scipy import ndimage
 
+def plot_image_show_centroid_distance(mat, title, figurenum):
+    """
+    plots an image and shows the distance from the centroid to the image center
+    """
+    # calculate the current centroid
+    c_y = calc_centroid(mat, axis=0)
+    c_x = calc_centroid(mat, axis=1)
+    plt.figure(figurenum)
+    plt.imshow(mat)
+    plt.axvline(x=c_x, color="yellow")
+    plt.axhline(y=c_y, color="yellow")
+    plt.title(title)
+    plt.gca().text(0.0, 0.9,"c_x: {}".format( c_x ), fontsize=10, ha='center', transform=plt.gca().transAxes, backgroundcolor="yellow")
+    plt.gca().text(0.0, 0.8,"c_y: {}".format( c_y ), fontsize=10, ha='center', transform=plt.gca().transAxes, backgroundcolor="yellow")
+
+    plt.gca().text(0.0, 0.7,"image center x: {}".format( np.shape(mat)[0] / 2 ), fontsize=10, ha='center', transform=plt.gca().transAxes, backgroundcolor="green")
+    plt.gca().text(0.0, 0.6,"image center y: {}".format( np.shape(mat)[0] / 2 ), fontsize=10, ha='center', transform=plt.gca().transAxes, backgroundcolor="green")
+
+    # center of the image
+    plt.axvline(x=int(np.shape(mat)[0] / 2), color="green")
+    plt.axhline(y=int(np.shape(mat)[0] / 2), color="green")
+
+def format_experimental_trace(N, df_ratio, measured_diffraction_pattern, rotation_angle):
+    """
+    N: the desired size of the formatted experimental image
+    df_ratio: (df calculated from diffraction plane) / (df calculated from object plane)
+    measured_diffraction_pattern: the measured diffraction pattern to format
+    rotation_angle: angle which to rotate the measured diffraction pattern (currently must be done by eye)
+    """
+    # divide scale the measured trace by this amount
+    new_size = np.shape(measured_diffraction_pattern)[0] * df_ratio
+    new_size = int(new_size)
+    measured_diffraction_pattern = resize(measured_diffraction_pattern, (new_size, new_size))
+
+    # rotate the image by eye
+    measured_diffraction_pattern = ndimage.rotate(measured_diffraction_pattern, rotation_angle, reshape=False)
+    measured_diffraction_pattern = center_image_at_centroid(measured_diffraction_pattern)
+    # crop the edges off the image
+    measured_diffraction_pattern = measured_diffraction_pattern[int((new_size/2) - (N/2)):int((new_size/2) + (N/2)) , int((new_size/2) - (N/2)):int((new_size/2) + (N/2))]
+    measured_diffraction_pattern = center_image_at_centroid(measured_diffraction_pattern)
+
+    return measured_diffraction_pattern
 
 def center_image_at_centroid(mat):
 
