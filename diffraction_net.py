@@ -111,7 +111,7 @@ class DiffractionNet():
         # save file
         if not os.path.isdir('./models'):
             os.makedirs('./models')
-        shutil.copyfile('./'+__file__, './models/'+__file__.split(".")[0]+'_{}.py'.format(self.name))
+        shutil.copyfile('./'+ os.path.basename(__file__), './models/'+os.path.basename(__file__).split(".")[0]+'_{}.py'.format(self.name))
 
         # setup logging
         self.tf_loggers = {}
