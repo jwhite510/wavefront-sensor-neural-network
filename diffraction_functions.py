@@ -36,7 +36,7 @@ def plot_image_show_centroid_distance(mat, title, figurenum):
     plt.axvline(x=int(np.shape(mat)[0] / 2), color="green")
     plt.axhline(y=int(np.shape(mat)[0] / 2), color="green")
 
-def format_experimental_trace(N, df_ratio, measured_diffraction_pattern, rotation_angle):
+def format_experimental_trace(N, df_ratio, measured_diffraction_pattern, rotation_angle, trim):
     """
     N: the desired size of the formatted experimental image
     df_ratio: (df calculated from diffraction plane) / (df calculated from object plane)
@@ -53,6 +53,20 @@ def format_experimental_trace(N, df_ratio, measured_diffraction_pattern, rotatio
     measured_diffraction_pattern = center_image_at_centroid(measured_diffraction_pattern)
     # crop the edges off the image
     measured_diffraction_pattern = measured_diffraction_pattern[int((new_size/2) - (N/2)):int((new_size/2) + (N/2)) , int((new_size/2) - (N/2)):int((new_size/2) + (N/2))]
+
+    # plot_image_show_centroid_distance(measured_diffraction_pattern, "measured_diffraction_pattern", 454)
+    # trim = 30
+    measured_diffraction_pattern[:trim, :] = 0
+    measured_diffraction_pattern[-trim:, :] = 0
+    measured_diffraction_pattern[:, :trim] = 0
+    measured_diffraction_pattern[:, -trim:] = 0
+
+    # uncomment for debug
+    # measured_diffraction_pattern[:trim, :] = np.max(measured_diffraction_pattern)
+    # measured_diffraction_pattern[-trim:, :] = np.max(measured_diffraction_pattern)
+    # measured_diffraction_pattern[:, :trim] = np.max(measured_diffraction_pattern)
+    # measured_diffraction_pattern[:, -trim:] = np.max(measured_diffraction_pattern)
+
     measured_diffraction_pattern = center_image_at_centroid(measured_diffraction_pattern)
 
     return measured_diffraction_pattern

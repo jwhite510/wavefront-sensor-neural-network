@@ -67,7 +67,9 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
                 N=self.get_data.N,
                 df_ratio=df_ratio,
                 measured_diffraction_pattern=measured_pattern,
-                rotation_angle=-3) # if transposed (measured_pattern.T) , flip the rotation
+                rotation_angle=-3,
+                trim=1) # if transposed (measured_pattern.T) , flip the rotation
+                # use 30 to block outer maxima
 
         diffraction_functions.plot_image_show_centroid_distance(
                 measured_pattern,
