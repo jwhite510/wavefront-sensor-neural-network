@@ -2,6 +2,7 @@ import diffraction_net
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+import time
 
 class NetworkRetrieval(diffraction_net.DiffractionNet):
     def __init__(self, name):
@@ -24,22 +25,56 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
         imag_output = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:diffraction_samples})
         tf_reconstructed_diff = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:diffraction_samples})
 
-        print("np.shape(object_real_samples) => ",np.shape(object_real_samples))
-        print("np.shape(object_imag_samples) => ",np.shape(object_imag_samples))
-        print("np.shape(diffraction_samples) => ",np.shape(diffraction_samples))
-        print("np.shape(real_output) => ",np.shape(real_output))
-        print("np.shape(imag_output) => ",np.shape(imag_output))
-        print("np.shape(tf_reconstructed_diff) => ",np.shape(tf_reconstructed_diff))
-
         index = 1
+        plotretrieval(
+                plot_title = "sample "+str(index),
+                object_real_samples = object_real_samples[index,:,:,0],
+                object_imag_samples = object_imag_samples[index,:,:,0],
+                diffraction_samples = diffraction_samples[index,:,:,0],
+                real_output = real_output[index,:,:,0],
+                imag_output = imag_output[index,:,:,0],
+                tf_reconstructed_diff = tf_reconstructed_diff[index,:,:,0]
+                )
 
-        plt.figure()
-        plt.imshow(np.squeeze(diffraction_samples[index]))
-        plt.savefig("./1.png")
+        # "experimental data:"
+        index = 2
+        plotretrieval(
+                plot_title = "sample "+str(index),
+                object_real_samples = None,
+                object_imag_samples = None,
+                diffraction_samples = diffraction_samples[index,:,:,0],
+                real_output = real_output[index,:,:,0],
+                imag_output = imag_output[index,:,:,0],
+                tf_reconstructed_diff = tf_reconstructed_diff[index,:,:,0]
+                )
 
-        plt.figure()
-        plt.imshow(np.squeeze(tf_reconstructed_diff[index]))
-        plt.savefig("./2.png")
+        plt.show()
+
+def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffraction_samples, real_output, imag_output, tf_reconstructed_diff):
+
+    # plot the output of the network
+    axes_obj = diffraction_net.PlotAxes(plot_title)
+
+    im = axes_obj.diffraction_samples.pcolormesh(diffraction_samples)
+    axes_obj.fig.colorbar(im, ax=axes_obj.diffraction_samples)
+
+    if object_real_samples is not None:
+        im = axes_obj.object_real_samples.pcolormesh(object_real_samples)
+        axes_obj.fig.colorbar(im, ax=axes_obj.object_real_samples)
+
+    if object_imag_samples is not None:
+        im = axes_obj.object_imag_samples.pcolormesh(object_imag_samples)
+        axes_obj.fig.colorbar(im, ax=axes_obj.object_imag_samples)
+
+    im = axes_obj.real_output.pcolormesh(real_output)
+    axes_obj.fig.colorbar(im, ax=axes_obj.real_output)
+
+    im = axes_obj.imag_output.pcolormesh(imag_output)
+    axes_obj.fig.colorbar(im, ax=axes_obj.imag_output)
+
+    # tensorflow reconstructed diffraction pattern
+    im = axes_obj.tf_reconstructed_diff.pcolormesh(tf_reconstructed_diff)
+    axes_obj.fig.colorbar(im, ax=axes_obj.tf_reconstructed_diff)
 
 
 if __name__ == "__main__":
