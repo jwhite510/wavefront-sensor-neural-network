@@ -73,6 +73,11 @@ class DiffractionNet():
         # self.imag_scalar_actual = tf.placeholder(tf.float32, shape=[None, 1])
         self.real_actual = tf.placeholder(tf.float32, shape=[None, self.get_data.N, self.get_data.N, 1])
 
+        # amplitude mask for generating the output
+        _, self.amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(self.get_data.N, int(self.get_data.N/2))
+        self.amplitude_mask = np.expand_dims(self.amplitude_mask, axis=-1)
+        self.amplitude_mask = np.expand_dims(self.amplitude_mask, axis=0)
+
         # real retrieval network
         self.nn_nodes = {}
         self.setup_network_2(self.nn_nodes)
@@ -250,6 +255,10 @@ class DiffractionNet():
 
         _nodes["real_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm18"])
         _nodes["imag_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm18"])
+
+        # constrain the output to the mask
+        _nodes["real_out"] = _nodes["real_out"] * self.amplitude_mask
+        _nodes["imag_out"] = _nodes["imag_out"] * self.amplitude_mask
 
     def setup_logging(self):
         self.tf_loggers["real_loss_training"] = tf.summary.scalar("real_loss_training", self.nn_nodes["real_loss"])
