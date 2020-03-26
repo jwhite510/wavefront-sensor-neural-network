@@ -1,12 +1,19 @@
 import diffraction_net
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 
 class NetworkRetrieval(diffraction_net.DiffractionNet):
     def __init__(self, name):
         diffraction_net.DiffractionNet.__init__(self, name)
 
-        data = self.get_data.evaluate_on_train_data(n_samples=50)
+        # data = self.get_data.evaluate_on_train_data(n_samples=10)
+        # with open("training_data_samples.p", "wb") as file:
+            # pickle.dump(data, file)
+        # exit()
+        with open("training_data_samples.p", "rb") as file:
+            data = pickle.load(file)
+
 
         object_real_samples = data["object_real_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         object_imag_samples = data["object_imag_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
