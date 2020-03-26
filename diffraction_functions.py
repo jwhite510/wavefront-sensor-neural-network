@@ -95,7 +95,7 @@ def get_measured_diffraction_pattern_grid():
 
     assert np.shape(measured_pattern)[0] == np.shape(measured_pattern)[1]
     # construct position (space) axis
-    print("np.shape(measured_pattern) => ",np.shape(measured_pattern))
+    # print("np.shape(measured_pattern) => ",np.shape(measured_pattern))
     N = np.shape(measured_pattern)[0]
 
     # calculate delta frequency

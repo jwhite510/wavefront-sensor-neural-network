@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 import time
+import diffraction_functions
 
 class NetworkRetrieval(diffraction_net.DiffractionNet):
     def __init__(self, name):
@@ -40,16 +41,64 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
                 tf_reconstructed_diff = tf_reconstructed_diff[index,:,:,0]
                 )
 
-        # "experimental data:"
         index = 2
         plotretrieval(
                 plot_title = "sample "+str(index),
-                object_real_samples = None,
-                object_imag_samples = None,
+                object_real_samples = object_real_samples[index,:,:,0],
+                object_imag_samples = object_imag_samples[index,:,:,0],
                 diffraction_samples = diffraction_samples[index,:,:,0],
                 real_output = real_output[index,:,:,0],
                 imag_output = imag_output[index,:,:,0],
                 tf_reconstructed_diff = tf_reconstructed_diff[index,:,:,0]
+                )
+
+        # get the measured trace
+        # open the object with known dimmensions
+        obj_calculated_measured_axes, _ = diffraction_functions.get_amplitude_mask_and_imagesize(self.get_data.N, int(self.get_data.N/2))
+        diffraction_calculated_measured_axes, measured_pattern = diffraction_functions.get_measured_diffraction_pattern_grid()
+
+        measured_pattern = measured_pattern.astype(np.float64)
+        measured_pattern = measured_pattern.T
+
+
+        df_ratio = diffraction_calculated_measured_axes['diffraction_plane']['df'] / obj_calculated_measured_axes['diffraction_plane']['df']
+
+        measured_pattern = diffraction_functions.format_experimental_trace(
+                N=self.get_data.N,
+                df_ratio=df_ratio,
+                measured_diffraction_pattern=measured_pattern,
+                rotation_angle=-3) # if transposed (measured_pattern.T) , flip the rotation
+
+        diffraction_functions.plot_image_show_centroid_distance(
+                measured_pattern,
+                "measured_pattern",
+                10)
+
+        index = 1
+        diffraction_functions.plot_image_show_centroid_distance(
+                diffraction_samples[index,:,:,0],
+                "diffraction_samples[index,:,:,0]",
+                11)
+
+        measured_pattern = np.expand_dims(measured_pattern, axis=0)
+        measured_pattern = np.expand_dims(measured_pattern, axis=-1)
+        # print("np.max(measured_pattern[0,:,:,0]) =>", np.max(measured_pattern[0,:,:,0]))
+        measured_pattern *= (1/np.max(measured_pattern))
+        # retrieve the experimental diffraction pattern
+        real_output = self.sess.run(self.nn_nodes["real_out"], feed_dict={self.x:measured_pattern})
+        imag_output = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:measured_pattern})
+        tf_reconstructed_diff = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:measured_pattern})
+
+
+        # "experimental data:"
+        plotretrieval(
+                plot_title = "experimental data",
+                object_real_samples = None,
+                object_imag_samples = None,
+                diffraction_samples = measured_pattern[0,:,:,0],
+                real_output = real_output[0,:,:,0],
+                imag_output = imag_output[0,:,:,0],
+                tf_reconstructed_diff = tf_reconstructed_diff[0,:,:,0]
                 )
 
         plt.show()
