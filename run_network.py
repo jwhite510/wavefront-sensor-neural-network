@@ -16,14 +16,18 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
             data = pickle.load(file)
 
 
-        object_real_samples = data["object_real_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-        object_imag_samples = data["object_imag_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-        diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+        object_real_samples = data["object_real_samples"].reshape(
+                -1,self.get_data.N, self.get_data.N, 1)
+        object_imag_samples = data["object_imag_samples"].reshape(
+                -1,self.get_data.N, self.get_data.N, 1)
+        diffraction_samples = data["diffraction_samples"].reshape(
+                -1,self.get_data.N, self.get_data.N, 1)
 
         # get the output
         real_output = self.sess.run(self.nn_nodes["real_out"], feed_dict={self.x:diffraction_samples})
         imag_output = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:diffraction_samples})
-        tf_reconstructed_diff = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:diffraction_samples})
+        tf_reconstructed_diff = self.sess.run(
+                self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:diffraction_samples})
 
         index = 1
         plotretrieval(
@@ -50,7 +54,8 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
 
         plt.show()
 
-def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffraction_samples, real_output, imag_output, tf_reconstructed_diff):
+def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffraction_samples,
+                    real_output, imag_output, tf_reconstructed_diff):
 
     # plot the output of the network
     axes_obj = diffraction_net.PlotAxes(plot_title)
