@@ -504,11 +504,12 @@ def make_dataset(filename, N, samples):
                 # adjust the real and imaginary parts to be between 0 and 1
                 # object_real: # between -1 and 1
                 # object_imag: # between -1 and 1
-                object_real += 1 # between 0 and 2
-                object_imag += 1 # between 0 and 2
-                object_real *= (1/2) # between 0 and 1
-                object_imag *= (1/2) # between 0 and 1
 
+                # this is done in the network output instead
+                # object_real += 1 # between 0 and 2
+                # object_imag += 1 # between 0 and 2
+                # object_real *= (1/2) # between 0 and 1
+                # object_imag *= (1/2) # between 0 and 1
                 if i % 100 == 0:
                     plot_sample(N, object_real, object_imag, diffraction_pattern_with_noise)
                     plt.pause(0.001)

@@ -255,6 +255,13 @@ class DiffractionNet():
 
         _nodes["real_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm18"])
         _nodes["imag_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["batch_norm18"])
+        # output is currently between 0 and 1
+
+        _nodes["real_out"] *=2
+        _nodes["imag_out"] *=2
+        _nodes["real_out"] -=1
+        _nodes["imag_out"] -=1
+        # the output is now between -1 and 1
 
         # constrain the output to the mask
         _nodes["real_out"] = _nodes["real_out"] * self.amplitude_mask
