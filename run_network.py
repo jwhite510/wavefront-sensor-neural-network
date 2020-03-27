@@ -69,8 +69,9 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
                 )
 
         measured_pattern = self.get_and_format_experimental_trace()
+
         diffraction_functions.plot_image_show_centroid_distance(
-                measured_pattern,
+                np.squeeze(measured_pattern),
                 "measured_pattern",
                 10)
 
@@ -80,10 +81,6 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
                 "diffraction_samples[index,:,:,0]",
                 11)
 
-        measured_pattern = np.expand_dims(measured_pattern, axis=0)
-        measured_pattern = np.expand_dims(measured_pattern, axis=-1)
-        # print("np.max(measured_pattern[0,:,:,0]) =>", np.max(measured_pattern[0,:,:,0]))
-        measured_pattern *= (1/np.max(measured_pattern))
         # retrieve the experimental diffraction pattern
         real_output = self.sess.run(self.nn_nodes["real_out"], feed_dict={self.x:measured_pattern})
         imag_output = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:measured_pattern})
@@ -122,6 +119,11 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
                 rotation_angle=-3,
                 trim=1) # if transposed (measured_pattern.T) , flip the rotation
                 # use 30 to block outer maxima
+
+        measured_pattern = np.expand_dims(measured_pattern, axis=0)
+        measured_pattern = np.expand_dims(measured_pattern, axis=-1)
+        # print("np.max(measured_pattern[0,:,:,0]) =>", np.max(measured_pattern[0,:,:,0]))
+        measured_pattern *= (1/np.max(measured_pattern))
 
         return measured_pattern
 
