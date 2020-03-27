@@ -134,5 +134,5 @@ def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffract
 
 
 if __name__ == "__main__":
-    network_retrieval = NetworkRetrieval("IUBL_centered_at_centroid1")
+    network_retrieval = NetworkRetrieval("IOGL_constrain_output_with_mask")
 
