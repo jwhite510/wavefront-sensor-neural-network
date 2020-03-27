@@ -135,8 +135,52 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
         imag_output = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:measured_pattern})
         tf_reconstructed_diff = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:measured_pattern})
 
-        # run the training for minimizing the retreival error
-        # TODO
+        plt.ion()
+        fig = plt.figure(1, figsize=(8,10))
+        gs = fig.add_gridspec(3,2)
+        measured_pattern_ax = fig.add_subplot(gs[0,0])
+        reconstructed_ax = fig.add_subplot(gs[0,1])
+        retrieved_real_ax = fig.add_subplot(gs[1,1])
+        retrieved_imag_ax = fig.add_subplot(gs[2,1])
+
+        # set text to show epoch
+        epoch_text = fig.text(0.4, 0.5,"epoch: {}".format(0), fontsize=10, ha='center', backgroundcolor="yellow")
+
+
+        measured_pattern_im = measured_pattern_ax.imshow(measured_pattern[0,:,:,0])
+        measured_pattern_text = measured_pattern_ax.text(0.3, 0.9,"measured diffraction pattern", fontsize=10, ha='center', transform=measured_pattern_ax.transAxes, backgroundcolor="yellow")
+
+        # reconstructed diffraction pattern
+        reconstructed_im = reconstructed_ax.imshow(tf_reconstructed_diff[0,:,:,0])
+        reconstructed_text = reconstructed_ax.text(0.3, 0.9,"reconstructed diffraction pattern", fontsize=10, ha='center', transform=reconstructed_ax.transAxes, backgroundcolor="yellow")
+
+        # retrieved real object
+        retrieved_real_im = retrieved_real_ax.imshow(real_output[0,:,:,0])
+        retrieved_real_text = retrieved_real_ax.text(0.3, 0.9,"retrieved real", fontsize=10, ha='center', transform=retrieved_real_ax.transAxes, backgroundcolor="yellow")
+
+        # retrieved imag object
+        retrieved_imag_im = retrieved_imag_ax.imshow(imag_output[0,:,:,0])
+        retrieved_imag_text = retrieved_imag_ax.text(0.3, 0.9,"retrieved imag", fontsize=10, ha='center', transform=retrieved_imag_ax.transAxes, backgroundcolor="yellow")
+
+        for i in range(400):
+            # run the training for minimizing the retreival error
+            # TODO
+            self.sess.run(self.nn_nodes["u_train"], feed_dict={self.x:measured_pattern, self.s_LR:0.0001})
+
+            if i % 5 == 0:
+                epoch_text.set_text("epoch: {}".format(i))
+                # retrieve the experimental diffraction pattern
+                real_output = self.sess.run(self.nn_nodes["real_out"], feed_dict={self.x:measured_pattern})
+                imag_output = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:measured_pattern})
+                tf_reconstructed_diff = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:measured_pattern})
+                reconstructed_im.set_data(tf_reconstructed_diff[0,:,:,0])
+                retrieved_real_im.set_data(imag_output[0,:,:,0])
+                retrieved_imag_im.set_data(real_output[0,:,:,0])
+                print(i)
+                plt.pause(0.1)
+                # plt.ioff()
+                # plt.show()
+                # break
 
 
 def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffraction_samples,
@@ -168,7 +212,7 @@ def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffract
 
 
 if __name__ == "__main__":
-    network_retrieval = NetworkRetrieval("IOGL_constrain_output_with_mask")
+    network_retrieval = NetworkRetrieval("IGLUY_constrain_output_with_mask_u")
     # network_retrieval.retrieve_experimental()
     network_retrieval.unsupervised_retrieval()
 
