@@ -6,6 +6,7 @@ import time
 import diffraction_functions
 import glob
 import shutil
+import imageio
 
 class NetworkRetrieval(diffraction_net.DiffractionNet):
     def __init__(self, name):
@@ -162,7 +163,8 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
         retrieved_imag_im = retrieved_imag_ax.imshow(imag_output[0,:,:,0])
         retrieved_imag_text = retrieved_imag_ax.text(0.3, 0.9,"retrieved imag", fontsize=10, ha='center', transform=retrieved_imag_ax.transAxes, backgroundcolor="yellow")
 
-        for i in range(400):
+        images = []
+        for i in range(300):
             # run the training for minimizing the retreival error
             # TODO
             self.sess.run(self.nn_nodes["u_train"], feed_dict={self.x:measured_pattern, self.s_LR:0.0001})
@@ -177,10 +179,17 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
                 retrieved_real_im.set_data(imag_output[0,:,:,0])
                 retrieved_imag_im.set_data(real_output[0,:,:,0])
                 print(i)
+
+                # Used to return the plot as an image rray
+                fig.canvas.draw()       # draw the canvas, cache the renderer
+                image = np.frombuffer(fig.canvas.tostring_rgb(), dtype='uint8')
+                image  = image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+                images.append(image)
+
                 plt.pause(0.1)
-                # plt.ioff()
-                # plt.show()
-                # break
+
+        imageio.mimsave('./unsupervised.gif', images, fps=15)
+
 
 
 def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffraction_samples,
