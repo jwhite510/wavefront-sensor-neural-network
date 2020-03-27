@@ -113,6 +113,9 @@ class DiffractionNet():
         optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
         self.nn_nodes["train"] = optimizer.minimize(self.nn_nodes["cost_function"])
 
+        optimizer_u = tf.train.AdamOptimizer(learning_rate=self.s_LR)
+        self.nn_nodes["u_train"] = optimizer_u.minimize(self.nn_nodes["reconstruction_loss"])
+
         # save file
         if not os.path.isdir('./models'):
             os.makedirs('./models')

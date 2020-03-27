@@ -127,6 +127,18 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
 
         return measured_pattern
 
+    def unsupervised_retrieval(self):
+        measured_pattern = self.get_and_format_experimental_trace()
+
+        # retrieve the experimental diffraction pattern
+        real_output = self.sess.run(self.nn_nodes["real_out"], feed_dict={self.x:measured_pattern})
+        imag_output = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:measured_pattern})
+        tf_reconstructed_diff = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:measured_pattern})
+
+        # run the training for minimizing the retreival error
+        # TODO
+
+
 def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffraction_samples,
                     real_output, imag_output, tf_reconstructed_diff):
 
@@ -157,5 +169,6 @@ def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffract
 
 if __name__ == "__main__":
     network_retrieval = NetworkRetrieval("IOGL_constrain_output_with_mask")
-    network_retrieval.retrieve_experimental()
+    # network_retrieval.retrieve_experimental()
+    network_retrieval.unsupervised_retrieval()
 
