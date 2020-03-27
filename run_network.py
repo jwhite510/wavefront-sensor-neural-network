@@ -4,11 +4,27 @@ import matplotlib.pyplot as plt
 import pickle
 import time
 import diffraction_functions
+import glob
+import shutil
 
 class NetworkRetrieval(diffraction_net.DiffractionNet):
     def __init__(self, name):
-        diffraction_net.DiffractionNet.__init__(self, name)
 
+        self.name = name
+        # copy the weights and create a new network
+        for file in glob.glob(r'./models/{}.ckpt.*'.format(self.name)):
+            file_newname = file.replace(self.name, self.name+'_retrieval')
+            shutil.copy(file, file_newname)
+
+        for file in glob.glob(r'./models/{}.p'.format(self.name)):
+            file_newname = file.replace(self.name, self.name+'_retrieval')
+
+        shutil.copy(r'./models/{}.p'.format(self.name),
+                r'./models/{}.p'.format(self.name+'_retrieval'))
+
+        diffraction_net.DiffractionNet.__init__(self, self.name+'_retrieval')
+
+    def retrieve_experimental(self):
         # data = self.get_data.evaluate_on_train_data(n_samples=10)
         # with open("training_data_samples.p", "wb") as file:
             # pickle.dump(data, file)
@@ -52,25 +68,7 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
                 tf_reconstructed_diff = tf_reconstructed_diff[index,:,:,0]
                 )
 
-        # get the measured trace
-        # open the object with known dimmensions
-        obj_calculated_measured_axes, _ = diffraction_functions.get_amplitude_mask_and_imagesize(self.get_data.N, int(self.get_data.N/2))
-        diffraction_calculated_measured_axes, measured_pattern = diffraction_functions.get_measured_diffraction_pattern_grid()
-
-        measured_pattern = measured_pattern.astype(np.float64)
-        measured_pattern = measured_pattern.T
-
-
-        df_ratio = diffraction_calculated_measured_axes['diffraction_plane']['df'] / obj_calculated_measured_axes['diffraction_plane']['df']
-
-        measured_pattern = diffraction_functions.format_experimental_trace(
-                N=self.get_data.N,
-                df_ratio=df_ratio,
-                measured_diffraction_pattern=measured_pattern,
-                rotation_angle=-3,
-                trim=1) # if transposed (measured_pattern.T) , flip the rotation
-                # use 30 to block outer maxima
-
+        measured_pattern = self.get_and_format_experimental_trace()
         diffraction_functions.plot_image_show_centroid_distance(
                 measured_pattern,
                 "measured_pattern",
@@ -105,6 +103,28 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
 
         plt.show()
 
+    def get_and_format_experimental_trace(self):
+        # get the measured trace
+        # open the object with known dimmensions
+        obj_calculated_measured_axes, _ = diffraction_functions.get_amplitude_mask_and_imagesize(self.get_data.N, int(self.get_data.N/2))
+        diffraction_calculated_measured_axes, measured_pattern = diffraction_functions.get_measured_diffraction_pattern_grid()
+
+        measured_pattern = measured_pattern.astype(np.float64)
+        measured_pattern = measured_pattern.T
+
+
+        df_ratio = diffraction_calculated_measured_axes['diffraction_plane']['df'] / obj_calculated_measured_axes['diffraction_plane']['df']
+
+        measured_pattern = diffraction_functions.format_experimental_trace(
+                N=self.get_data.N,
+                df_ratio=df_ratio,
+                measured_diffraction_pattern=measured_pattern,
+                rotation_angle=-3,
+                trim=1) # if transposed (measured_pattern.T) , flip the rotation
+                # use 30 to block outer maxima
+
+        return measured_pattern
+
 def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffraction_samples,
                     real_output, imag_output, tf_reconstructed_diff):
 
@@ -135,4 +155,5 @@ def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffract
 
 if __name__ == "__main__":
     network_retrieval = NetworkRetrieval("IOGL_constrain_output_with_mask")
+    network_retrieval.retrieve_experimental()
 
