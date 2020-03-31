@@ -101,25 +101,60 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
 
         plt.show()
 
-    def get_and_format_experimental_trace(self):
+    def get_and_format_experimental_trace(self, transform):
         # get the measured trace
         # open the object with known dimmensions
         obj_calculated_measured_axes, _ = diffraction_functions.get_amplitude_mask_and_imagesize(self.get_data.N, int(self.get_data.N/2))
         diffraction_calculated_measured_axes, measured_pattern = diffraction_functions.get_measured_diffraction_pattern_grid()
 
         measured_pattern = measured_pattern.astype(np.float64)
-        measured_pattern = measured_pattern.T
+        # measured_pattern = measured_pattern.T
 
 
         df_ratio = diffraction_calculated_measured_axes['diffraction_plane']['df'] / obj_calculated_measured_axes['diffraction_plane']['df']
+        # multiply by scale adjustment
+        df_ratio *= transform["scale"]
 
         measured_pattern = diffraction_functions.format_experimental_trace(
                 N=self.get_data.N,
                 df_ratio=df_ratio,
                 measured_diffraction_pattern=measured_pattern,
-                rotation_angle=-3,
+                rotation_angle=3,
                 trim=1) # if transposed (measured_pattern.T) , flip the rotation
                 # use 30 to block outer maxima
+
+        # diffraction_functions.plot_image_show_centroid_distance(
+                # measured_pattern,
+                # "before flip",
+                # 10)
+
+        if transform["flip"] == "lr":
+            measured_pattern = np.flip(measured_pattern, axis=1)
+
+        elif transform["flip"] == "ud":
+            measured_pattern = np.flip(measured_pattern, axis=0)
+
+        elif transform["flip"] == "lrud":
+            measured_pattern = np.flip(measured_pattern, axis=0)
+            measured_pattern = np.flip(measured_pattern, axis=1)
+
+        elif transform["flip"] == None:
+            pass
+
+        else:
+            raise ValueError("invalid flip specified")
+
+        # diffraction_functions.plot_image_show_centroid_distance(
+                # measured_pattern,
+                # "after flip",
+                # 11)
+
+        measured_pattern = diffraction_functions.center_image_at_centroid(measured_pattern)
+
+        # diffraction_functions.plot_image_show_centroid_distance(
+                # measured_pattern,
+                # "after flip,  center_image_at_centroid",
+                # 12)
 
         measured_pattern = np.expand_dims(measured_pattern, axis=0)
         measured_pattern = np.expand_dims(measured_pattern, axis=-1)
@@ -128,8 +163,11 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
 
         return measured_pattern
 
-    def unsupervised_retrieval(self):
-        measured_pattern = self.get_and_format_experimental_trace()
+    def unsupervised_retrieval(self, transform, iterations):
+        """
+        transform: dict{}
+        """
+        measured_pattern = self.get_and_format_experimental_trace(transform)
 
         # retrieve the experimental diffraction pattern
         real_output = self.sess.run(self.nn_nodes["real_out"], feed_dict={self.x:measured_pattern})
@@ -163,33 +201,30 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
         retrieved_imag_im = retrieved_imag_ax.imshow(imag_output[0,:,:,0])
         retrieved_imag_text = retrieved_imag_ax.text(0.3, 0.9,"retrieved imag", fontsize=10, ha='center', transform=retrieved_imag_ax.transAxes, backgroundcolor="yellow")
 
-        images = []
-        for i in range(300):
+        retrieved_obj = {}
+        retrieved_obj["measured_pattern"] = measured_pattern
+        for i in range(iterations):
             # run the training for minimizing the retreival error
             # TODO
-            self.sess.run(self.nn_nodes["u_train"], feed_dict={self.x:measured_pattern, self.s_LR:0.0001})
 
             if i % 5 == 0:
                 epoch_text.set_text("epoch: {}".format(i))
                 # retrieve the experimental diffraction pattern
-                real_output = self.sess.run(self.nn_nodes["real_out"], feed_dict={self.x:measured_pattern})
-                imag_output = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:measured_pattern})
-                tf_reconstructed_diff = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:measured_pattern})
-                reconstructed_im.set_data(tf_reconstructed_diff[0,:,:,0])
-                retrieved_real_im.set_data(imag_output[0,:,:,0])
-                retrieved_imag_im.set_data(real_output[0,:,:,0])
-                print(i)
+                retrieved_obj["real_output"] = self.sess.run(self.nn_nodes["real_out"], feed_dict={self.x:measured_pattern})
+                retrieved_obj["imag_output"] = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:measured_pattern})
+                retrieved_obj["tf_reconstructed_diff"] = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:measured_pattern})
+                reconstructed_im.set_data(retrieved_obj["tf_reconstructed_diff"][0,:,:,0])
+                retrieved_real_im.set_data(retrieved_obj["imag_output"][0,:,:,0])
+                retrieved_imag_im.set_data(retrieved_obj["real_output"][0,:,:,0])
+                print("epoch: "+str(i))
 
                 # Used to return the plot as an image rray
-                fig.canvas.draw()       # draw the canvas, cache the renderer
-                image = np.frombuffer(fig.canvas.tostring_rgb(), dtype='uint8')
-                image  = image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-                images.append(image)
-
                 plt.pause(0.1)
 
-        imageio.mimsave('./unsupervised.gif', images, fps=15)
+            # run unsupervsied training
+            self.sess.run(self.nn_nodes["u_train"], feed_dict={self.x:measured_pattern, self.s_LR:0.0001})
 
+        return retrieved_obj
 
 
 def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffraction_samples,
@@ -223,5 +258,33 @@ def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffract
 if __name__ == "__main__":
     network_retrieval = NetworkRetrieval("IGLUY_constrain_output_with_mask_u")
     # network_retrieval.retrieve_experimental()
-    network_retrieval.unsupervised_retrieval()
+    transform = {}
+
+    # between 0.4 and 1.4
+    transform["scale"] = 1.0
+    # transform["flip"] = "lr"
+    # transform["flip"] = "ud"
+    transform["flip"] = "lrud"
+    retrieved_obj = network_retrieval.unsupervised_retrieval(transform, iterations=20)
+
+    print("np.shape(retrieved_obj['measured_pattern']) => ",np.shape(retrieved_obj['measured_pattern']))
+    print("np.shape(retrieved_obj['real_output']) => ",np.shape(retrieved_obj['real_output']))
+    print("np.shape(retrieved_obj['imag_output']) => ",np.shape(retrieved_obj['imag_output']))
+    print("np.shape(retrieved_obj['tf_reconstructed_diff']) => ",np.shape(retrieved_obj['tf_reconstructed_diff']))
+
+    plt.figure(3)
+    plt.imshow(np.squeeze(retrieved_obj['measured_pattern']))
+
+    plt.figure(4)
+    plt.imshow(np.squeeze(retrieved_obj['real_output']))
+
+    plt.figure(5)
+    plt.imshow(np.squeeze(retrieved_obj['imag_output']))
+
+    plt.figure(6)
+    plt.imshow(np.squeeze(retrieved_obj['tf_reconstructed_diff']))
+
+    plt.ioff()
+    plt.show()
+
 
