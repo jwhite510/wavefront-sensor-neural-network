@@ -2,6 +2,7 @@ import diffraction_net
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+import tensorflow as tf
 import time
 import diffraction_functions
 import glob
@@ -226,6 +227,9 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
 
         return retrieved_obj
 
+    def close(self):
+        self.sess.close()
+
 
 def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffraction_samples,
                     real_output, imag_output, tf_reconstructed_diff):
@@ -259,30 +263,49 @@ if __name__ == "__main__":
     network_retrieval = NetworkRetrieval("IGLUY_constrain_output_with_mask_u")
     # network_retrieval.retrieve_experimental()
     transform = {}
-
     # between 0.4 and 1.4
     transform["scale"] = 1.0
     # transform["flip"] = "lr"
     # transform["flip"] = "ud"
     transform["flip"] = "lrud"
+    # transform["flip"] = None
     retrieved_obj = network_retrieval.unsupervised_retrieval(transform, iterations=20)
+    # del network_retrieval
+    network_retrieval.close()
+    del network_retrieval
+    tf.reset_default_graph()
 
-    print("np.shape(retrieved_obj['measured_pattern']) => ",np.shape(retrieved_obj['measured_pattern']))
-    print("np.shape(retrieved_obj['real_output']) => ",np.shape(retrieved_obj['real_output']))
-    print("np.shape(retrieved_obj['imag_output']) => ",np.shape(retrieved_obj['imag_output']))
-    print("np.shape(retrieved_obj['tf_reconstructed_diff']) => ",np.shape(retrieved_obj['tf_reconstructed_diff']))
+    diffraction_functions.plot_image_show_centroid_distance(
+            np.squeeze(retrieved_obj['measured_pattern']),
+            "lrud",
+            3)
 
-    plt.figure(3)
-    plt.imshow(np.squeeze(retrieved_obj['measured_pattern']))
+    # plt.figure(4)
+    # plt.imshow(np.squeeze(retrieved_obj['real_output']))
+    # plt.figure(5)
+    # plt.imshow(np.squeeze(retrieved_obj['imag_output']))
+    # plt.figure(6)
+    # plt.imshow(np.squeeze(retrieved_obj['tf_reconstructed_diff']))
 
-    plt.figure(4)
-    plt.imshow(np.squeeze(retrieved_obj['real_output']))
+    network_retrieval = NetworkRetrieval("IGLUY_constrain_output_with_mask_u")
+    # network_retrieval.retrieve_experimental()
+    transform = {}
+    # between 0.4 and 1.4
+    transform["scale"] = 1.0
+    # transform["flip"] = "lr"
+    transform["flip"] = None
+    # transform["flip"] = "ud"
+    # transform["flip"] = "lrud"
+    retrieved_obj = network_retrieval.unsupervised_retrieval(transform, iterations=20)
+    # del network_retrieval
+    network_retrieval.close()
+    del network_retrieval
 
-    plt.figure(5)
-    plt.imshow(np.squeeze(retrieved_obj['imag_output']))
 
-    plt.figure(6)
-    plt.imshow(np.squeeze(retrieved_obj['tf_reconstructed_diff']))
+    diffraction_functions.plot_image_show_centroid_distance(
+            np.squeeze(retrieved_obj['measured_pattern']),
+            "None",
+            4)
 
     plt.ioff()
     plt.show()
