@@ -305,6 +305,14 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title):
 
     im = axes["reconstructed"].pcolormesh(np.squeeze(retrieved_obj["tf_reconstructed_diff"]))
     axes["reconstructed"].text(0.2, 0.9,"reconstructed", fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
+
+    # calc mse
+    A = retrieved_obj["measured_pattern"].reshape(-1)
+    B = retrieved_obj["tf_reconstructed_diff"].reshape(-1)
+    mse = (np.square(A-B)).mean()
+    mse = str(mse)
+    axes["reconstructed"].text(0.2, 1.1,"mse(reconstructed, measured): "+mse, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
+
     fig.colorbar(im, ax=axes["reconstructed"])
 
     im = axes["real"].pcolormesh(np.squeeze(retrieved_obj["real_output"]))
@@ -347,7 +355,7 @@ def test_various_scales(scales, orientation, iterations):
 if __name__ == "__main__":
 
 
-    scales = np.arange(0.4, 1.5, 0.1)
+    scales = np.arange(0.8, 1.2, 0.01)
     test_various_scales(scales, None, 300)
     test_various_scales(scales, "lr", 300)
     test_various_scales(scales, "ud", 300)
