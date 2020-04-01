@@ -258,6 +258,59 @@ def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffract
     im = axes_obj.tf_reconstructed_diff.pcolormesh(tf_reconstructed_diff)
     axes_obj.fig.colorbar(im, ax=axes_obj.tf_reconstructed_diff)
 
+def plot_amplitude_phase_meas_retreival(retrieved_obj, title):
+
+    # print(retrieved_obj.keys())
+
+    fig = plt.figure(figsize=(10,10))
+    gs = fig.add_gridspec(3,2)
+    fig.text(0.5, 0.95, title, ha="center", size=30)
+
+    axes = {}
+    axes["measured"] = fig.add_subplot(gs[0,0])
+    axes["reconstructed"] = fig.add_subplot(gs[0,1])
+
+    axes["real"] = fig.add_subplot(gs[1,0])
+    axes["imag"] = fig.add_subplot(gs[1,1])
+
+    axes["intensity"] = fig.add_subplot(gs[2,0])
+    axes["phase"] = fig.add_subplot(gs[2,1])
+
+    # calculate the intensity
+    complex_obj = np.squeeze(retrieved_obj["real_output"]) + 1j * np.squeeze(retrieved_obj["imag_output"])
+
+    I = np.abs(complex_obj)**2
+
+    # calculate the phase
+    obj_phase = np.angle(complex_obj)
+
+    im = axes["phase"].pcolormesh(obj_phase)
+    axes["phase"].text(0.2, 0.9,"phase(retrieved)", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor="cyan")
+    fig.colorbar(im, ax=axes["phase"])
+
+    im = axes["intensity"].pcolormesh(I)
+    axes["intensity"].text(0.2, 0.9,"intensity(retrieved)", fontsize=10, ha='center', transform=axes["intensity"].transAxes, backgroundcolor="cyan")
+    fig.colorbar(im, ax=axes["intensity"])
+
+    im = axes["measured"].pcolormesh(np.squeeze(retrieved_obj["measured_pattern"]))
+    axes["measured"].text(0.2, 0.9,"measured", fontsize=10, ha='center', transform=axes["measured"].transAxes, backgroundcolor="cyan")
+    fig.colorbar(im, ax=axes["measured"])
+
+    im = axes["reconstructed"].pcolormesh(np.squeeze(retrieved_obj["tf_reconstructed_diff"]))
+    axes["reconstructed"].text(0.2, 0.9,"reconstructed", fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
+    fig.colorbar(im, ax=axes["reconstructed"])
+
+    im = axes["real"].pcolormesh(np.squeeze(retrieved_obj["real_output"]))
+    axes["real"].text(0.2, 0.9,"real(retrieved)", fontsize=10, ha='center', transform=axes["real"].transAxes, backgroundcolor="cyan")
+    fig.colorbar(im, ax=axes["real"])
+
+    im = axes["imag"].pcolormesh(np.squeeze(retrieved_obj["imag_output"]))
+    axes["imag"].text(0.2, 0.9,"imag(retrieved)", fontsize=10, ha='center', transform=axes["imag"].transAxes, backgroundcolor="cyan")
+    fig.colorbar(im, ax=axes["imag"])
+
+    return fig
+
+
 
 if __name__ == "__main__":
     network_retrieval = NetworkRetrieval("IGLUY_constrain_output_with_mask_u")
@@ -275,17 +328,6 @@ if __name__ == "__main__":
     del network_retrieval
     tf.reset_default_graph()
 
-    diffraction_functions.plot_image_show_centroid_distance(
-            np.squeeze(retrieved_obj['measured_pattern']),
-            "lrud",
-            3)
-
-    # plt.figure(4)
-    # plt.imshow(np.squeeze(retrieved_obj['real_output']))
-    # plt.figure(5)
-    # plt.imshow(np.squeeze(retrieved_obj['imag_output']))
-    # plt.figure(6)
-    # plt.imshow(np.squeeze(retrieved_obj['tf_reconstructed_diff']))
 
     network_retrieval = NetworkRetrieval("IGLUY_constrain_output_with_mask_u")
     # network_retrieval.retrieve_experimental()
@@ -301,11 +343,15 @@ if __name__ == "__main__":
     network_retrieval.close()
     del network_retrieval
 
+    # # with open("retrieved_obj.p", "wb") as file:
+        # # pickle.dump(retrieved_obj, file)
+    # # exit()
+    # with open("retrieved_obj.p", "rb") as file:
+        # retrieved_obj = pickle.load(file)
 
-    diffraction_functions.plot_image_show_centroid_distance(
-            np.squeeze(retrieved_obj['measured_pattern']),
-            "None",
-            4)
+    title = "lr up sclae: 34"
+    fig = plot_amplitude_phase_meas_retreival(retrieved_obj, title)
+    fig.savefig("fig.png")
 
     plt.ioff()
     plt.show()
