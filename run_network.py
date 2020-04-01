@@ -1,4 +1,5 @@
 import diffraction_net
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
@@ -164,7 +165,7 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
 
         return measured_pattern
 
-    def unsupervised_retrieval(self, transform, iterations):
+    def unsupervised_retrieval(self, transform, iterations, plotting=True):
         """
         transform: dict{}
         """
@@ -175,55 +176,61 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
         imag_output = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:measured_pattern})
         tf_reconstructed_diff = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:measured_pattern})
 
-        plt.ion()
-        fig = plt.figure(1, figsize=(8,10))
-        gs = fig.add_gridspec(3,2)
-        measured_pattern_ax = fig.add_subplot(gs[0,0])
-        reconstructed_ax = fig.add_subplot(gs[0,1])
-        retrieved_real_ax = fig.add_subplot(gs[1,1])
-        retrieved_imag_ax = fig.add_subplot(gs[2,1])
+        if plotting == True:
+            plt.ion()
+            fig = plt.figure(1, figsize=(8,10))
+            gs = fig.add_gridspec(3,2)
+            measured_pattern_ax = fig.add_subplot(gs[0,0])
+            reconstructed_ax = fig.add_subplot(gs[0,1])
+            retrieved_real_ax = fig.add_subplot(gs[1,1])
+            retrieved_imag_ax = fig.add_subplot(gs[2,1])
 
-        # set text to show epoch
-        epoch_text = fig.text(0.4, 0.5,"epoch: {}".format(0), fontsize=10, ha='center', backgroundcolor="yellow")
+            # set text to show epoch
+            epoch_text = fig.text(0.4, 0.5,"epoch: {}".format(0), fontsize=10, ha='center', backgroundcolor="yellow")
 
 
-        measured_pattern_im = measured_pattern_ax.imshow(measured_pattern[0,:,:,0])
-        measured_pattern_text = measured_pattern_ax.text(0.3, 0.9,"measured diffraction pattern", fontsize=10, ha='center', transform=measured_pattern_ax.transAxes, backgroundcolor="yellow")
+            measured_pattern_im = measured_pattern_ax.imshow(measured_pattern[0,:,:,0])
+            measured_pattern_text = measured_pattern_ax.text(0.3, 0.9,"measured diffraction pattern", fontsize=10, ha='center', transform=measured_pattern_ax.transAxes, backgroundcolor="yellow")
 
-        # reconstructed diffraction pattern
-        reconstructed_im = reconstructed_ax.imshow(tf_reconstructed_diff[0,:,:,0])
-        reconstructed_text = reconstructed_ax.text(0.3, 0.9,"reconstructed diffraction pattern", fontsize=10, ha='center', transform=reconstructed_ax.transAxes, backgroundcolor="yellow")
+            # reconstructed diffraction pattern
+            reconstructed_im = reconstructed_ax.imshow(tf_reconstructed_diff[0,:,:,0])
+            reconstructed_text = reconstructed_ax.text(0.3, 0.9,"reconstructed diffraction pattern", fontsize=10, ha='center', transform=reconstructed_ax.transAxes, backgroundcolor="yellow")
 
-        # retrieved real object
-        retrieved_real_im = retrieved_real_ax.imshow(real_output[0,:,:,0])
-        retrieved_real_text = retrieved_real_ax.text(0.3, 0.9,"retrieved real", fontsize=10, ha='center', transform=retrieved_real_ax.transAxes, backgroundcolor="yellow")
+            # retrieved real object
+            retrieved_real_im = retrieved_real_ax.imshow(real_output[0,:,:,0])
+            retrieved_real_text = retrieved_real_ax.text(0.3, 0.9,"retrieved real", fontsize=10, ha='center', transform=retrieved_real_ax.transAxes, backgroundcolor="yellow")
 
-        # retrieved imag object
-        retrieved_imag_im = retrieved_imag_ax.imshow(imag_output[0,:,:,0])
-        retrieved_imag_text = retrieved_imag_ax.text(0.3, 0.9,"retrieved imag", fontsize=10, ha='center', transform=retrieved_imag_ax.transAxes, backgroundcolor="yellow")
+            # retrieved imag object
+            retrieved_imag_im = retrieved_imag_ax.imshow(imag_output[0,:,:,0])
+            retrieved_imag_text = retrieved_imag_ax.text(0.3, 0.9,"retrieved imag", fontsize=10, ha='center', transform=retrieved_imag_ax.transAxes, backgroundcolor="yellow")
 
         retrieved_obj = {}
         retrieved_obj["measured_pattern"] = measured_pattern
         for i in range(iterations):
             # run the training for minimizing the retreival error
             # TODO
-
             if i % 5 == 0:
-                epoch_text.set_text("epoch: {}".format(i))
-                # retrieve the experimental diffraction pattern
-                retrieved_obj["real_output"] = self.sess.run(self.nn_nodes["real_out"], feed_dict={self.x:measured_pattern})
-                retrieved_obj["imag_output"] = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:measured_pattern})
-                retrieved_obj["tf_reconstructed_diff"] = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:measured_pattern})
-                reconstructed_im.set_data(retrieved_obj["tf_reconstructed_diff"][0,:,:,0])
-                retrieved_real_im.set_data(retrieved_obj["imag_output"][0,:,:,0])
-                retrieved_imag_im.set_data(retrieved_obj["real_output"][0,:,:,0])
                 print("epoch: "+str(i))
 
-                # Used to return the plot as an image rray
-                plt.pause(0.1)
+                if plotting==True:
+                    epoch_text.set_text("epoch: {}".format(i))
+                    # retrieve the experimental diffraction pattern
+                    retrieved_obj["real_output"] = self.sess.run(self.nn_nodes["real_out"], feed_dict={self.x:measured_pattern})
+                    retrieved_obj["imag_output"] = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:measured_pattern})
+                    retrieved_obj["tf_reconstructed_diff"] = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:measured_pattern})
+                    reconstructed_im.set_data(retrieved_obj["tf_reconstructed_diff"][0,:,:,0])
+                    retrieved_real_im.set_data(retrieved_obj["imag_output"][0,:,:,0])
+                    retrieved_imag_im.set_data(retrieved_obj["real_output"][0,:,:,0])
+
+                    # Used to return the plot as an image rray
+                    plt.pause(0.1)
 
             # run unsupervsied training
             self.sess.run(self.nn_nodes["u_train"], feed_dict={self.x:measured_pattern, self.s_LR:0.0001})
+
+        retrieved_obj["real_output"] = self.sess.run(self.nn_nodes["real_out"], feed_dict={self.x:measured_pattern})
+        retrieved_obj["imag_output"] = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:measured_pattern})
+        retrieved_obj["tf_reconstructed_diff"] = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:measured_pattern})
 
         return retrieved_obj
 
@@ -311,8 +318,43 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title):
     return fig
 
 
+def test_various_scales(scales, orientation, iterations):
+
+    save_folder = "flip_"+str(orientation)
+    if not os.path.exists(save_folder):
+        os.makedirs(save_folder)
+
+    for scale in scales:
+        print("scale:"+str(scale))
+        network_retrieval = NetworkRetrieval("IGLUY_constrain_output_with_mask_u")
+        transform = {}
+        transform["scale"] = scale
+        transform["flip"] = orientation
+        retrieved_obj = network_retrieval.unsupervised_retrieval(transform, iterations, plotting=False)
+        # del network_retrieval
+        network_retrieval.close()
+        del network_retrieval
+        tf.reset_default_graph()
+
+        # save the retrieval
+        title = "orientation change:"+str(orientation)+"    "+"scale:"+str(scale)
+        fig = plot_amplitude_phase_meas_retreival(retrieved_obj, title)
+
+        filename = str(orientation)+"_"+str(scale).replace(".", "_")+".png"
+        fig.savefig(os.path.join(save_folder,filename))
+
 
 if __name__ == "__main__":
+
+
+    scales = np.arange(0.4, 1.5, 0.1)
+    test_various_scales(scales, None, 300)
+    test_various_scales(scales, "lr", 300)
+    test_various_scales(scales, "ud", 300)
+    test_various_scales(scales, "lrud", 300)
+    exit()
+
+
     network_retrieval = NetworkRetrieval("IGLUY_constrain_output_with_mask_u")
     # network_retrieval.retrieve_experimental()
     transform = {}
