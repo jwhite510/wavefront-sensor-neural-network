@@ -9,6 +9,7 @@ import diffraction_functions
 import glob
 import shutil
 import imageio
+from numpy import unravel_index
 
 class NetworkRetrieval(diffraction_net.DiffractionNet):
     def __init__(self, name):
@@ -289,6 +290,11 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, amplitude_mask):
     I = np.abs(complex_obj)**2
 
     # calculate the phase
+    # subtract phase at intensity peak
+    m_index = unravel_index(I.argmax(), I.shape)
+    phase_Imax = np.angle(complex_obj[m_index[0], m_index[1]])
+    complex_obj *= np.exp(-1j * phase_Imax)
+
     obj_phase = np.angle(complex_obj)
 
     # multiply phase by the amplitude mask
@@ -300,6 +306,8 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, amplitude_mask):
     im = axes["phase"].pcolormesh(obj_phase)
     axes["phase"].text(0.2, 0.9,"phase(retrieved)", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["phase"])
+    # axes["phase"].axvline(x=m_index[1], color="green")
+    # axes["phase"].axhline(y=m_index[0], color="green")
 
     im = axes["intensity"].pcolormesh(I)
     axes["intensity"].text(0.2, 0.9,"intensity(retrieved)", fontsize=10, ha='center', transform=axes["intensity"].transAxes, backgroundcolor="cyan")
