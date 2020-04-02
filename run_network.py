@@ -265,7 +265,7 @@ def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffract
     im = axes_obj.tf_reconstructed_diff.pcolormesh(tf_reconstructed_diff)
     axes_obj.fig.colorbar(im, ax=axes_obj.tf_reconstructed_diff)
 
-def plot_amplitude_phase_meas_retreival(retrieved_obj, title):
+def plot_amplitude_phase_meas_retreival(retrieved_obj, title, amplitude_mask):
 
     # print(retrieved_obj.keys())
 
@@ -290,6 +290,12 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title):
 
     # calculate the phase
     obj_phase = np.angle(complex_obj)
+
+    # multiply phase by the amplitude mask
+    amplitude_mask = np.squeeze(amplitude_mask)
+    amplitude_mask = np.array(amplitude_mask)
+    amplitude_mask[amplitude_mask < 0.2] = 0
+    obj_phase *= amplitude_mask
 
     im = axes["phase"].pcolormesh(obj_phase)
     axes["phase"].text(0.2, 0.9,"phase(retrieved)", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor="cyan")
@@ -339,17 +345,17 @@ def test_various_scales(scales, orientation, iterations):
         transform["scale"] = scale
         transform["flip"] = orientation
         retrieved_obj = network_retrieval.unsupervised_retrieval(transform, iterations, plotting=False)
-        # del network_retrieval
-        network_retrieval.close()
-        del network_retrieval
-        tf.reset_default_graph()
 
         # save the retrieval
         title = "orientation change:"+str(orientation)+"    "+"scale:"+str(scale)
-        fig = plot_amplitude_phase_meas_retreival(retrieved_obj, title)
+        fig = plot_amplitude_phase_meas_retreival(retrieved_obj, title, network_retrieval.amplitude_mask)
 
         filename = str(orientation)+"_"+str(scale).replace(".", "_")+".png"
         fig.savefig(os.path.join(save_folder,filename))
+
+        network_retrieval.close()
+        del network_retrieval
+        tf.reset_default_graph()
 
 
 if __name__ == "__main__":
