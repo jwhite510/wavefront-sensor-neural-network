@@ -271,7 +271,7 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, amplitude_mask):
     # print(retrieved_obj.keys())
 
     fig = plt.figure(figsize=(10,10))
-    gs = fig.add_gridspec(3,2)
+    gs = fig.add_gridspec(4,2)
     fig.text(0.5, 0.95, title, ha="center", size=30)
 
     axes = {}
@@ -283,6 +283,9 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, amplitude_mask):
 
     axes["intensity"] = fig.add_subplot(gs[2,0])
     axes["phase"] = fig.add_subplot(gs[2,1])
+
+    axes["phase_vertical"] = fig.add_subplot(gs[3,0])
+    axes["phase_horizontal"] = fig.add_subplot(gs[3,1])
 
     # calculate the intensity
     complex_obj = np.squeeze(retrieved_obj["real_output"]) + 1j * np.squeeze(retrieved_obj["imag_output"])
@@ -303,11 +306,23 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, amplitude_mask):
     amplitude_mask[amplitude_mask < 0.2] = 0
     obj_phase *= amplitude_mask
 
+    # for testing
+    # obj_phase[10:20, :] = np.max(obj_phase)
+    # obj_phase[:, 10:20] = np.max(obj_phase)
+    # obj_phase[:, -30:-20] = np.max(obj_phase)
+
     im = axes["phase"].pcolormesh(obj_phase)
     axes["phase"].text(0.2, 0.9,"phase(retrieved)", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["phase"])
-    # axes["phase"].axvline(x=m_index[1], color="green")
-    # axes["phase"].axhline(y=m_index[0], color="green")
+    axes["phase"].axvline(x=m_index[1], color="red", alpha=0.8)
+    axes["phase"].axhline(y=m_index[0], color="blue", alpha=0.8)
+
+    axes["phase_horizontal"].plot(obj_phase[m_index[0], :], color="blue")
+    axes["phase_horizontal"].text(0.2, -0.25,"phase(horizontal)", fontsize=10, ha='center', transform=axes["phase_horizontal"].transAxes, backgroundcolor="blue")
+
+    axes["phase_vertical"].plot(obj_phase[:, m_index[1]], color="red")
+    axes["phase_vertical"].text(0.2, -0.25,"phase(vertical)", fontsize=10, ha='center', transform=axes["phase_vertical"].transAxes, backgroundcolor="red")
+
 
     im = axes["intensity"].pcolormesh(I)
     axes["intensity"].text(0.2, 0.9,"intensity(retrieved)", fontsize=10, ha='center', transform=axes["intensity"].transAxes, backgroundcolor="cyan")
