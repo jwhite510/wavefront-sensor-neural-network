@@ -267,7 +267,7 @@ def plotretrieval(plot_title, object_real_samples, object_imag_samples, diffract
     im = axes_obj.tf_reconstructed_diff.pcolormesh(tf_reconstructed_diff)
     axes_obj.fig.colorbar(im, ax=axes_obj.tf_reconstructed_diff)
 
-def plot_amplitude_phase_meas_retreival(retrieved_obj, title, amplitude_mask):
+def plot_amplitude_phase_meas_retreival(retrieved_obj, title):
 
     # print(retrieved_obj.keys())
 
@@ -301,11 +301,13 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, amplitude_mask):
 
     obj_phase = np.angle(complex_obj)
 
-    # multiply phase by the amplitude mask
-    amplitude_mask = np.squeeze(amplitude_mask)
-    amplitude_mask = np.array(amplitude_mask)
-    amplitude_mask[amplitude_mask < 0.2] = 0
-    obj_phase *= amplitude_mask
+    # not using the amplitude_mask, use the absolute value of the intensity
+    nonzero_intensity = np.array(np.abs(complex_obj))
+    nonzero_intensity[nonzero_intensity < 0.01*np.max(nonzero_intensity)] = 0
+    nonzero_intensity[nonzero_intensity >= 0.01*np.max(nonzero_intensity)] = 1
+    obj_phase *= nonzero_intensity
+
+
 
     # for testing
     # obj_phase[10:20, :] = np.max(obj_phase)
@@ -372,20 +374,21 @@ def test_various_scales(scales, orientation, iterations):
 
         # save the retrieval
         title = "orientation change:"+str(orientation)+"    "+"scale:"+str(scale)
-        fig = plot_amplitude_phase_meas_retreival(retrieved_obj, title, network_retrieval.amplitude_mask)
+        fig = plot_amplitude_phase_meas_retreival(retrieved_obj, title)
 
         filename = str(orientation)+"_"+str(scale).replace(".", "_")+".png"
         fig.savefig(os.path.join(save_folder,filename))
 
+        amplitude_mask = network_retrieval.amplitude_mask
         network_retrieval.close()
         del network_retrieval
         tf.reset_default_graph()
 
         # retrieve the diffraction pattern with matlab code
-        retrieved_obj = matlab_cdi_retrieval(np.squeeze(retrieved_obj["measured_pattern"]), np.squeeze(network_retrieval.amplitude_mask))
+        retrieved_obj = matlab_cdi_retrieval(np.squeeze(retrieved_obj["measured_pattern"]), np.squeeze(amplitude_mask))
         # save the retrieval
         title = "MATLAB CDI orientation change:"+str(orientation)+"    "+"scale:"+str(scale)
-        fig = plot_amplitude_phase_meas_retreival(retrieved_obj, title, network_retrieval.amplitude_mask)
+        fig = plot_amplitude_phase_meas_retreival(retrieved_obj, title)
         filename = "MATLABCDI_"+str(orientation)+"_"+str(scale).replace(".", "_")+".png"
         fig.savefig(os.path.join(save_folder,filename))
 
@@ -431,7 +434,7 @@ def matlab_cdi_retrieval(diffraction_pattern, support):
     retrieved_obj["tf_reconstructed_diff"] = recon_diffracted
     retrieved_obj["real_output"] = np.real(rec_object)
     retrieved_obj["imag_output"] = np.imag(rec_object)
-    return rec_object
+    return retrieved_obj
 
 
 
@@ -439,56 +442,10 @@ if __name__ == "__main__":
 
 
     # scales = np.arange(0.8, 1.2, 0.01)
-    scales = np.array([1.0])
-    test_various_scales(scales, None, 1)
-    exit()
+    scales = np.array([0.9, 1.0, 1.1])
+    test_various_scales(scales, None, 300)
     test_various_scales(scales, "lr", 300)
     test_various_scales(scales, "ud", 300)
     test_various_scales(scales, "lrud", 300)
-    exit()
-
-
-    network_retrieval = NetworkRetrieval("IGLUY_constrain_output_with_mask_u")
-    # network_retrieval.retrieve_experimental()
-    transform = {}
-    # between 0.4 and 1.4
-    transform["scale"] = 1.0
-    # transform["flip"] = "lr"
-    # transform["flip"] = "ud"
-    transform["flip"] = "lrud"
-    # transform["flip"] = None
-    retrieved_obj = network_retrieval.unsupervised_retrieval(transform, iterations=20)
-    # del network_retrieval
-    network_retrieval.close()
-    del network_retrieval
-    tf.reset_default_graph()
-
-
-    network_retrieval = NetworkRetrieval("IGLUY_constrain_output_with_mask_u")
-    # network_retrieval.retrieve_experimental()
-    transform = {}
-    # between 0.4 and 1.4
-    transform["scale"] = 1.0
-    # transform["flip"] = "lr"
-    transform["flip"] = None
-    # transform["flip"] = "ud"
-    # transform["flip"] = "lrud"
-    retrieved_obj = network_retrieval.unsupervised_retrieval(transform, iterations=20)
-    # del network_retrieval
-    network_retrieval.close()
-    del network_retrieval
-
-    # # with open("retrieved_obj.p", "wb") as file:
-        # # pickle.dump(retrieved_obj, file)
-    # # exit()
-    # with open("retrieved_obj.p", "rb") as file:
-        # retrieved_obj = pickle.load(file)
-
-    title = "lr up sclae: 34"
-    fig = plot_amplitude_phase_meas_retreival(retrieved_obj, title)
-    fig.savefig("fig.png")
-
-    plt.ioff()
-    plt.show()
 
 

@@ -8,4 +8,5 @@ tensorboard_graph/
 *.hdf5
 .grep*
 models/
+matlab_cdi/*.mat
 
