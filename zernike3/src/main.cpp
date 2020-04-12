@@ -561,10 +561,10 @@ int main()
 
 
   // generate data set
-  Python.call("create_dataset", "test.hdf5");
+  Python.call("create_dataset", "train.hdf5");
   // generate data
   // for(int i=0; i < 40000; i++) // 40k samples
-  for(int i=0; i < 200; i++) // 40k samples
+  for(int i=0; i < 40000; i++) // 40k samples
   {
     if(i % 10 == 0)
       cout << "generating sample" << i << endl;
@@ -623,7 +623,7 @@ int main()
     // auto duration = duration_cast<microseconds>(time2 - time1);
     // cout << "average time:" << duration.count() << endl;
     // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-    Python.call_function_np("write_to_dataset", "test.hdf5", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+    Python.call_function_np("write_to_dataset", "train.hdf5", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
     // Python.call("show");
   }
 

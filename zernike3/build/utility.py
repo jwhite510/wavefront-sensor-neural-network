@@ -230,6 +230,9 @@ def write_to_dataset(filename, array):
     object_imag = np.imag(array)
     diffraction_pattern_with_noise = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(array))))**2
 
+    # normalize
+    diffraction_pattern_with_noise = diffraction_pattern_with_noise / np.max(diffraction_pattern_with_noise)
+
     # plt.figure()
     # plt.imshow(object_real)
 
