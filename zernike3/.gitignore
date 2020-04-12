@@ -1,0 +1,15 @@
+.grepignorefile
+.grepignoredir
+*.vim
+tags
+src/compile_commands.json
+build/CMakeCache.txt
+build/cmake_install.cmake
+build/CMakeCache.txt
+build/__pycache__/
+build/CMakeFiles/
+build/a.out
+build/compile_commands.json
+build/*.pyc
+build/Makefile
+
