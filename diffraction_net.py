@@ -458,7 +458,7 @@ class DiffractionNet():
 
         # imag_output = imag_output * real_output #TODO maybe remove this
 
-        for index in range(0,10):
+        for index in range(0,20):
             axes_obj = PlotAxes("sample "+str(index))
 
             im = axes_obj.diffraction_samples.pcolormesh(diffraction_samples[index,:,:,0])
