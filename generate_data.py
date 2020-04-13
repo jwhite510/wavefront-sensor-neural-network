@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import tables
@@ -12,6 +13,58 @@ import imageio
 import tensorflow as tf
 import PIL.ImageOps
 import time
+
+def plot_complex_diffraction(array):
+    array = array.astype(np.complex128)
+    print("plot_complex_diffraction")
+    fig = plt.figure(figsize=(10,7))
+    gs = fig.add_gridspec(2,3)
+
+    ax = fig.add_subplot(gs[0,0])
+    im = ax.imshow(np.angle(array))
+    fig.colorbar(im, ax=ax)
+    ax.set_title("angle")
+
+    ax = fig.add_subplot(gs[0,1])
+    im = ax.imshow(np.real(array))
+    fig.colorbar(im, ax=ax)
+    ax.set_title("real")
+
+    ax = fig.add_subplot(gs[0,2])
+    im = ax.imshow(np.imag(array))
+    fig.colorbar(im, ax=ax)
+    ax.set_title("imag")
+
+    # make the intensity pattern
+    ax = fig.add_subplot(gs[1,0])
+    im = ax.imshow(np.abs(array)**2)
+    fig.colorbar(im, ax=ax)
+    ax.set_title("intensity")
+
+    # make the diffraction pattern
+    ax = fig.add_subplot(gs[1,1])
+    diffraction = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(array))))**2
+    im = ax.imshow(diffraction)
+    fig.colorbar(im, ax=ax)
+    ax.set_title("diffraction")
+
+def create_material_slice(N, beta_Ta, delta_Ta, k, dz, amplitude_mask):
+    material = np.zeros((N, N), dtype=np.complex128)
+    material[amplitude_mask < 0.5] = np.exp(-1 * k * beta_Ta *dz) * np.exp(-1j * k * delta_Ta * dz )
+    material[amplitude_mask >= 0.5] = 1
+    return material
+
+def propagate_through_material(field, material, steps, dz, lam, fx_grid, fy_grid):
+
+    for _ in range(steps):
+        field *= material
+        field = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(field))).astype(np.complex64)
+        H = np.exp(1j * 2 * np.pi * dz / lam * np.sqrt(1 - (lam * fx_grid) ** 2 - (lam * fy_grid) ** 2)).astype(np.complex64)
+        field *= H
+        field = np.fft.fftshift(np.fft.ifft2(np.fft.fftshift(field))).astype(np.complex64)
+
+    return field
+
 
 def detector(dp, num_phot, qe, io_noise, well_capac, el_per_DC, bit_depth, phot_energy, offset=None):
     """
@@ -279,7 +332,7 @@ def print_debug_variables(debug_locals):
     print("")
 
 
-def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, z_radius, scalef, tf_propagate_gaussian_graph, sess):
+def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, z_radius, scalef, tf_propagate_gaussian_graph, measured_axes, sess):
 
     zernike_coefficients = [
             #(m,n)
@@ -330,8 +383,9 @@ def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, 
     # take the center of propagated beam
     random_shift = ( (-1 + 2*np.random.rand()), (-1 + 2*np.random.rand()) )
     random_shift_scalar = 25
-    index_min = int((N_zernike/2) - 100)
-    index_max = int((N_zernike/2) + 100)
+    crop_size = int(20 + np.random.rand()*180)
+    index_min = int((N_zernike/2) - int(crop_size/2))
+    index_max = int((N_zernike/2) + int(crop_size/2))
 
     prop_center = prop[int(index_min+random_shift_scalar*random_shift[0]):int(index_max+random_shift_scalar*random_shift[0]), int(index_min+random_shift_scalar*random_shift[1]):int(index_max+random_shift_scalar*random_shift[1])]
 
@@ -344,6 +398,38 @@ def make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, 
 
     real_masked_prop = np.real(prop_center_N)
     imag_masked_prop = np.imag(prop_center_N)
+
+    complex_object = real_masked_prop + 1j * imag_masked_prop
+
+    # propagate through material
+    f = measured_axes["diffraction_plane"]["f"]
+    dz = 1e-9
+    lam = 13.5e-9
+    k =  2 * np.pi / lam
+    fx_grid = f.reshape(1,-1)
+    fy_grid = f.reshape(-1,1)
+    Cu_m = {}
+    Cu_m["beta_Ta"] = 0.0612;
+    Cu_m["delta_Ta"] = 0.03748;
+    Si_m = {}
+    Si_m["beta_Ta"] = 0.00926;
+    Si_m["delta_Ta"] = 0.02661;
+    Cu_slice = create_material_slice(N, Cu_m["beta_Ta"], Cu_m["delta_Ta"], k, dz, amplitude_mask)
+    Si_slice = create_material_slice(N, Si_m["beta_Ta"], Si_m["delta_Ta"], k, dz, amplitude_mask)
+
+    Si_distance = 50e-9;
+    cu_distance = 150e-9;
+
+    steps_Si = int(math.ceil(Si_distance / dz));
+    steps_cu = int(math.ceil(cu_distance / dz));
+    # plot_complex_diffraction(complex_object)
+    complex_object = propagate_through_material(complex_object, Si_slice, steps_Si, dz, lam, fx_grid, fy_grid)
+    complex_object = propagate_through_material(complex_object, Cu_slice, steps_cu, dz, lam, fx_grid, fy_grid)
+    # plot_complex_diffraction(complex_object)
+
+    real_masked_prop = np.real(complex_object)
+    imag_masked_prop = np.imag(complex_object)
+
 
     return real_masked_prop, imag_masked_prop
 
@@ -462,7 +548,7 @@ def make_dataset(filename, N, samples):
                 # plot_thing(object_phase, 1, "object_phase")
                 # plot_thing(object_amplitude, 2, "object_amplitude")
 
-                object_real, object_imag = make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, z_radius, scalef, tf_propagate_gaussian_graph, sess)
+                object_real, object_imag = make_wavefront_sensor_image(N, N_zernike, amplitude_mask, tf_zernike_graph, z_radius, scalef, tf_propagate_gaussian_graph, obj_calculated_measured_axes, sess)
 
 
                 # plot_thing(object_real, 1, "object_real")
