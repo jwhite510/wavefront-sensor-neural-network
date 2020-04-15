@@ -7,11 +7,11 @@ rm ./*.hdf5
 echo generating dataset
 ~/python_compiled/bin/python3 ~/projects/diffraction_3/generate_data.py
 
-export batch_run_name=IUBL_centered_at_centroid1
+export batch_run_name=debug11
 echo submtting network training job $batch_run_name
 sbatch --wait submit_gpu_job.slurm # start training network
 
-export batch_run_name=IUBL_centered_at_centroid1
+export batch_run_name=debug11
 echo submtting network training job $batch_run_name
 sbatch --wait submit_gpu_job.slurm # start training network
 

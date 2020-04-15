@@ -307,7 +307,7 @@ class DiffractionNet():
 
             print("add_tensorboard_values")
             self.add_tensorboard_values()
-            if self.i % 5 == 0:
+            if self.i % 50 == 0:
 
                 # create directory if it doesnt exist
                 check_is_dir("nn_pictures")
@@ -316,10 +316,10 @@ class DiffractionNet():
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/training")
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/validation")
 
-                data = self.get_data.evaluate_on_train_data(n_samples=50)
+                data = self.get_data.evaluate_on_train_data(n_samples=10)
                 self.evaluate_performance(data, "training")
 
-                data = self.get_data.evaluate_on_validation_data(n_samples=50)
+                data = self.get_data.evaluate_on_validation_data(n_samples=10)
                 self.evaluate_performance(data, "validation")
 
 
@@ -436,22 +436,22 @@ class DiffractionNet():
         # imag_out_raw = self.sess.run(self.nn_nodes["imag_out_raw"], feed_dict={self.x:diffraction_samples})
 
 
-        # check the output
-        with open("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/samples.p", "wb") as file:
-            obj = {}
-            # network output
-            obj["real_output"] = real_output
-            obj["imag_output"] = imag_output
-            # obj["imag_out_raw"] = imag_out_raw
-            # obj["imag_scalar_output"] = imag_scalar_output
-            obj["tf_reconstructed_diff"] = tf_reconstructed_diff
+        # # check the output
+        # with open("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/samples.p", "wb") as file:
+            # obj = {}
+            # # network output
+            # obj["real_output"] = real_output
+            # obj["imag_output"] = imag_output
+            # # obj["imag_out_raw"] = imag_out_raw
+            # # obj["imag_scalar_output"] = imag_scalar_output
+            # obj["tf_reconstructed_diff"] = tf_reconstructed_diff
 
-            # training data
-            obj["object_real_samples"] = object_real_samples
-            obj["object_imag_samples"] = object_imag_samples
-            obj["diffraction_samples"] = diffraction_samples
-            # obj["imag_scalar_samples"] = imag_scalar_samples
-            pickle.dump(obj, file)
+            # # training data
+            # obj["object_real_samples"] = object_real_samples
+            # obj["object_imag_samples"] = object_imag_samples
+            # obj["diffraction_samples"] = diffraction_samples
+            # # obj["imag_scalar_samples"] = imag_scalar_samples
+            # pickle.dump(obj, file)
 
 
         # multiply by real_output

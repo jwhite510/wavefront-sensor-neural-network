@@ -540,7 +540,7 @@ if __name__ == "__main__":
     # generate a data set
     N = 128
 
-    make_dataset("train_data.hdf5", N=N, samples=40000)
+    make_dataset("train_data.hdf5", N=N, samples=200)
 
     make_dataset("test_data.hdf5", N=N, samples=200)
 
