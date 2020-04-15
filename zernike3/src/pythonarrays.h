@@ -84,6 +84,8 @@ class PythonInterp
     PyArrayObject* vec_array;
 
     pFunc = PyObject_GetAttrString(pModule, functionname);
+    if(!pFunc || !PyCallable_Check(pFunc))
+      cout << "function: " << functionname << " not found!" << endl;
 
     pArgs = PyTuple_New(1);
 
@@ -91,6 +93,8 @@ class PythonInterp
     PyTuple_SetItem(pArgs, 0, vec_array_reshaped);
 
     pValue = PyObject_CallObject(pFunc, pArgs);
+    if(pValue == NULL)
+      cout << "NULL value in " << pFunc << " python call!" << endl;
 
     // Py_DECREF(pValue);
     // Py_DECREF(pFunc);
@@ -110,6 +114,8 @@ class PythonInterp
     PyObject* vec_array_reshaped;
 
     pFunc = PyObject_GetAttrString(pModule, functionname);
+    if(!pFunc || !PyCallable_Check(pFunc))
+      cout << "function: " << functionname << " not found!" << endl;
 
     pArgs = PyTuple_New(2);
 
@@ -119,6 +125,8 @@ class PythonInterp
     PyTuple_SetItem(pArgs, 0, _string_arg);
 
     pValue = PyObject_CallObject(pFunc, pArgs);
+    if(pValue == NULL)
+      cout << "NULL value in " << pFunc << " python call!" << endl;
 
     // Py_DECREF(pValue);
     // Py_DECREF(pFunc);
@@ -139,10 +147,14 @@ class PythonInterp
 
     std::cout << "calling" << std::endl;
     pFunc = PyObject_GetAttrString(pModule, functionname);
+    if(!pFunc || !PyCallable_Check(pFunc))
+      cout << "function: " << functionname << " not found!" << endl;
     std::cout << "pFunc" << " => " << pFunc << std::endl;
     pArgs = PyTuple_New(1);
     PyTuple_SetItem(pArgs, 0, PyLong_FromLong(0));
     pValue = PyObject_CallObject(pFunc, pArgs);
+    if(pValue == NULL)
+      cout << "NULL value in " << pFunc << " python call!" << endl;
 
     // Py_DECREF(pValue);
     // Py_DECREF(pFunc);
@@ -162,9 +174,13 @@ class PythonInterp
 
     _string_arg = PyUnicode_DecodeFSDefault(stringarg);
     pFunc = PyObject_GetAttrString(pModule, functionname);
+    if(!pFunc || !PyCallable_Check(pFunc))
+      cout << "function: " << functionname << " not found!" << endl;
     pArgs = PyTuple_New(1);
     PyTuple_SetItem(pArgs, 0, _string_arg);
     pValue = PyObject_CallObject(pFunc, pArgs);
+    if(pValue == NULL)
+      cout << "NULL value in " << pFunc << " python call!" << endl;
 
     // Py_DECREF(pValue);
     // Py_DECREF(pFunc);
@@ -185,10 +201,14 @@ class PythonInterp
 
     std::cout << "calling" << std::endl;
     pFunc = PyObject_GetAttrString(pModule, functionname);
+    if(!pFunc || !PyCallable_Check(pFunc))
+      cout << "function: " << functionname << " not found!" << endl;
     std::cout << "pFunc" << " => " << pFunc << std::endl;
     pArgs = PyTuple_New(1);
     PyTuple_SetItem(pArgs, 0, PyLong_FromLong(0));
     pValue = PyObject_CallObject(pFunc, pArgs);
+    if(pValue == NULL)
+      cout << "NULL value in " << pFunc << " python call!" << endl;
     return pValue;
 
     // Py_DECREF(pValue);
