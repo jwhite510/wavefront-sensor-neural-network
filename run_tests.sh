@@ -5,7 +5,7 @@
 # generate dataset
 rm ./*.hdf5
 echo generating dataset
-~/python_compiled/bin/python3 ~/projects/diffraction_3/generate_data.py
+~/python_compiled/bin/python3 generate_data.py
 
 export batch_run_name=debug11
 echo submtting network training job $batch_run_name
