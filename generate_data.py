@@ -555,6 +555,11 @@ def make_dataset(filename, N, samples):
                 # plot_thing(object_imag, 2, "object_imag")
                 complex_object = object_real + 1j*object_imag
 
+                if True in np.isnan(complex_object):
+                    print("complex_object is NAN!!!!!!!")
+                    print("continuing")
+                    continue
+
                 # plot_thing(np.abs(complex_object), 87979, "np.abs(complex_object)")
 
                 diffraction_pattern = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_object)))
@@ -626,7 +631,7 @@ if __name__ == "__main__":
     # generate a data set
     N = 128
 
-    make_dataset("train_data.hdf5", N=N, samples=200)
+    make_dataset("train_data.hdf5", N=N, samples=40000)
 
     make_dataset("test_data.hdf5", N=N, samples=200)
 
