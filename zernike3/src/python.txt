@@ -1,0 +1,17 @@
+  Python.call_function_np("plot_complex", wavefrontsensor.data, vector<int>{wavefrontsensor.size_0,wavefrontsensor.size_1}, PyArray_FLOAT32);
+  Python.call_function_np("plot_complex", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+  Python.call_function_np("plot_complex", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_FLOAT64);
+  Python.call_function_np("plot_complex", cropped_propagated_beam.data, vector<int>{cropped_propagated_beam.size_0,cropped_propagated_beam.size_1}, PyArray_FLOAT64);
+  PythonInterp Python("/home/zom/Projects/diffraction_net/venv/", "utility");
+  Python.call_function_np("plot_complex", wavefrontsensor.data, vector<int>{wavefrontsensor.size_0,wavefrontsensor.size_1}, PyArray_FLOAT32);
+  Python.call_function_np("plot_complex", slice.data, vector<int>{slice.size_0,slice.size_1}, PyArray_COMPLEX64);
+  Python.call("show");
+  Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+  Python.call_function_np("save_interped_arr", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+  Python.call_function_np("save_slice", slice.data, vector<int>{slice.size_0,slice.size_1}, PyArray_COMPLEX64);
+  Python.call_function_np("save_f", f.data, vector<int>{f.size_0}, PyArray_FLOAT32);
+
+  auto start = std::chrono::high_resolution_clock::now();
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+  std::cout << "duration.count()[microseconds]" << " => " << duration.count() << std::endl;
