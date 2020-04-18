@@ -487,9 +487,38 @@ struct zernike_c
   int n;
 };
 
-
-int main()
+struct RunParameters
 {
+  string RunName;
+  int Samples;
+};
+RunParameters parseargs(int argc, char *argv[])
+{
+  RunParameters runParameters;
+  runParameters.Samples = 0;
+  runParameters.RunName = "NONE";
+  for(int i=0; i < argc; i++)
+    if(string(argv[i]) == "--count")
+      runParameters.Samples = atoi(argv[i+1]);
+
+  for(int i=0; i < argc; i++)
+    if(string(argv[i]) == "--name")
+      runParameters.RunName = argv[i+1];
+
+  return runParameters;
+}
+
+int main(int argc, char *argv[])
+{
+
+  RunParameters runParameters = parseargs(argc, argv);
+
+  std::cout << "runParameters.Samples" << " => " << runParameters.Samples << std::endl;
+  std::cout << "runParameters.RunName" << " => " << runParameters.RunName << std::endl;
+
+  if(runParameters.RunName == "NONE" || runParameters.Samples == 0)
+    return 1; // parameter not set
+
   PythonInterp Python("/home/hi76tor/python_compiled_2", "utility");
 
   // seed random
@@ -561,10 +590,10 @@ int main()
 
 
   // generate data set
-  Python.call("create_dataset", "train.hdf5");
+  Python.call("create_dataset", runParameters.RunName.c_str());
   // generate data
   // for(int i=0; i < 40000; i++) // 40k samples
-  for(int i=0; i < 200; i++) // 40k samples
+  for(int i=0; i < runParameters.Samples; i++) // 40k samples
   {
     if(i % 10 == 0)
       cout << "generating sample" << i << endl;
@@ -623,7 +652,7 @@ int main()
     // auto duration = duration_cast<microseconds>(time2 - time1);
     // cout << "average time:" << duration.count() << endl;
     // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-    Python.call_function_np("write_to_dataset", "train.hdf5", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+    Python.call_function_np("write_to_dataset",runParameters.RunName.c_str(), interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
     // Python.call("show");
   }
 
