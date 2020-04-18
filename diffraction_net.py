@@ -14,8 +14,8 @@ class GetData():
         self.batch_counter = 0
         self.batch_index = 0
         self.batch_size = batch_size
-        self.train_filename = "train_data.hdf5"
-        self.test_filename = "test_data.hdf5"
+        self.train_filename = "zernike3/build/train.hdf5"
+        self.test_filename = "zernike3/build/test.hdf5"
         self.hdf5_file_train = tables.open_file(self.train_filename, mode="r")
         self.hdf5_file_validation = tables.open_file(self.test_filename, mode="r")
         self.samples = self.hdf5_file_train.root.object_real.shape[0]

@@ -226,12 +226,18 @@ def create_dataset(filename):
 
 def write_to_dataset(filename, array):
 
+    if True in np.isnan(array):
+        print("complex_object is NAN!!!!!!!")
+        print("continuing")
+        return
+
     object_real = np.real(array)
     object_imag = np.imag(array)
     diffraction_pattern_with_noise = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(array))))**2
 
     # normalize
     diffraction_pattern_with_noise = diffraction_pattern_with_noise / np.max(diffraction_pattern_with_noise)
+    diffraction_pattern_with_noise = diffraction_functions.center_image_at_centroid(diffraction_pattern_with_noise)
 
     # plt.figure()
     # plt.imshow(object_real)

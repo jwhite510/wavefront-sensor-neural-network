@@ -564,7 +564,7 @@ int main()
   Python.call("create_dataset", "train.hdf5");
   // generate data
   // for(int i=0; i < 40000; i++) // 40k samples
-  for(int i=0; i < 40000; i++) // 40k samples
+  for(int i=0; i < 200; i++) // 40k samples
   {
     if(i % 10 == 0)
       cout << "generating sample" << i << endl;
