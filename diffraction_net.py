@@ -316,23 +316,27 @@ class DiffractionNet():
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/training")
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/validation")
 
-                data = self.get_data.evaluate_on_train_data(n_samples=10)
+                data = self.get_data.evaluate_on_train_data(n_samples=50)
                 self.evaluate_performance(data, "training")
 
-                data = self.get_data.evaluate_on_validation_data(n_samples=10)
+                data = self.get_data.evaluate_on_validation_data(n_samples=50)
                 self.evaluate_performance(data, "validation")
+
+
+            # save the network
+            if self.i % 50 == 0:
+                print("saving network models/" + self.name + ".ckpt")
+                self.saver.save(self.sess, "models/" + self.name + ".ckpt")
+                training_parameters = {}
+                training_parameters["i"] = self.i
+                with open("models/" + self.name + ".p", "wb") as file:
+                    pickle.dump(training_parameters, file)
+                print("network saved" + self.name + ".ckpt")
 
 
             # save the network
             self.get_data.batch_index = 0
             self.i+=1
-            print("saving network models/" + self.name + ".ckpt")
-            self.saver.save(self.sess, "models/" + self.name + ".ckpt")
-            training_parameters = {}
-            training_parameters["i"] = self.i
-            with open("models/" + self.name + ".p", "wb") as file:
-                pickle.dump(training_parameters, file)
-            print("network saved" + self.name + ".ckpt")
 
 
     def add_tensorboard_values(self):
@@ -458,7 +462,7 @@ class DiffractionNet():
 
         # imag_output = imag_output * real_output #TODO maybe remove this
 
-        for index in range(0,10):
+        for index in range(0,50):
             axes_obj = PlotAxes("sample "+str(index))
 
             im = axes_obj.diffraction_samples.pcolormesh(diffraction_samples[index,:,:,0])

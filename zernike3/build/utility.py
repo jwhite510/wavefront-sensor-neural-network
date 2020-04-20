@@ -225,11 +225,20 @@ def create_dataset(filename):
         hd5file.root.N.append(np.array([[N]]))
 
 def write_to_dataset(filename, array):
+    # print("writing dataset")
 
     if True in np.isnan(array):
         print("complex_object is NAN!!!!!!!")
         print("continuing")
         return
+
+    if True in np.isinf(array):
+        print("complex_object is inf!!!!!!!")
+        print("continuing")
+        return
+
+    # normalize the array
+    array = array / np.max(np.abs(array))
 
     object_real = np.real(array)
     object_imag = np.imag(array)
