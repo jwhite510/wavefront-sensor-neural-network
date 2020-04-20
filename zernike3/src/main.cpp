@@ -532,10 +532,9 @@ struct DataGenerator
   int start_n;
   int max_n;
   array3d<float>* mn_polynomials;
-  RunParameters runParameters;
   vector<zernike_c> zernike_cvector;
 
-  DataGenerator(int argc, char *argv[], const char* pythonhomedir,
+  DataGenerator(const char* pythonhomedir,
       int N_computational,
       int crop_size,
       int n_interp)
@@ -554,13 +553,6 @@ struct DataGenerator
     this->N_computational = N_computational;
     this->crop_size = crop_size;
     this->n_interp = n_interp;
-    runParameters = parseargs(argc, argv);
-
-    std::cout << "runParameters.Samples" << " => " << runParameters.Samples << std::endl;
-    std::cout << "runParameters.RunName" << " => " << runParameters.RunName << std::endl;
-
-    if(runParameters.RunName == "NONE" || runParameters.Samples == 0)
-      return; // parameter not set
 
     // seed random
     srand(time(0));
@@ -650,7 +642,7 @@ struct DataGenerator
     // normalize
     normalize(interped_arr);
 
-    Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+    // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
     // propagate through materials
     for(int i=0; i<steps_Si; i++) // 50 nm & dz: 10 nm
       forward_propagate(interped_arr, slice_Si, *wavefonts.f, params_Si, fft_2_interp);
@@ -669,15 +661,25 @@ struct DataGenerator
 int main(int argc, char *argv[])
 {
 
+  RunParameters runParameters = parseargs(argc, argv);
+
+  std::cout << "runParameters.Samples" << " => " << runParameters.Samples << std::endl;
+  std::cout << "runParameters.RunName" << " => " << runParameters.RunName << std::endl;
+
+  if(runParameters.RunName == "NONE" || runParameters.Samples == 0)
+    return 1; // parameter not set
+
   int n_interp = 128;
+  int crop_size = 200;
+  int N_computational = 1024;
   array2d<complex<float>> interped_arr(n_interp, n_interp);
-  DataGenerator datagenerator(argc, argv, "/home/zom/Projects/diffraction_net/venv/",
-      1024, // N_computational
-      200, // crop_size
+  DataGenerator datagenerator("/home/zom/Projects/diffraction_net/venv/",
+      N_computational, // N_computational
+      crop_size, // crop_size
       n_interp // n_interp
       );
-  datagenerator.Python.call("create_dataset", "train.hdf5");
-  for(int i=0; i < 5; i++) {
+  datagenerator.Python.call("create_dataset",runParameters.RunName.c_str());
+  for(int i=0; i < runParameters.Samples; i++) {
     datagenerator.makesample(interped_arr);
     datagenerator.Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
     datagenerator.Python.call("show");
