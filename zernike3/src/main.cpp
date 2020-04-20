@@ -518,7 +518,6 @@ struct DataGenerator
   GaussianPropagator gaussianp;
   int crop_size;
   int n_interp;
-  array2d<complex<float>> interped_arr;
   CropAndInterpolateComplex cropinterp;
   WaveFrontSensor wavefonts;
   Parameters params_cu;
@@ -546,7 +545,6 @@ struct DataGenerator
       zernikegenerator(N_computational),
       complex_object(N_computational, N_computational),
       gaussianp(N_computational),
-      interped_arr(n_interp, n_interp),
       cropinterp(n_interp, crop_size),
       wavefonts(n_interp, Python),
       slice_cu(n_interp, n_interp),
@@ -612,74 +610,53 @@ struct DataGenerator
 
 
   }
-  void makesample()
+  void makesample(array2d<complex<float>>  &interped_arr)
   {
-    // generate data set
-    Python.call("create_dataset", runParameters.RunName.c_str());
-    // generate data
-    // for(int i=0; i < 40000; i++) // 40k samples
-    for(int i=0; i < runParameters.Samples; i++) // 40k samples
-    {
-      if(i % 10 == 0)
-        cout << "generating sample" << i << endl;
-      // auto time1 = high_resolution_clock::now();
-      // get a random value for each coefficient
-      for(int i=0; i < zernike_polynom.length; i++)
-        zernike_polynom.data[i] = 0.0;
+    // auto time1 = high_resolution_clock::now();
+    // get a random value for each coefficient
+    for(int i=0; i < zernike_polynom.length; i++)
+      zernike_polynom.data[i] = 0.0;
 
-      // for each zernike coeffieicent
-      for(int i=0; i < zernike_cvector.size(); i++) {
-        // make random scalar
-        float r1 = RandomF();
-        r1 *= 9; // scalar
-        if(RandomF() > 0.5)
-          r1 *= -1;
+    // for each zernike coeffieicent
+    for(int i=0; i < zernike_cvector.size(); i++) {
+      // make random scalar
+      float r1 = RandomF();
+      r1 *= 9; // scalar
+      if(RandomF() > 0.5)
+        r1 *= -1;
 
-        // float r1 = 2.0; // TODO return this to normal, its disabled to show the cropping
+      // float r1 = 2.0; // TODO return this to normal, its disabled to show the cropping
 
-        // std::cout << "r" << " => " << r1 << std::endl;
-        for(int j=0; j < N_computational; j++)
-          for(int k=0; k < N_computational; k++)
-            zernike_polynom(j,k) +=  r1 * (*mn_polynomials)(i, j, k);
-      }
-
-      // apply this phase and propagate it
-      gaussianp.propagate(complex_object, zernike_polynom);
-      cropinterp.crop_interp(complex_object,
-          interped_arr, // OUT
-          0.1 // between 0 and 1 : the minimum image scale after interpolation
-          );
-
-      // TODO: do not set the electric field normalized after multiplying by the wavefront mask
-      // !!! -- make it between something and 1, not 0 and 1
-
-      // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-      // multiplby wavefront sensor
-      for(int i=0; i < interped_arr.length; i++)
-        interped_arr.data[i] *= wavefonts.wavefrontsensor->data[i];
-      // normalize
-      normalize(interped_arr);
-
-      // // save the data to pickles
-      // Python.call_function_np("savepickle", "slice_cu.p", slice_cu.data, vector<int>{slice_cu.size_0,slice_cu.size_1}, PyArray_COMPLEX64);
-      // Python.call_function_np("savepickle", "slice_Si.p", slice_Si.data, vector<int>{slice_Si.size_0,slice_Si.size_1}, PyArray_COMPLEX64);
-      // Python.call_function_np("savepickle", "interped_arr.p", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-      // Python.call_function_np("savepickle", "f.p", wavefonts.f->data, vector<int>{wavefonts.f->size_0}, PyArray_FLOAT32);
-
-      // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-      // propagate through materials
-      for(int i=0; i<steps_Si; i++) // 50 nm & dz: 10 nm
-        forward_propagate(interped_arr, slice_Si, *wavefonts.f, params_Si, fft_2_interp);
-      for(int i=0; i<steps_cu; i++)
-        forward_propagate(interped_arr, slice_cu, *wavefonts.f, params_cu, fft_2_interp);
-
-      // auto time2 = high_resolution_clock::now();
-      // auto duration = duration_cast<microseconds>(time2 - time1);
-      // cout << "average time:" << duration.count() << endl;
-      // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-      Python.call_function_np("write_to_dataset",runParameters.RunName.c_str(), interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-      // Python.call("show");
+      // std::cout << "r" << " => " << r1 << std::endl;
+      for(int j=0; j < N_computational; j++)
+        for(int k=0; k < N_computational; k++)
+          zernike_polynom(j,k) +=  r1 * (*mn_polynomials)(i, j, k);
     }
+
+    // apply this phase and propagate it
+    gaussianp.propagate(complex_object, zernike_polynom);
+    cropinterp.crop_interp(complex_object,
+        interped_arr, // OUT
+        0.1 // between 0 and 1 : the minimum image scale after interpolation
+        );
+
+    // TODO: do not set the electric field normalized after multiplying by the wavefront mask
+    // !!! -- make it between something and 1, not 0 and 1
+
+    // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+    // multiplby wavefront sensor
+    for(int i=0; i < interped_arr.length; i++)
+      interped_arr.data[i] *= wavefonts.wavefrontsensor->data[i];
+    // normalize
+    normalize(interped_arr);
+
+    Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+    // propagate through materials
+    for(int i=0; i<steps_Si; i++) // 50 nm & dz: 10 nm
+      forward_propagate(interped_arr, slice_Si, *wavefonts.f, params_Si, fft_2_interp);
+    for(int i=0; i<steps_cu; i++)
+      forward_propagate(interped_arr, slice_cu, *wavefonts.f, params_cu, fft_2_interp);
+
   }
 
   ~DataGenerator()
@@ -692,11 +669,21 @@ struct DataGenerator
 int main(int argc, char *argv[])
 {
 
+  int n_interp = 128;
+  array2d<complex<float>> interped_arr(n_interp, n_interp);
   DataGenerator datagenerator(argc, argv, "/home/zom/Projects/diffraction_net/venv/",
       1024, // N_computational
       200, // crop_size
-      128 // n_interp
+      n_interp // n_interp
       );
-  datagenerator.makesample();
+  datagenerator.Python.call("create_dataset", "train.hdf5");
+  for(int i=0; i < 5; i++) {
+    datagenerator.makesample(interped_arr);
+    datagenerator.Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+    datagenerator.Python.call("show");
+  }
+
+
+  // Python.call_function_np("write_to_dataset",runParameters.RunName.c_str(), interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
 
 }
