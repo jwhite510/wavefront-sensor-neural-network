@@ -508,152 +508,167 @@ RunParameters parseargs(int argc, char *argv[])
   return runParameters;
 }
 
+struct DataGenerator
+{
+  PythonInterp Python;
+  int N_computational;
+  DataGenerator(int argc, char *argv[], const char* pythonhomedir, int N_computational)
+    : Python(pythonhomedir, "utility")
+  {
+
+    RunParameters runParameters = parseargs(argc, argv);
+
+    std::cout << "runParameters.Samples" << " => " << runParameters.Samples << std::endl;
+    std::cout << "runParameters.RunName" << " => " << runParameters.RunName << std::endl;
+
+    if(runParameters.RunName == "NONE" || runParameters.Samples == 0)
+      return; // parameter not set
+
+    // PythonInterp Python("/home/zom/Projects/diffraction_net/venv/", "utility");
+
+    // seed random
+    srand(time(0));
+    this->N_computational = N_computational;
+    // use a square grid
+    array2d<float> zernike_polynom(N_computational,N_computational);
+    ZernikeGenerator zernikegenerator(N_computational);
+
+
+    // create the complex object with the phase and amplitude
+    array2d<complex<float>> complex_object(N_computational, N_computational);
+    GaussianPropagator gaussianp(N_computational);
+    // crop the image size:
+    int crop_size = 200;
+    int n_interp = 128;
+    array2d<complex<float>> interped_arr(n_interp, n_interp);
+    CropAndInterpolateComplex cropinterp(n_interp, crop_size);
+    WaveFrontSensor wavefonts(n_interp, Python);
+
+    // define materials
+    Parameters params_cu;
+    Parameters params_Si;
+    params_cu.beta_Ta = 0.0612;
+    params_cu.delta_Ta = 0.03748;
+    params_Si.beta_Ta = 0.00926;
+    params_Si.delta_Ta = 0.02661;
+
+    // single slice of the material
+    array2d<complex<float>> slice_cu(n_interp, n_interp);
+    create_slice(slice_cu, *wavefonts.wavefrontsensor, params_cu);
+    array2d<complex<float>> slice_Si(n_interp, n_interp);
+    create_slice(slice_Si, *wavefonts.wavefrontsensor, params_Si);
+
+    // initialize FFT
+    Fft2 fft_2_interp(n_interp);
+
+    // lambda: 13.5 nm
+    // forward propagate thorugh 50 nm Si3N4 -> delta:0.02661 , beta:0.00926
+    // forward_propagate through 150 nm Cu -> delta:0.03748 , beta:0.0612
+    float Si_distance = 50e-9;
+    float cu_distance = 150e-9;
+
+    int steps_Si = Si_distance / params_Si.dz;
+    int steps_cu = cu_distance / params_cu.dz;
+    std::cout << "steps_cu" << " => " << steps_cu << std::endl;
+    std::cout << "steps_Si" << " => " << steps_Si << std::endl;
+
+    int start_n = 2;
+    int max_n = 4;
+    vector<zernike_c> zernike_cvector;
+    for(int n=start_n; n <= max_n; n++)
+      for(int m=n; m >=-n ; m-=2)
+        zernike_cvector.push_back({m,n});
+
+    // 3d array to hold the zernike polynomials
+    array3d<float> mn_polynomials(zernike_cvector.size(),N_computational,N_computational);
+
+    int mn_polynomials_index = 0;
+    for(zernike_c z : zernike_cvector) {
+      cout << "i:" << mn_polynomials_index << " m:" << z.m << "n:" << z.n << endl;
+      // generate the zernike coefficient and add it to the matrix
+      zernikegenerator.makezernike(z.m, z.n, zernike_polynom);
+      for(int i=0; i < N_computational; i++)
+        for(int j=0; j < N_computational; j++)
+          mn_polynomials(mn_polynomials_index, i, j) = zernike_polynom(i, j);
+      mn_polynomials_index ++;
+    }
+
+
+    // generate data set
+    Python.call("create_dataset", runParameters.RunName.c_str());
+    // generate data
+    // for(int i=0; i < 40000; i++) // 40k samples
+    for(int i=0; i < runParameters.Samples; i++) // 40k samples
+    {
+      if(i % 10 == 0)
+        cout << "generating sample" << i << endl;
+      // auto time1 = high_resolution_clock::now();
+      // get a random value for each coefficient
+      for(int i=0; i < zernike_polynom.length; i++)
+        zernike_polynom.data[i] = 0.0;
+
+      // for each zernike coeffieicent
+      for(int i=0; i < zernike_cvector.size(); i++) {
+        // make random scalar
+        float r1 = RandomF();
+        r1 *= 9; // scalar
+        if(RandomF() > 0.5)
+          r1 *= -1;
+
+        // float r1 = 2.0; // TODO return this to normal, its disabled to show the cropping
+
+        // std::cout << "r" << " => " << r1 << std::endl;
+        for(int j=0; j < N_computational; j++)
+          for(int k=0; k < N_computational; k++)
+            zernike_polynom(j,k) +=  r1 * mn_polynomials(i, j, k);
+      }
+
+      // apply this phase and propagate it
+      gaussianp.propagate(complex_object, zernike_polynom);
+      cropinterp.crop_interp(complex_object,
+          interped_arr, // OUT
+          0.1 // between 0 and 1 : the minimum image scale after interpolation
+          );
+
+      // TODO: do not set the electric field normalized after multiplying by the wavefront mask
+      // !!! -- make it between something and 1, not 0 and 1
+
+      // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+      // multiplby wavefront sensor
+      for(int i=0; i < interped_arr.length; i++)
+        interped_arr.data[i] *= wavefonts.wavefrontsensor->data[i];
+      // normalize
+      normalize(interped_arr);
+
+      // // save the data to pickles
+      // Python.call_function_np("savepickle", "slice_cu.p", slice_cu.data, vector<int>{slice_cu.size_0,slice_cu.size_1}, PyArray_COMPLEX64);
+      // Python.call_function_np("savepickle", "slice_Si.p", slice_Si.data, vector<int>{slice_Si.size_0,slice_Si.size_1}, PyArray_COMPLEX64);
+      // Python.call_function_np("savepickle", "interped_arr.p", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+      // Python.call_function_np("savepickle", "f.p", wavefonts.f->data, vector<int>{wavefonts.f->size_0}, PyArray_FLOAT32);
+
+      // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+      // propagate through materials
+      for(int i=0; i<steps_Si; i++) // 50 nm & dz: 10 nm
+        forward_propagate(interped_arr, slice_Si, *wavefonts.f, params_Si, fft_2_interp);
+      for(int i=0; i<steps_cu; i++)
+        forward_propagate(interped_arr, slice_cu, *wavefonts.f, params_cu, fft_2_interp);
+
+      // auto time2 = high_resolution_clock::now();
+      // auto duration = duration_cast<microseconds>(time2 - time1);
+      // cout << "average time:" << duration.count() << endl;
+      // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+      Python.call_function_np("write_to_dataset",runParameters.RunName.c_str(), interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+      // Python.call("show");
+    }
+
+
+  }
+
+};
+
 int main(int argc, char *argv[])
 {
 
-  RunParameters runParameters = parseargs(argc, argv);
-
-  std::cout << "runParameters.Samples" << " => " << runParameters.Samples << std::endl;
-  std::cout << "runParameters.RunName" << " => " << runParameters.RunName << std::endl;
-
-  if(runParameters.RunName == "NONE" || runParameters.Samples == 0)
-    return 1; // parameter not set
-
-  PythonInterp Python("/home/hi76tor/python_compiled_2", "utility");
-
-  // seed random
-  srand(time(0));
-  int N_computational = 1024;
-  // use a square grid
-  array2d<float> zernike_polynom(N_computational,N_computational);
-  ZernikeGenerator zernikegenerator(N_computational);
-
-
-  // create the complex object with the phase and amplitude
-  array2d<complex<float>> complex_object(N_computational, N_computational);
-  GaussianPropagator gaussianp(N_computational);
-  // crop the image size:
-  int crop_size = 200;
-  int n_interp = 128;
-  array2d<complex<float>> interped_arr(n_interp, n_interp);
-  CropAndInterpolateComplex cropinterp(n_interp, crop_size);
-  WaveFrontSensor wavefonts(n_interp, Python);
-
-  // define materials
-  Parameters params_cu;
-  Parameters params_Si;
-  params_cu.beta_Ta = 0.0612;
-  params_cu.delta_Ta = 0.03748;
-  params_Si.beta_Ta = 0.00926;
-  params_Si.delta_Ta = 0.02661;
-
-  // single slice of the material
-  array2d<complex<float>> slice_cu(n_interp, n_interp);
-  create_slice(slice_cu, *wavefonts.wavefrontsensor, params_cu);
-  array2d<complex<float>> slice_Si(n_interp, n_interp);
-  create_slice(slice_Si, *wavefonts.wavefrontsensor, params_Si);
-
-  // initialize FFT
-  Fft2 fft_2_interp(n_interp);
-
-  // lambda: 13.5 nm
-  // forward propagate thorugh 50 nm Si3N4 -> delta:0.02661 , beta:0.00926
-  // forward_propagate through 150 nm Cu -> delta:0.03748 , beta:0.0612
-  float Si_distance = 50e-9;
-  float cu_distance = 150e-9;
-
-  int steps_Si = Si_distance / params_Si.dz;
-  int steps_cu = cu_distance / params_cu.dz;
-  std::cout << "steps_cu" << " => " << steps_cu << std::endl;
-  std::cout << "steps_Si" << " => " << steps_Si << std::endl;
-
-  int start_n = 2;
-  int max_n = 4;
-  vector<zernike_c> zernike_cvector;
-  for(int n=start_n; n <= max_n; n++)
-    for(int m=n; m >=-n ; m-=2)
-      zernike_cvector.push_back({m,n});
-
-  // 3d array to hold the zernike polynomials
-  array3d<float> mn_polynomials(zernike_cvector.size(),N_computational,N_computational);
-
-  int mn_polynomials_index = 0;
-  for(zernike_c z : zernike_cvector) {
-    cout << "i:" << mn_polynomials_index << " m:" << z.m << "n:" << z.n << endl;
-    // generate the zernike coefficient and add it to the matrix
-    zernikegenerator.makezernike(z.m, z.n, zernike_polynom);
-    for(int i=0; i < N_computational; i++)
-      for(int j=0; j < N_computational; j++)
-        mn_polynomials(mn_polynomials_index, i, j) = zernike_polynom(i, j);
-    mn_polynomials_index ++;
-  }
-
-
-  // generate data set
-  Python.call("create_dataset", runParameters.RunName.c_str());
-  // generate data
-  // for(int i=0; i < 40000; i++) // 40k samples
-  for(int i=0; i < runParameters.Samples; i++) // 40k samples
-  {
-    if(i % 10 == 0)
-      cout << "generating sample" << i << endl;
-    // auto time1 = high_resolution_clock::now();
-    // get a random value for each coefficient
-    for(int i=0; i < zernike_polynom.length; i++)
-      zernike_polynom.data[i] = 0.0;
-
-    // for each zernike coeffieicent
-    for(int i=0; i < zernike_cvector.size(); i++) {
-      // make random scalar
-      float r1 = RandomF();
-      r1 *= 9; // scalar
-      if(RandomF() > 0.5)
-        r1 *= -1;
-
-      // float r1 = 2.0; // TODO return this to normal, its disabled to show the cropping
-
-      // std::cout << "r" << " => " << r1 << std::endl;
-      for(int j=0; j < N_computational; j++)
-        for(int k=0; k < N_computational; k++)
-          zernike_polynom(j,k) +=  r1 * mn_polynomials(i, j, k);
-    }
-
-    // apply this phase and propagate it
-    gaussianp.propagate(complex_object, zernike_polynom);
-    cropinterp.crop_interp(complex_object,
-        interped_arr, // OUT
-        0.1 // between 0 and 1 : the minimum image scale after interpolation
-        );
-
-    // TODO: do not set the electric field normalized after multiplying by the wavefront mask
-    // !!! -- make it between something and 1, not 0 and 1
-
-    // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-    // multiplby wavefront sensor
-    for(int i=0; i < interped_arr.length; i++)
-      interped_arr.data[i] *= wavefonts.wavefrontsensor->data[i];
-    // normalize
-    normalize(interped_arr);
-
-        // // save the data to pickles
-        // Python.call_function_np("savepickle", "slice_cu.p", slice_cu.data, vector<int>{slice_cu.size_0,slice_cu.size_1}, PyArray_COMPLEX64);
-        // Python.call_function_np("savepickle", "slice_Si.p", slice_Si.data, vector<int>{slice_Si.size_0,slice_Si.size_1}, PyArray_COMPLEX64);
-        // Python.call_function_np("savepickle", "interped_arr.p", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-        // Python.call_function_np("savepickle", "f.p", wavefonts.f->data, vector<int>{wavefonts.f->size_0}, PyArray_FLOAT32);
-
-    // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-    // propagate through materials
-    for(int i=0; i<steps_Si; i++) // 50 nm & dz: 10 nm
-      forward_propagate(interped_arr, slice_Si, *wavefonts.f, params_Si, fft_2_interp);
-    for(int i=0; i<steps_cu; i++)
-      forward_propagate(interped_arr, slice_cu, *wavefonts.f, params_cu, fft_2_interp);
-
-    // auto time2 = high_resolution_clock::now();
-    // auto duration = duration_cast<microseconds>(time2 - time1);
-    // cout << "average time:" << duration.count() << endl;
-    // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-    Python.call_function_np("write_to_dataset",runParameters.RunName.c_str(), interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-    // Python.call("show");
-  }
+  DataGenerator datagenerator(argc, argv, "/home/zom/Projects/diffraction_net/venv/", 1024);
 
 }
