@@ -512,11 +512,51 @@ struct DataGenerator
 {
   PythonInterp Python;
   int N_computational;
-  DataGenerator(int argc, char *argv[], const char* pythonhomedir, int N_computational)
-    : Python(pythonhomedir, "utility")
-  {
+  array2d<float> zernike_polynom;
+  ZernikeGenerator zernikegenerator;
+  array2d<complex<float>> complex_object;
+  GaussianPropagator gaussianp;
+  int crop_size;
+  int n_interp;
+  array2d<complex<float>> interped_arr;
+  CropAndInterpolateComplex cropinterp;
+  WaveFrontSensor wavefonts;
+  Parameters params_cu;
+  Parameters params_Si;
+  array2d<complex<float>> slice_cu;
+  array2d<complex<float>> slice_Si;
+  Fft2 fft_2_interp;
+  float Si_distance;
+  float cu_distance;
+  int steps_Si;
+  int steps_cu;
+  int start_n;
+  int max_n;
+  array3d<float>* mn_polynomials;
+  RunParameters runParameters;
+  vector<zernike_c> zernike_cvector;
 
-    RunParameters runParameters = parseargs(argc, argv);
+  DataGenerator(int argc, char *argv[], const char* pythonhomedir,
+      int N_computational,
+      int crop_size,
+      int n_interp)
+
+    : Python(pythonhomedir, "utility"),
+      zernike_polynom(N_computational,N_computational),
+      zernikegenerator(N_computational),
+      complex_object(N_computational, N_computational),
+      gaussianp(N_computational),
+      interped_arr(n_interp, n_interp),
+      cropinterp(n_interp, crop_size),
+      wavefonts(n_interp, Python),
+      slice_cu(n_interp, n_interp),
+      slice_Si(n_interp, n_interp),
+      fft_2_interp(n_interp)
+  {
+    this->N_computational = N_computational;
+    this->crop_size = crop_size;
+    this->n_interp = n_interp;
+    runParameters = parseargs(argc, argv);
 
     std::cout << "runParameters.Samples" << " => " << runParameters.Samples << std::endl;
     std::cout << "runParameters.RunName" << " => " << runParameters.RunName << std::endl;
@@ -524,63 +564,40 @@ struct DataGenerator
     if(runParameters.RunName == "NONE" || runParameters.Samples == 0)
       return; // parameter not set
 
-    // PythonInterp Python("/home/zom/Projects/diffraction_net/venv/", "utility");
-
     // seed random
     srand(time(0));
-    this->N_computational = N_computational;
     // use a square grid
-    array2d<float> zernike_polynom(N_computational,N_computational);
-    ZernikeGenerator zernikegenerator(N_computational);
-
-
-    // create the complex object with the phase and amplitude
-    array2d<complex<float>> complex_object(N_computational, N_computational);
-    GaussianPropagator gaussianp(N_computational);
     // crop the image size:
-    int crop_size = 200;
-    int n_interp = 128;
-    array2d<complex<float>> interped_arr(n_interp, n_interp);
-    CropAndInterpolateComplex cropinterp(n_interp, crop_size);
-    WaveFrontSensor wavefonts(n_interp, Python);
 
     // define materials
-    Parameters params_cu;
-    Parameters params_Si;
     params_cu.beta_Ta = 0.0612;
     params_cu.delta_Ta = 0.03748;
     params_Si.beta_Ta = 0.00926;
     params_Si.delta_Ta = 0.02661;
 
     // single slice of the material
-    array2d<complex<float>> slice_cu(n_interp, n_interp);
     create_slice(slice_cu, *wavefonts.wavefrontsensor, params_cu);
-    array2d<complex<float>> slice_Si(n_interp, n_interp);
     create_slice(slice_Si, *wavefonts.wavefrontsensor, params_Si);
 
     // initialize FFT
-    Fft2 fft_2_interp(n_interp);
-
     // lambda: 13.5 nm
     // forward propagate thorugh 50 nm Si3N4 -> delta:0.02661 , beta:0.00926
     // forward_propagate through 150 nm Cu -> delta:0.03748 , beta:0.0612
-    float Si_distance = 50e-9;
-    float cu_distance = 150e-9;
+    Si_distance = 50e-9;
+    cu_distance = 150e-9;
+    steps_Si = Si_distance / params_Si.dz;
+    steps_cu = cu_distance / params_cu.dz;
 
-    int steps_Si = Si_distance / params_Si.dz;
-    int steps_cu = cu_distance / params_cu.dz;
     std::cout << "steps_cu" << " => " << steps_cu << std::endl;
     std::cout << "steps_Si" << " => " << steps_Si << std::endl;
-
-    int start_n = 2;
-    int max_n = 4;
-    vector<zernike_c> zernike_cvector;
+    start_n = 2;
+    max_n = 4;
     for(int n=start_n; n <= max_n; n++)
       for(int m=n; m >=-n ; m-=2)
         zernike_cvector.push_back({m,n});
 
     // 3d array to hold the zernike polynomials
-    array3d<float> mn_polynomials(zernike_cvector.size(),N_computational,N_computational);
+    mn_polynomials = new array3d<float>(zernike_cvector.size(),N_computational,N_computational);
 
     int mn_polynomials_index = 0;
     for(zernike_c z : zernike_cvector) {
@@ -589,11 +606,14 @@ struct DataGenerator
       zernikegenerator.makezernike(z.m, z.n, zernike_polynom);
       for(int i=0; i < N_computational; i++)
         for(int j=0; j < N_computational; j++)
-          mn_polynomials(mn_polynomials_index, i, j) = zernike_polynom(i, j);
+          (*mn_polynomials)(mn_polynomials_index, i, j) = zernike_polynom(i, j);
       mn_polynomials_index ++;
     }
 
 
+  }
+  void makesample()
+  {
     // generate data set
     Python.call("create_dataset", runParameters.RunName.c_str());
     // generate data
@@ -620,7 +640,7 @@ struct DataGenerator
         // std::cout << "r" << " => " << r1 << std::endl;
         for(int j=0; j < N_computational; j++)
           for(int k=0; k < N_computational; k++)
-            zernike_polynom(j,k) +=  r1 * mn_polynomials(i, j, k);
+            zernike_polynom(j,k) +=  r1 * (*mn_polynomials)(i, j, k);
       }
 
       // apply this phase and propagate it
@@ -660,8 +680,11 @@ struct DataGenerator
       Python.call_function_np("write_to_dataset",runParameters.RunName.c_str(), interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
       // Python.call("show");
     }
+  }
 
-
+  ~DataGenerator()
+  {
+    delete mn_polynomials;
   }
 
 };
@@ -669,6 +692,11 @@ struct DataGenerator
 int main(int argc, char *argv[])
 {
 
-  DataGenerator datagenerator(argc, argv, "/home/zom/Projects/diffraction_net/venv/", 1024);
+  DataGenerator datagenerator(argc, argv, "/home/zom/Projects/diffraction_net/venv/",
+      1024, // N_computational
+      200, // crop_size
+      128 // n_interp
+      );
+  datagenerator.makesample();
 
 }
