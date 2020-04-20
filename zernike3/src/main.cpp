@@ -669,20 +669,46 @@ int main(int argc, char *argv[])
   if(runParameters.RunName == "NONE" || runParameters.Samples == 0)
     return 1; // parameter not set
 
+  // data generation parameters
+  int buffer_size_per_process = 10;
+
   int n_interp = 128;
   int crop_size = 200;
   int N_computational = 1024;
   array2d<complex<float>> interped_arr(n_interp, n_interp);
+  array3d<complex<float>> samples_buffer(buffer_size_per_process,n_interp,n_interp);
   DataGenerator datagenerator("/home/zom/Projects/diffraction_net/venv/",
       N_computational, // N_computational
       crop_size, // crop_size
       n_interp // n_interp
       );
+
+  // initialize the data set
   datagenerator.Python.call("create_dataset",runParameters.RunName.c_str());
+
+
+  int current_buffer_index = 0;
   for(int i=0; i < runParameters.Samples; i++) {
     datagenerator.makesample(interped_arr);
-    datagenerator.Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-    datagenerator.Python.call("show");
+    // datagenerator.Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+    // datagenerator.Python.call("show");
+
+    // add to buffer
+    for(int i=0; i < n_interp; i++)
+      for(int j=0; j < n_interp; j++)
+        samples_buffer(current_buffer_index,i,j) = interped_arr(i,j);
+    current_buffer_index++;
+
+    if(current_buffer_index == buffer_size_per_process) {
+      // save the data to hdf5, reset buffer index
+      current_buffer_index = 0;
+      datagenerator.Python.call_function_np("view_array", samples_buffer.data, vector<int>{samples_buffer.size_0,samples_buffer.size_1,samples_buffer.size_2}, PyArray_COMPLEX64);
+    }
+
+
+
+
+
   }
 
 

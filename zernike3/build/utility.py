@@ -267,6 +267,18 @@ def write_to_dataset(filename, array):
     # print("wrote to dataset!")
 
 
+def view_array(array):
+    print("np.shape(array) => ",np.shape(array))
+    # save all of these elements to the hdf5 file
+    plt.figure()
+    plt.imshow(np.abs(array[0,:,:]))
+    plt.figure()
+    plt.imshow(np.abs(array[1,:,:]))
+    plt.figure()
+    plt.imshow(np.abs(array[2,:,:]))
+    plt.show()
+
+
 
 if __name__ == "__main__":
     print("running main!!!")
