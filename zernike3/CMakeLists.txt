@@ -8,6 +8,7 @@ set(numpydir "/home/hi76tor/python_compiled/lib/python3.6/site-packages/numpy/co
 set(PYTHON_LIBRARIES "/home/hi76tor/python_compiled_2/lib/libpython3.6m.so")
 set(PYTHON_INCLUDE_DIRS "/home/hi76tor/python_compiled_2/include/python3.6m")
 find_package( GSL REQUIRED )
+find_package(MPI REQUIRED)
 
 include_directories(${PYTHON_INCLUDE_DIRS} ${numpydir})
 
@@ -19,6 +20,6 @@ add_executable(
 	src/main.cpp
 	src/utility.h
 	)
-target_link_libraries(a.out fftw3 ${PYTHON_LIBRARIES} GSL::gsl)
+target_link_libraries(a.out fftw3 ${PYTHON_LIBRARIES} GSL::gsl ${MPI_LIBRARIES} MPI::MPI_CXX)
 
 # PYTHON_CONFIGURE_OPTS="--enable-shared"

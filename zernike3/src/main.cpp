@@ -7,6 +7,7 @@
 #include <fftw3.h>
 #include <ctime>
 #include <gsl/gsl_interp2d.h>
+#include <mpi.h>
 
 using namespace std::chrono;
 
@@ -491,12 +492,14 @@ struct RunParameters
 {
   string RunName;
   int Samples;
+  int BufferSize;
 };
 RunParameters parseargs(int argc, char *argv[])
 {
   RunParameters runParameters;
   runParameters.Samples = 0;
   runParameters.RunName = "NONE";
+  runParameters.BufferSize =0;
   for(int i=0; i < argc; i++)
     if(string(argv[i]) == "--count")
       runParameters.Samples = atoi(argv[i+1]);
@@ -504,6 +507,10 @@ RunParameters parseargs(int argc, char *argv[])
   for(int i=0; i < argc; i++)
     if(string(argv[i]) == "--name")
       runParameters.RunName = argv[i+1];
+
+  for(int i=0; i < argc; i++)
+    if(string(argv[i]) == "--buffersize")
+      runParameters.BufferSize = atoi(argv[i+1]);
 
   return runParameters;
 }
@@ -661,22 +668,49 @@ struct DataGenerator
 int main(int argc, char *argv[])
 {
 
+  // MPI parameters
+  int process_Rank, size_Of_Cluster;
+  MPI_Init(NULL, NULL);
+  MPI_Comm_size(MPI_COMM_WORLD, &size_Of_Cluster);
+  MPI_Comm_rank(MPI_COMM_WORLD, &process_Rank);
+  // std::cout << "process_Rank" << " => " << process_Rank << std::endl;
+  // std::cout << "size_Of_Cluster" << " => " << size_Of_Cluster << std::endl;
+
   RunParameters runParameters = parseargs(argc, argv);
 
-  std::cout << "runParameters.Samples" << " => " << runParameters.Samples << std::endl;
-  std::cout << "runParameters.RunName" << " => " << runParameters.RunName << std::endl;
-
-  if(runParameters.RunName == "NONE" || runParameters.Samples == 0)
+  if(runParameters.RunName == "NONE" || runParameters.Samples == 0 || runParameters.BufferSize == 0) {
+    if(process_Rank==0)
+      cout << "--count --buffersize or --name not set" << endl;
+    MPI_Finalize();
     return 1; // parameter not set
+  }
 
   // data generation parameters
-  int buffer_size_per_process = 10;
+  int buffer_size = runParameters.BufferSize; // the amount of samples to store before saving them to hdf5
 
+  // physical parameters
   int n_interp = 128;
   int crop_size = 200;
   int N_computational = 1024;
+
+  // MPI parameters
+  int samples_per_process = runParameters.Samples / size_Of_Cluster; // samples for each process to generate
+  if(process_Rank == 0) {
+    cout << "generating " << runParameters.Samples << " samples" << endl;
+    cout << "samples_per_process => " << samples_per_process << endl;
+    cout << "buffer_size => " << buffer_size << endl;
+    if(samples_per_process % buffer_size != 0) {
+      cout << "choose a sample size that is divisible by the buffer size" << endl;
+    }
+  }
+
+
+  MPI_Finalize();
+  return 0;
+
+
   array2d<complex<float>> interped_arr(n_interp, n_interp);
-  array3d<complex<float>> samples_buffer(buffer_size_per_process,n_interp,n_interp);
+  array3d<complex<float>> samples_buffer(buffer_size,n_interp,n_interp);
   DataGenerator datagenerator("/home/zom/Projects/diffraction_net/venv/",
       N_computational, // N_computational
       crop_size, // crop_size
@@ -699,8 +733,9 @@ int main(int argc, char *argv[])
         samples_buffer(current_buffer_index,i,j) = interped_arr(i,j);
     current_buffer_index++;
 
-    if(current_buffer_index == buffer_size_per_process) {
+    if(current_buffer_index == buffer_size) {
       // save the data to hdf5, reset buffer index
+      // synchronize threads here in for loop
       current_buffer_index = 0;
       datagenerator.Python.call_function_np("view_array", samples_buffer.data, vector<int>{samples_buffer.size_0,samples_buffer.size_1,samples_buffer.size_2}, PyArray_COMPLEX64);
     }
