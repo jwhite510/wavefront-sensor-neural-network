@@ -562,7 +562,6 @@ struct DataGenerator
     this->n_interp = n_interp;
 
     // seed random
-    srand(time(0));
     // use a square grid
     // crop the image size:
 
@@ -709,6 +708,12 @@ int main(int argc, char *argv[])
     MPI_Finalize();
     return 0;
   }
+
+  // seed random number generators for all the processes
+  uint randomseed = time(0) + process_Rank;
+  // uint randomseed = time(0);
+  srand(randomseed);
+  cout << "process:" << process_Rank << " random seed:" << randomseed << endl;
 
   // create data generator and buffers
   array2d<complex<float>> interped_arr(n_interp, n_interp);
