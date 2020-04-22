@@ -1,4 +1,5 @@
 import numpy as np
+import time
 import pickle
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
@@ -278,6 +279,42 @@ def view_array(array):
     plt.imshow(np.abs(array[2,:,:]))
     plt.show()
 
+def save_to_hdf5(filename, array):
+    try:
+
+        if True in np.isnan(array):
+            print("complex_object is NAN!!!!!!!")
+            print("continuing")
+            return
+
+        if True in np.isinf(array):
+            print("complex_object is inf!!!!!!!")
+            print("continuing")
+            return
+
+        with tables.open_file(filename, mode='a') as hd5file:
+            for i in range(np.shape(array)[0]):
+                object_real = np.real(array[i,:,:])
+                object_imag = np.imag(array[i,:,:])
+                diffraction_pattern_with_noise = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(array[i,:,:]))))**2
+
+                # normalize
+                diffraction_pattern_with_noise = diffraction_pattern_with_noise / np.max(diffraction_pattern_with_noise)
+                diffraction_pattern_with_noise = diffraction_functions.center_image_at_centroid(diffraction_pattern_with_noise)
+                hd5file.root.object_real.append(object_real.reshape(1,-1))
+                hd5file.root.object_imag.append(object_imag.reshape(1,-1))
+                hd5file.root.diffraction.append(diffraction_pattern_with_noise.reshape(1,-1))
+
+                plt.figure()
+                plt.title(str(i))
+                plt.imshow(object_real)
+                plt.figure()
+                plt.title(str(i))
+                plt.imshow(diffraction_pattern_with_noise)
+                plt.show()
+
+    except Exception as e:
+        print(e)
 
 
 if __name__ == "__main__":

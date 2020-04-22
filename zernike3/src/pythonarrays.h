@@ -50,9 +50,10 @@ class PythonInterp
   public:
   PythonInterp(const char* environment, const char* script)
   {
-    std::cout << "initi ptyhon" << std::endl;
-    std::cout << "environment" << " => " << environment << std::endl;
-    std::cout << "script" << " => " << script << std::endl;
+    // debug
+    // std::cout << "initi ptyhon" << std::endl;
+    // std::cout << "environment" << " => " << environment << std::endl;
+    // std::cout << "script" << " => " << script << std::endl;
 
     wchar_t* home_name = Py_DecodeLocale(environment, NULL);
     Py_SetPythonHome(home_name);
@@ -199,11 +200,11 @@ class PythonInterp
     PyObject* vec_array_reshaped;
     PyArrayObject* vec_array;
 
-    std::cout << "calling" << std::endl;
+    // std::cout << "calling" << std::endl;
     pFunc = PyObject_GetAttrString(pModule, functionname);
     if(!pFunc || !PyCallable_Check(pFunc))
       cout << "function: " << functionname << " not found!" << endl;
-    std::cout << "pFunc" << " => " << pFunc << std::endl;
+    // std::cout << "pFunc" << " => " << pFunc << std::endl;
     pArgs = PyTuple_New(1);
     PyTuple_SetItem(pArgs, 0, PyLong_FromLong(0));
     pValue = PyObject_CallObject(pFunc, pArgs);

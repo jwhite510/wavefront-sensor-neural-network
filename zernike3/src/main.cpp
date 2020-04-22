@@ -585,8 +585,8 @@ struct DataGenerator
     steps_Si = Si_distance / params_Si.dz;
     steps_cu = cu_distance / params_cu.dz;
 
-    std::cout << "steps_cu" << " => " << steps_cu << std::endl;
-    std::cout << "steps_Si" << " => " << steps_Si << std::endl;
+    // std::cout << "steps_cu" << " => " << steps_cu << std::endl;
+    // std::cout << "steps_Si" << " => " << steps_Si << std::endl;
     start_n = 2;
     max_n = 4;
     for(int n=start_n; n <= max_n; n++)
@@ -598,7 +598,10 @@ struct DataGenerator
 
     int mn_polynomials_index = 0;
     for(zernike_c z : zernike_cvector) {
-      cout << "i:" << mn_polynomials_index << " m:" << z.m << "n:" << z.n << endl;
+
+      // to print all the zernike m and n values
+      // cout << "i:" << mn_polynomials_index << " m:" << z.m << "n:" << z.n << endl;
+
       // generate the zernike coefficient and add it to the matrix
       zernikegenerator.makezernike(z.m, z.n, zernike_polynom);
       for(int i=0; i < N_computational; i++)
@@ -699,16 +702,15 @@ int main(int argc, char *argv[])
     cout << "generating " << runParameters.Samples << " samples" << endl;
     cout << "samples_per_process => " << samples_per_process << endl;
     cout << "buffer_size => " << buffer_size << endl;
-    if(samples_per_process % buffer_size != 0) {
-      cout << "choose a sample size that is divisible by the buffer size" << endl;
-    }
+  }
+  if(samples_per_process % buffer_size != 0) {
+    if(process_Rank == 0)
+      cout << "ERROR: choose a sample size that is divisible by the buffer size" << endl;
+    MPI_Finalize();
+    return 0;
   }
 
-
-  MPI_Finalize();
-  return 0;
-
-
+  // create data generator and buffers
   array2d<complex<float>> interped_arr(n_interp, n_interp);
   array3d<complex<float>> samples_buffer(buffer_size,n_interp,n_interp);
   DataGenerator datagenerator("/home/zom/Projects/diffraction_net/venv/",
@@ -717,15 +719,17 @@ int main(int argc, char *argv[])
       n_interp // n_interp
       );
 
-  // initialize the data set
-  datagenerator.Python.call("create_dataset",runParameters.RunName.c_str());
+  // process 0 initialize the data set
+  if(process_Rank == 0)
+    datagenerator.Python.call("create_dataset",runParameters.RunName.c_str());
+  MPI_Barrier(MPI_COMM_WORLD);
 
 
+  // each process fill buffer
   int current_buffer_index = 0;
-  for(int i=0; i < runParameters.Samples; i++) {
+  for(int i=0; i < samples_per_process; i++) {
+    cout << "process" << process_Rank << "generating sample: " << i << endl;
     datagenerator.makesample(interped_arr);
-    // datagenerator.Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-    // datagenerator.Python.call("show");
 
     // add to buffer
     for(int i=0; i < n_interp; i++)
@@ -737,16 +741,21 @@ int main(int argc, char *argv[])
       // save the data to hdf5, reset buffer index
       // synchronize threads here in for loop
       current_buffer_index = 0;
-      datagenerator.Python.call_function_np("view_array", samples_buffer.data, vector<int>{samples_buffer.size_0,samples_buffer.size_1,samples_buffer.size_2}, PyArray_COMPLEX64);
+      for(int i=0; i < size_Of_Cluster; i++) {
+        MPI_Barrier(MPI_COMM_WORLD);
+        if(process_Rank == i) {
+          cout << "process " << process_Rank << " save to hdf5 " << endl;
+          datagenerator.Python.call_function_np("save_to_hdf5",runParameters.RunName.c_str(), samples_buffer.data, vector<int>{samples_buffer.size_0,samples_buffer.size_1,samples_buffer.size_2}, PyArray_COMPLEX64);
+        }
+      }
+      MPI_Barrier(MPI_COMM_WORLD);
     }
-
-
-
-
-
   }
 
+  MPI_Finalize();
+  return 0;
 
-  // Python.call_function_np("write_to_dataset",runParameters.RunName.c_str(), interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+
+
 
 }
