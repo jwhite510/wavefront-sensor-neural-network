@@ -733,7 +733,8 @@ int main(int argc, char *argv[])
   // each process fill buffer
   int current_buffer_index = 0;
   for(int i=0; i < samples_per_process; i++) {
-    cout << "process" << process_Rank << "generating sample: " << i << endl;
+    if(i%20==0)
+      cout << "process" << process_Rank << "generating sample: " << i << endl;
     datagenerator.makesample(interped_arr);
 
     // add to buffer
