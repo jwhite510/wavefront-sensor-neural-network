@@ -718,7 +718,7 @@ int main(int argc, char *argv[])
   // create data generator and buffers
   array2d<complex<float>> interped_arr(n_interp, n_interp);
   array3d<complex<float>> samples_buffer(buffer_size,n_interp,n_interp);
-  DataGenerator datagenerator("/home/zom/Projects/diffraction_net/venv/",
+  DataGenerator datagenerator("/home/hi76tor/python_compiled_2/",
       N_computational, // N_computational
       crop_size, // crop_size
       n_interp // n_interp
