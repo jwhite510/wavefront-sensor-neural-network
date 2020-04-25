@@ -280,6 +280,7 @@ def view_array(array):
     plt.show()
 
 def save_to_hdf5(filename, array):
+    print("save_to_hdf5 called")
     try:
 
         if True in np.isnan(array):
@@ -305,13 +306,16 @@ def save_to_hdf5(filename, array):
                 hd5file.root.object_imag.append(object_imag.reshape(1,-1))
                 hd5file.root.diffraction.append(diffraction_pattern_with_noise.reshape(1,-1))
 
-                # plt.figure()
-                # plt.title(str(i))
-                # plt.imshow(object_real)
-                # plt.figure()
-                # plt.title(str(i))
-                # plt.imshow(diffraction_pattern_with_noise)
-                # plt.show()
+            print("calling flush")
+            hd5file.flush()
+
+            # plt.figure()
+            # plt.title(str(i))
+            # plt.imshow(object_real)
+            # plt.figure()
+            # plt.title(str(i))
+            # plt.imshow(diffraction_pattern_with_noise)
+            # plt.show()
 
     except Exception as e:
         print(e)

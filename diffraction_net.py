@@ -324,7 +324,7 @@ class DiffractionNet():
 
 
             # save the network
-            if self.i % 50 == 0:
+            if self.i % 10 == 0:
                 print("saving network models/" + self.name + ".ckpt")
                 self.saver.save(self.sess, "models/" + self.name + ".ckpt")
                 training_parameters = {}
