@@ -149,6 +149,10 @@ class DiffractionNet():
             print("restored saved model {}".format(self.name))
             print("model loaded at epoch {}".format(self.i))
 
+        # for adjusting the learning rate as it trains
+        self.cost_function_vals = []
+        self.lr_value = 0.0001
+
 
     def setup_network_1(self, _nodes):
         # convolutional layer down sampling
@@ -303,7 +307,40 @@ class DiffractionNet():
                                                     self.real_actual:object_real_samples,
                                                     self.imag_actual:object_imag_samples,
                                                     # self.imag_scalar_actual:imag_scalar_samples,
-                                                    self.s_LR:0.0001})
+                                                    self.s_LR:self.lr_value})
+
+
+            # adjust learning rate dynamic
+            data = self.get_data.evaluate_on_train_data(n_samples=50)
+            object_real_samples = data["object_real_samples"].reshape(
+                    -1,self.get_data.N, self.get_data.N, 1)
+            object_imag_samples = data["object_imag_samples"].reshape(
+                    -1,self.get_data.N, self.get_data.N, 1)
+            diffraction_samples = data["diffraction_samples"].reshape(
+                    -1,self.get_data.N, self.get_data.N, 1)
+            current_cost = self.sess.run(self.nn_nodes["cost_function"], feed_dict={
+                self.x:diffraction_samples,
+                self.real_actual:object_real_samples,
+                self.imag_actual:object_imag_samples
+                })
+            self.cost_function_vals.append(current_cost)
+            # adjust the learning if the cost function is not decreasing in x iteraitons
+            if len(self.cost_function_vals) >= 10:
+
+                # print statements for debugging
+                print("length of cost_function_vals has reached 10")
+                print("cost_function_vals =>", cost_function_vals)
+                print("abs(self.cost_function_vals[-1] - self.cost_function_vals[0]) =>",
+                        abs(self.cost_function_vals[-1] - self.cost_function_vals[0]))
+
+                if abs(self.cost_function_vals[-1] - self.cost_function_vals[0])<1e-4:
+                    print("SETTING LEARNING RATE TO HALF")
+                    self.lr_value *= 0.5
+                self.cost_function_vals.clear()
+
+
+
+
 
             print("add_tensorboard_values")
             self.add_tensorboard_values()
