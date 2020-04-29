@@ -6,10 +6,10 @@ source zernike3/loadmodules.sh
 
 declare -a runs=(
 
-"mpidata_36000_24_lrdynamic"
+"mpidata_36000_28_lrdynamic_no_output_constraint"
 "36000"
 
-"mpidata_36000_25_lrdynamic"
+"mpidata_36000_29_lrdynamic_no_output_constraint"
 "36000"
 
 )
