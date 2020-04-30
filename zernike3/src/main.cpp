@@ -432,6 +432,12 @@ class CropAndInterpolateComplex
     float y_tl = RandomF(0, max_xy_location);
     float y_br = y_tl + image_relative_size;
 
+    // set the image to be cropped the same way every time
+    x_tl = 0;
+    x_br = 1;
+    y_tl = 0;
+    y_br = 1;
+
     x_tl *=2; x_tl -=1; // shift to -1. 1 coordinates
     x_br *=2; x_br -=1; // shift to -1. 1 coordinates
     y_tl *=2; y_tl -=1; // shift to -1. 1 coordinates
@@ -622,7 +628,7 @@ struct DataGenerator
     for(int i=0; i < zernike_cvector.size(); i++) {
       // make random scalar
       float r1 = RandomF();
-      r1 *= 9; // scalar
+      r1 *= 1; // scalar // VERY SMALL VARIATION
       if(RandomF() > 0.5)
         r1 *= -1;
 
