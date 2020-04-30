@@ -658,11 +658,12 @@ struct DataGenerator
     normalize(interped_arr);
 
     // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-    // propagate through materials
-    for(int i=0; i<steps_Si; i++) // 50 nm & dz: 10 nm
-      forward_propagate(interped_arr, slice_Si, *wavefonts.f, params_Si, fft_2_interp);
-    for(int i=0; i<steps_cu; i++)
-      forward_propagate(interped_arr, slice_cu, *wavefonts.f, params_cu, fft_2_interp);
+
+    // // propagate through materials
+    // for(int i=0; i<steps_Si; i++) // 50 nm & dz: 10 nm
+    //   forward_propagate(interped_arr, slice_Si, *wavefonts.f, params_Si, fft_2_interp);
+    // for(int i=0; i<steps_cu; i++)
+    //   forward_propagate(interped_arr, slice_cu, *wavefonts.f, params_cu, fft_2_interp);
 
   }
 
