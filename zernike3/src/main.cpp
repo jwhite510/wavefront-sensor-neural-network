@@ -432,11 +432,11 @@ class CropAndInterpolateComplex
     float y_tl = RandomF(0, max_xy_location);
     float y_br = y_tl + image_relative_size;
 
-    // set the image to be cropped the same way every time
-    x_tl = 0;
-    x_br = 1;
-    y_tl = 0;
-    y_br = 1;
+    // // set the image to be cropped the same way every time
+    // x_tl = 0;
+    // x_br = 1;
+    // y_tl = 0;
+    // y_br = 1;
 
     x_tl *=2; x_tl -=1; // shift to -1. 1 coordinates
     x_br *=2; x_br -=1; // shift to -1. 1 coordinates
@@ -628,7 +628,7 @@ struct DataGenerator
     for(int i=0; i < zernike_cvector.size(); i++) {
       // make random scalar
       float r1 = RandomF();
-      r1 *= 1; // scalar // VERY SMALL VARIATION
+      r1 *= 3; // scalar
       if(RandomF() > 0.5)
         r1 *= -1;
 
@@ -644,7 +644,7 @@ struct DataGenerator
     gaussianp.propagate(complex_object, zernike_polynom);
     cropinterp.crop_interp(complex_object,
         interped_arr, // OUT
-        0.1 // between 0 and 1 : the minimum image scale after interpolation
+        0.8 // between 0 and 1 : the minimum image scale after interpolation
         );
 
     // TODO: do not set the electric field normalized after multiplying by the wavefront mask
@@ -658,12 +658,11 @@ struct DataGenerator
     normalize(interped_arr);
 
     // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-
-    // // propagate through materials
-    // for(int i=0; i<steps_Si; i++) // 50 nm & dz: 10 nm
-    //   forward_propagate(interped_arr, slice_Si, *wavefonts.f, params_Si, fft_2_interp);
-    // for(int i=0; i<steps_cu; i++)
-    //   forward_propagate(interped_arr, slice_cu, *wavefonts.f, params_cu, fft_2_interp);
+    // propagate through materials
+    for(int i=0; i<steps_Si; i++) // 50 nm & dz: 10 nm
+      forward_propagate(interped_arr, slice_Si, *wavefonts.f, params_Si, fft_2_interp);
+    for(int i=0; i<steps_cu; i++)
+      forward_propagate(interped_arr, slice_cu, *wavefonts.f, params_cu, fft_2_interp);
 
   }
 
