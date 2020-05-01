@@ -627,10 +627,11 @@ struct DataGenerator
     // for each zernike coeffieicent
     for(int i=0; i < zernike_cvector.size(); i++) {
       // make random scalar
-      float r1 = RandomF();
+      float r1 = 1;
       r1 *= 3; // scalar
-      if(RandomF() > 0.5)
-        r1 *= -1;
+      cout << "r1 => " << r1 << endl;
+      // if(RandomF() > 0.5)
+      //   r1 *= -1;
 
       // float r1 = 2.0; // TODO return this to normal, its disabled to show the cropping
 
@@ -644,7 +645,7 @@ struct DataGenerator
     gaussianp.propagate(complex_object, zernike_polynom);
     cropinterp.crop_interp(complex_object,
         interped_arr, // OUT
-        0.8 // between 0 and 1 : the minimum image scale after interpolation
+        1.0 // between 0 and 1 : the minimum image scale after interpolation
         );
 
     // TODO: do not set the electric field normalized after multiplying by the wavefront mask
@@ -697,7 +698,7 @@ int main(int argc, char *argv[])
   int buffer_size = runParameters.BufferSize; // the amount of samples to store before saving them to hdf5
 
   // physical parameters
-  int n_interp = 128;
+  int n_interp = 1024;
   int crop_size = 200;
   int N_computational = 1024;
 

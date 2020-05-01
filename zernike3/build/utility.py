@@ -17,7 +17,7 @@ def plot(array):
 
 def plot_complex(array):
     fig = plt.figure(figsize=(10,4))
-    gs = fig.add_gridspec(1,3)
+    gs = fig.add_gridspec(1,4)
 
     ax = fig.add_subplot(gs[0,0])
     im = ax.imshow(np.angle(array))
@@ -33,6 +33,11 @@ def plot_complex(array):
     im = ax.imshow(np.imag(array))
     fig.colorbar(im, ax=ax)
     ax.set_title("imag")
+
+    ax = fig.add_subplot(gs[0,3])
+    im = ax.imshow(np.abs(array))
+    fig.colorbar(im, ax=ax)
+    ax.set_title("abs")
 
     # plt.show()
 
@@ -133,13 +138,13 @@ def fft2(array):
     # plt.show()
 
 def get_wavefront_sensor(a):
-    N = 128
+    N = 1024
     _, b = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
     b = b.astype(np.float32)
     return b
 
 def get_wavefront_sensor_f(a):
-    N = 128
+    N = 1024
     measured_axes, b = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
     # b = b.astype(np.float32)
     b = measured_axes["diffraction_plane"]["f"].astype(np.float32)
@@ -297,7 +302,40 @@ def save_to_hdf5(filename, array):
             for i in range(np.shape(array)[0]):
                 object_real = np.real(array[i,:,:])
                 object_imag = np.imag(array[i,:,:])
+                # zero pad the array
+                array_pad = array[i,:,:]
+                array_pad = np.pad(array_pad, pad_width=1000, mode="constant", constant_values=0)
+
+                diffraction_pattern_with_noise_p = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(array_pad))))**2
                 diffraction_pattern_with_noise = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(array[i,:,:]))))**2
+
+                with open("1024pickle.p", "wb") as file:
+                    pickle.dump(array[i,:,:], file)
+
+                print("saving object")
+                plt.figure()
+                plt.title("diffraction_pattern_with_noise")
+                plt.imshow(diffraction_pattern_with_noise)
+
+                plt.figure()
+                plt.title("array")
+                plt.imshow(np.abs(array[i,:,:]))
+
+                plt.figure()
+                plt.title("diffraction_pattern_with_noise_p")
+                plt.imshow(diffraction_pattern_with_noise_p)
+
+                plt.figure()
+                plt.title("array_pad")
+                plt.imshow(np.abs(array_pad))
+
+
+
+                plt.show()
+
+                # crop to the center of image
+
+
 
                 # normalize
                 diffraction_pattern_with_noise = diffraction_pattern_with_noise / np.max(diffraction_pattern_with_noise)
