@@ -164,13 +164,13 @@ class DiffractionNet():
         transform["scale"] = 1.0
         transform["scale"] = 0.9
 
-        experimental_traces = {}
+        self.experimental_traces = {}
         transform = {}
         orientations = [None, "lr", "ud", "lrud"]
         scales = [1.1, 1.0, 0.9]
         for _orientation in orientations:
-            if not _orientation in experimental_traces.keys():
-                experimental_traces[_orientation] = {}
+            if not _orientation in self.experimental_traces.keys():
+                self.experimental_traces[_orientation] = {}
             for _scale in scales:
 
                 transform["flip"] = _orientation
@@ -179,16 +179,21 @@ class DiffractionNet():
                 trace = diffraction_functions.get_and_format_experimental_trace(
                         self.get_data.N, transform)
 
-                experimental_traces[_orientation][_scale] = trace
+                self.experimental_traces[_orientation][_scale] = trace
 
 
-        print(experimental_traces.keys())
-        for _orientation in experimental_traces.keys():
-            for _scale in experimental_traces[_orientation].keys():
-                trace = experimental_traces[_orientation][_scale]
-                plt.figure()
-                plt.title(str(_orientation) + " : " + str(_scale))
-                plt.imshow(np.squeeze(trace))
+        # print(experimental_traces.keys())
+        # for _orientation in experimental_traces.keys():
+        #     for _scale in experimental_traces[_orientation].keys():
+        #         trace = experimental_traces[_orientation][_scale]
+        #         plt.figure()
+        #         plt.title(str(_orientation) + " : " + str(_scale))
+        #         plt.imshow(np.squeeze(trace))
+
+        # create tf loggers for experimental traces
+        self.tf_loggers_experimentaltrace = {}
+        self.setup_experimentaltrace_logging()
+
 
 
         # experimental_traces[None]
@@ -197,6 +202,13 @@ class DiffractionNet():
         plt.show()
 
         exit()
+
+    def setup_experimentaltrace_logging(self):
+        for _orientation in self.experimental_traces.keys():
+            for _scale in self.experimental_traces[_orientation].keys():
+                trace = self.experimental_traces[_orientation][_scale]
+                logger_name = "measured_"+str(_orientation)+"_"+str(_scale)+"_reconstructed"
+                self.tf_loggers_experimentaltrace[logger_name] = tf.summary.scalar(logger_name, self.nn_nodes["reconstruction_loss"])
 
 
     def setup_network_1(self, _nodes):
@@ -372,6 +384,7 @@ class DiffractionNet():
             # adjust the learning if the cost function is not decreasing in x iteraitons
             if len(self.cost_function_vals) >= 10:
 
+                # TODO make the state saved when the network is reloaded, if its trained in multiple sessions like this the result will be different
                 # print statements for debugging
                 print("length of cost_function_vals has reached 10")
                 print("self.cost_function_vals =>", self.cost_function_vals)
@@ -397,6 +410,7 @@ class DiffractionNet():
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch))
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/training")
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/validation")
+                check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/measured")
 
                 data = self.get_data.evaluate_on_train_data(n_samples=50)
                 self.evaluate_performance(data, "training")
@@ -488,6 +502,15 @@ class DiffractionNet():
         summ = self.sess.run(self.tf_loggers["reconstruction_loss_validation"], feed_dict={self.x:diffraction_samples, self.imag_actual:object_imag_samples})
         self.writer.add_summary(summ, global_step=self.epoch)
 
+
+        # add tensorboard values for experimental trace
+        for _orientation in self.experimental_traces.keys():
+            for _scale in self.experimental_traces[_orientation].keys():
+                trace = self.experimental_traces[_orientation][_scale]
+                logger_name = "measured_"+str(_orientation)+"_"+str(_scale)+"_reconstructed"
+                summ = self.sess.run(self.tf_loggers_experimentaltrace[logger_name], feed_dict={self.x:trace})
+                self.writer.add_summary(summ, global_step=self.epoch)
+
         self.writer.flush()
 
     def __del__(self):
@@ -568,6 +591,44 @@ class DiffractionNet():
 
             axes_obj.save("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/sample_"+str(index))
             del axes_obj
+
+        # view reconstruction from measured trace at various scales and orientations
+        for _orientation in self.experimental_traces.keys():
+            for _scale in self.experimental_traces[_orientation].keys():
+                trace = self.experimental_traces[_orientation][_scale]
+                logger_name = "measured_"+str(_orientation)+"_"+str(_scale)+"_reconstructed"
+                print("testing measured trace: "+logger_name)
+                # get the reconstructed trace
+                measured_reconstructed = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:trace})
+                measured_real = self.sess.run(self.nn_nodes["real_out"], feed_dict={self.x:trace})
+                measured_imag = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:trace})
+
+                # create plot axes
+                axes_obj = PlotAxes(logger_name + "_epoch: "+str(self.epoch))
+
+                im = axes_obj.diffraction_samples.pcolormesh(np.squeeze(trace))
+                axes_obj.fig.colorbar(im, ax=axes_obj.diffraction_samples)
+
+                # im = axes_obj.object_real_samples.pcolormesh(object_real_samples[index,:,:,0])
+                # axes_obj.fig.colorbar(im, ax=axes_obj.object_real_samples)
+
+                im = axes_obj.real_output.pcolormesh(np.squeeze(measured_real))
+                axes_obj.fig.colorbar(im, ax=axes_obj.real_output)
+
+                # im = axes_obj.object_imag_samples.pcolormesh(object_imag_samples[index,:,:,0])
+                # axes_obj.fig.colorbar(im, ax=axes_obj.object_imag_samples)
+
+                im = axes_obj.imag_output.pcolormesh(np.squeeze(measured_imag))
+                axes_obj.fig.colorbar(im, ax=axes_obj.imag_output)
+
+                # tensorflow reconstructed diffraction pattern
+                im = axes_obj.tf_reconstructed_diff.pcolormesh(np.squeeze(measured_reconstructed))
+                axes_obj.fig.colorbar(im, ax=axes_obj.tf_reconstructed_diff)
+
+                axes_obj.save("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+"measured"+"/"+logger_name)
+                del axes_obj
+
+
 
 def max_pooling_layer(input_x, pool_size_val,  stride_val, pad=False):
     if pad:
