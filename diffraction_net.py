@@ -221,7 +221,7 @@ class DiffractionNet():
                     -1,self.get_data.N, self.get_data.N, 1)
 
             filename = "mp_plotdata/"+self.name+"/"+_set+"_log.dat"
-            if not path.exists(filename):
+            if not os.path.exists(filename):
                 with open(filename, "w") as file:
                     file.write("# time[s] epoch real_loss imag_loss reconstruction_loss\n")
 
@@ -264,7 +264,7 @@ class DiffractionNet():
 
                 logger_name = "measured_"+str(_orientation)+"_"+str(_scale).replace(".","-")+"_reconstructed"
                 filename = "mp_plotdata/"+self.name+"/"+logger_name+".dat"
-                if not path.exists(filename):
+                if not os.path.exists(filename):
                     with open(filename, "w") as file:
                         file.write("# time[s] epoch reconstruction_loss\n")
 
