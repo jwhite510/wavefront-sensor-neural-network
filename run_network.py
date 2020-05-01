@@ -106,66 +106,8 @@ class NetworkRetrieval(diffraction_net.DiffractionNet):
         plt.show()
 
     def get_and_format_experimental_trace(self, transform):
-        # get the measured trace
-        # open the object with known dimmensions
-        obj_calculated_measured_axes, _ = diffraction_functions.get_amplitude_mask_and_imagesize(self.get_data.N, int(self.get_data.N/2))
-        diffraction_calculated_measured_axes, measured_pattern = diffraction_functions.get_measured_diffraction_pattern_grid()
-
-        measured_pattern = measured_pattern.astype(np.float64)
-        # measured_pattern = measured_pattern.T
-
-
-        df_ratio = diffraction_calculated_measured_axes['diffraction_plane']['df'] / obj_calculated_measured_axes['diffraction_plane']['df']
-        # multiply by scale adjustment
-        df_ratio *= transform["scale"]
-
-        measured_pattern = diffraction_functions.format_experimental_trace(
-                N=self.get_data.N,
-                df_ratio=df_ratio,
-                measured_diffraction_pattern=measured_pattern,
-                rotation_angle=3,
-                trim=1) # if transposed (measured_pattern.T) , flip the rotation
-                # use 30 to block outer maxima
-
-        # diffraction_functions.plot_image_show_centroid_distance(
-                # measured_pattern,
-                # "before flip",
-                # 10)
-
-        if transform["flip"] == "lr":
-            measured_pattern = np.flip(measured_pattern, axis=1)
-
-        elif transform["flip"] == "ud":
-            measured_pattern = np.flip(measured_pattern, axis=0)
-
-        elif transform["flip"] == "lrud":
-            measured_pattern = np.flip(measured_pattern, axis=0)
-            measured_pattern = np.flip(measured_pattern, axis=1)
-
-        elif transform["flip"] == None:
-            pass
-
-        else:
-            raise ValueError("invalid flip specified")
-
-        # diffraction_functions.plot_image_show_centroid_distance(
-                # measured_pattern,
-                # "after flip",
-                # 11)
-
-        measured_pattern = diffraction_functions.center_image_at_centroid(measured_pattern)
-
-        # diffraction_functions.plot_image_show_centroid_distance(
-                # measured_pattern,
-                # "after flip,  center_image_at_centroid",
-                # 12)
-
-        measured_pattern = np.expand_dims(measured_pattern, axis=0)
-        measured_pattern = np.expand_dims(measured_pattern, axis=-1)
-        # print("np.max(measured_pattern[0,:,:,0]) =>", np.max(measured_pattern[0,:,:,0]))
-        measured_pattern *= (1/np.max(measured_pattern))
-
-        return measured_pattern
+        # TODO double check this works
+        return diffraction_functions.get_and_format_experimental_trace(self.N, transform)
 
     def unsupervised_retrieval(self, transform, iterations, plotting=True):
         """

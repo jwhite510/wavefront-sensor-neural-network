@@ -153,6 +153,51 @@ class DiffractionNet():
         self.cost_function_vals = []
         self.lr_value = 0.0001
 
+        # get a measured trace to retrieve at every iteration
+        self.measured_trace = {} # store every orientation and scale
+        transform = {}
+        transform["flip"] = None
+        transform["flip"] = "lr"
+        transform["flip"] = "ud"
+        transform["flip"] = "lrud"
+        transform["scale"] = 1.1
+        transform["scale"] = 1.0
+        transform["scale"] = 0.9
+
+        experimental_traces = {}
+        transform = {}
+        orientations = [None, "lr", "ud", "lrud"]
+        scales = [1.1, 1.0, 0.9]
+        for _orientation in orientations:
+            if not _orientation in experimental_traces.keys():
+                experimental_traces[_orientation] = {}
+            for _scale in scales:
+
+                transform["flip"] = _orientation
+                transform["scale"] = _scale
+
+                trace = diffraction_functions.get_and_format_experimental_trace(
+                        self.get_data.N, transform)
+
+                experimental_traces[_orientation][_scale] = trace
+
+
+        print(experimental_traces.keys())
+        for _orientation in experimental_traces.keys():
+            for _scale in experimental_traces[_orientation].keys():
+                trace = experimental_traces[_orientation][_scale]
+                plt.figure()
+                plt.title(str(_orientation) + " : " + str(_scale))
+                plt.imshow(np.squeeze(trace))
+
+
+        # experimental_traces[None]
+        # import ipdb; ipdb.set_trace() # BREAKPOINT
+        # print("BREAKPOINT")
+        plt.show()
+
+        exit()
+
 
     def setup_network_1(self, _nodes):
         # convolutional layer down sampling
