@@ -1,4 +1,5 @@
 import tensorflow as tf
+import time
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -201,6 +202,84 @@ class DiffractionNet():
                 logger_name = "measured_"+str(_orientation)+"_"+str(_scale).replace(".","-")+"_reconstructed"
                 self.tf_loggers_experimentaltrace[logger_name] = tf.summary.scalar(logger_name, self.nn_nodes["reconstruction_loss"])
 
+    def update_error_plot_values(self):
+        """
+        write the useful error values for plotting to data files
+        """
+        check_is_dir("mp_plotdata")
+        check_is_dir("mp_plotdata/"+self.name)
+
+        data_train = self.get_data.evaluate_on_train_data(n_samples=50)
+        data_validation = self.get_data.evaluate_on_validation_data(n_samples=50)
+
+        for data, _set in zip([data_train, data_validation], ["train", "validation"]):
+            object_real_samples = data["object_real_samples"].reshape(
+                    -1,self.get_data.N, self.get_data.N, 1)
+            object_imag_samples = data["object_imag_samples"].reshape(
+                    -1,self.get_data.N, self.get_data.N, 1)
+            diffraction_samples = data["diffraction_samples"].reshape(
+                    -1,self.get_data.N, self.get_data.N, 1)
+
+            filename = "mp_plotdata/"+self.name+"/"+_set+"_log.dat"
+            if not path.exists(filename):
+                with open(filename, "w") as file:
+                    file.write("# time[s] epoch real_loss imag_loss reconstruction_loss\n")
+
+            # real loss
+            real_loss = self.sess.run(self.nn_nodes["real_loss"],
+                    feed_dict={self.x:diffraction_samples,
+                        self.real_actual:object_real_samples})
+
+            # imaginary loss
+            imag_loss = self.sess.run(self.nn_nodes["imag_loss"],
+                    feed_dict={self.x:diffraction_samples,
+                        self.imag_actual:object_imag_samples})
+
+            # reconstruction
+            reconstruction_loss = self.sess.run(self.nn_nodes["reconstruction_loss"],
+                    feed_dict={self.x:diffraction_samples})
+
+            datastring = ""
+            datastring+= str(time.time())
+            datastring+= "  "
+            datastring+= str(self.epoch)
+            datastring+= "  "
+            datastring+= str(real_loss)
+            datastring+= "  "
+            datastring+= str(imag_loss)
+            datastring+= "  "
+            datastring+= str(reconstruction_loss)
+            datastring+= "\n"
+
+            with open(filename, "a") as file:
+                file.write(datastring)
+
+        # plot the measured trace error
+        for _orientation in self.experimental_traces.keys():
+            for _scale in self.experimental_traces[_orientation].keys():
+                trace = self.experimental_traces[_orientation][_scale]
+                # reconstruction
+                reconstruction_loss = self.sess.run(self.nn_nodes["reconstruction_loss"],
+                        feed_dict={self.x:trace})
+
+                logger_name = "measured_"+str(_orientation)+"_"+str(_scale).replace(".","-")+"_reconstructed"
+                filename = "mp_plotdata/"+self.name+"/"+logger_name+".dat"
+                if not path.exists(filename):
+                    with open(filename, "w") as file:
+                        file.write("# time[s] epoch reconstruction_loss\n")
+
+                datastring = ""
+                datastring+= str(time.time())
+                datastring+= "  "
+                datastring+= str(self.epoch)
+                datastring+= "  "
+                datastring+= str(reconstruction_loss)
+                datastring+= "\n"
+                with open(filename, "a") as file:
+                    file.write(datastring)
+
+
+
 
     def setup_network_1(self, _nodes):
         # convolutional layer down sampling
@@ -393,6 +472,7 @@ class DiffractionNet():
 
             print("add_tensorboard_values")
             self.add_tensorboard_values()
+            self.update_error_plot_values()
             if self.i % 5 == 0:
 
                 # create directory if it doesnt exist
