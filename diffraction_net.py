@@ -194,20 +194,11 @@ class DiffractionNet():
         self.tf_loggers_experimentaltrace = {}
         self.setup_experimentaltrace_logging()
 
-
-
-        # experimental_traces[None]
-        # import ipdb; ipdb.set_trace() # BREAKPOINT
-        # print("BREAKPOINT")
-        plt.show()
-
-        exit()
-
     def setup_experimentaltrace_logging(self):
         for _orientation in self.experimental_traces.keys():
             for _scale in self.experimental_traces[_orientation].keys():
                 trace = self.experimental_traces[_orientation][_scale]
-                logger_name = "measured_"+str(_orientation)+"_"+str(_scale)+"_reconstructed"
+                logger_name = "measured_"+str(_orientation)+"_"+str(_scale).replace(".","-")+"_reconstructed"
                 self.tf_loggers_experimentaltrace[logger_name] = tf.summary.scalar(logger_name, self.nn_nodes["reconstruction_loss"])
 
 
@@ -418,6 +409,8 @@ class DiffractionNet():
                 data = self.get_data.evaluate_on_validation_data(n_samples=50)
                 self.evaluate_performance(data, "validation")
 
+                self.evaluate_performance_measureddata()
+
 
             # save the network
             if self.i % 10 == 0:
@@ -507,7 +500,7 @@ class DiffractionNet():
         for _orientation in self.experimental_traces.keys():
             for _scale in self.experimental_traces[_orientation].keys():
                 trace = self.experimental_traces[_orientation][_scale]
-                logger_name = "measured_"+str(_orientation)+"_"+str(_scale)+"_reconstructed"
+                logger_name = "measured_"+str(_orientation)+"_"+str(_scale).replace(".","-")+"_reconstructed"
                 summ = self.sess.run(self.tf_loggers_experimentaltrace[logger_name], feed_dict={self.x:trace})
                 self.writer.add_summary(summ, global_step=self.epoch)
 
@@ -568,6 +561,7 @@ class DiffractionNet():
         # imag_output = imag_output * real_output #TODO maybe remove this
 
         for index in range(0,50):
+            print("evaluating sample: "+str(index))
             axes_obj = PlotAxes("sample "+str(index))
 
             im = axes_obj.diffraction_samples.pcolormesh(diffraction_samples[index,:,:,0])
@@ -590,13 +584,15 @@ class DiffractionNet():
             axes_obj.fig.colorbar(im, ax=axes_obj.tf_reconstructed_diff)
 
             axes_obj.save("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/sample_"+str(index))
+            axes_obj.close()
             del axes_obj
 
+    def evaluate_performance_measureddata(self):
         # view reconstruction from measured trace at various scales and orientations
         for _orientation in self.experimental_traces.keys():
             for _scale in self.experimental_traces[_orientation].keys():
                 trace = self.experimental_traces[_orientation][_scale]
-                logger_name = "measured_"+str(_orientation)+"_"+str(_scale)+"_reconstructed"
+                logger_name = "measured_"+str(_orientation)+"_"+str(_scale).replace(".","-")+"_reconstructed"
                 print("testing measured trace: "+logger_name)
                 # get the reconstructed trace
                 measured_reconstructed = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:trace})
@@ -626,6 +622,7 @@ class DiffractionNet():
                 axes_obj.fig.colorbar(im, ax=axes_obj.tf_reconstructed_diff)
 
                 axes_obj.save("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+"measured"+"/"+logger_name)
+                axes_obj.close()
                 del axes_obj
 
 
@@ -724,6 +721,9 @@ class PlotAxes():
 
     def save(self, filename):
         self.fig.savefig(filename)
+
+    def close(self):
+        plt.close(self.fig)
 
 
 if __name__ == "__main__":
