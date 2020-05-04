@@ -642,10 +642,15 @@ struct DataGenerator
 
     // apply this phase and propagate it
     gaussianp.propagate(complex_object, zernike_polynom);
+
+    // Python.call_function_np("plot_zernike", complex_object.data, vector<int>{complex_object.size_0,complex_object.size_1}, PyArray_COMPLEX64);
     cropinterp.crop_interp(complex_object,
         interped_arr, // OUT
         0.8 // between 0 and 1 : the minimum image scale after interpolation
         );
+    // Python.call_function_np("plot_complex", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
+    // Python.call("show");
+    // exit(0);
 
     // TODO: do not set the electric field normalized after multiplying by the wavefront mask
     // !!! -- make it between something and 1, not 0 and 1

@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.patches
 import time
 import pickle
 import matplotlib.pyplot as plt
@@ -35,6 +36,70 @@ def plot_complex(array):
     ax.set_title("imag")
 
     # plt.show()
+
+def plot_zernike(array):
+
+    try:
+        print("array.shape =>", array.shape)
+
+        # difficulty number
+        minval = 0.2
+        # image_relative_size can be between minvaland 1
+        image_relative_size = minval + np.random.rand()*(1-minval)
+        print("image_relative_size =>", image_relative_size)
+        # image_relative_size = np.random.rand()
+        # max x, y location:
+        max_xy_location = 1.0 - image_relative_size;
+        # x, y start is between these two values
+        x_tl = np.random.rand()*max_xy_location
+        x_br = x_tl + image_relative_size;
+        y_tl = np.random.rand()*max_xy_location;
+        y_br = y_tl + image_relative_size;
+
+        x_tl *=2; x_tl -=1; # // shift to -1. 1 coordinates
+        x_br *=2; x_br -=1; # // shift to -1. 1 coordinates
+        y_tl *=2; y_tl -=1; # // shift to -1. 1 coordinates
+        y_br *=2; y_br -=1; # // shift to -1. 1 coordinates
+
+        crop_size = 200
+        array = array[int(array.shape[0]/2 - crop_size/2) : int(array.shape[0]/2 + crop_size/2),
+                    int(array.shape[1]/2 - crop_size/2) : int(array.shape[1]/2 + crop_size/2)]
+
+        # crop the array
+
+        plt.figure()
+        plt.pcolormesh(
+                np.linspace(-1,1,np.shape(array)[0]), # x value
+                np.linspace(-1,1,np.shape(array)[1]), # y value
+                np.abs(array)
+                )
+
+        rect = matplotlib.patches.Rectangle((-1.0,1.0), 2.0, -2.0,
+                linewidth=5, edgecolor="r", facecolor='none')
+        plt.gca().add_patch(rect)
+
+        print("x_tl =>", x_tl)
+        print("y_tl =>", y_tl)
+
+        size_x = x_br - x_tl
+        size_y = y_br - y_tl
+        print("size_x =>", size_x)
+        print("size_y =>", size_y)
+
+        rect = matplotlib.patches.Rectangle((x_tl,y_tl), size_x, size_y,
+                linewidth=5, edgecolor="orange", facecolor='none')
+        plt.gca().add_patch(rect)
+
+        fign = 5
+        plt.savefig("./LOW_scale_crop_difficulty_{}.png".format(str(fign)))
+
+        # plt.axhline(y=y_tl, color="blue")
+        # plt.axvline(x=x_tl, color="blue")
+
+
+    except Exception as e:
+        print(e)
+
 
 def plot_complex_diffraction(array):
     array = array.astype(np.complex128)
