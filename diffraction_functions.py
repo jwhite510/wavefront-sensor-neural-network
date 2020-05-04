@@ -14,6 +14,96 @@ from scipy.misc import factorial
 from skimage.transform import resize
 from scipy import ndimage
 
+def plot_amplitude_phase_meas_retreival(retrieved_obj, title):
+
+    # print(retrieved_obj.keys())
+
+    fig = plt.figure(figsize=(10,10))
+    gs = fig.add_gridspec(4,2)
+    fig.text(0.5, 0.95, title, ha="center", size=30)
+
+    axes = {}
+    axes["measured"] = fig.add_subplot(gs[0,0])
+    axes["reconstructed"] = fig.add_subplot(gs[0,1])
+
+    axes["real"] = fig.add_subplot(gs[1,0])
+    axes["imag"] = fig.add_subplot(gs[1,1])
+
+    axes["intensity"] = fig.add_subplot(gs[2,0])
+    axes["phase"] = fig.add_subplot(gs[2,1])
+
+    axes["phase_vertical"] = fig.add_subplot(gs[3,0])
+    axes["phase_horizontal"] = fig.add_subplot(gs[3,1])
+
+    # calculate the intensity
+    complex_obj = np.squeeze(retrieved_obj["real_output"]) + 1j * np.squeeze(retrieved_obj["imag_output"])
+
+    I = np.abs(complex_obj)**2
+
+    # calculate the phase
+    # subtract phase at intensity peak
+    m_index = unravel_index(I.argmax(), I.shape)
+    phase_Imax = np.angle(complex_obj[m_index[0], m_index[1]])
+    complex_obj *= np.exp(-1j * phase_Imax)
+
+    obj_phase = np.angle(complex_obj)
+
+    # not using the amplitude_mask, use the absolute value of the intensity
+    nonzero_intensity = np.array(np.abs(complex_obj))
+    nonzero_intensity[nonzero_intensity < 0.01*np.max(nonzero_intensity)] = 0
+    nonzero_intensity[nonzero_intensity >= 0.01*np.max(nonzero_intensity)] = 1
+    obj_phase *= nonzero_intensity
+
+
+
+    # for testing
+    # obj_phase[10:20, :] = np.max(obj_phase)
+    # obj_phase[:, 10:20] = np.max(obj_phase)
+    # obj_phase[:, -30:-20] = np.max(obj_phase)
+
+    im = axes["phase"].pcolormesh(obj_phase)
+    axes["phase"].text(0.2, 0.9,"phase(retrieved)", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor="cyan")
+    fig.colorbar(im, ax=axes["phase"])
+    axes["phase"].axvline(x=m_index[1], color="red", alpha=0.8)
+    axes["phase"].axhline(y=m_index[0], color="blue", alpha=0.8)
+
+    axes["phase_horizontal"].plot(obj_phase[m_index[0], :], color="blue")
+    axes["phase_horizontal"].text(0.2, -0.25,"phase(horizontal)", fontsize=10, ha='center', transform=axes["phase_horizontal"].transAxes, backgroundcolor="blue")
+
+    axes["phase_vertical"].plot(obj_phase[:, m_index[1]], color="red")
+    axes["phase_vertical"].text(0.2, -0.25,"phase(vertical)", fontsize=10, ha='center', transform=axes["phase_vertical"].transAxes, backgroundcolor="red")
+
+
+    im = axes["intensity"].pcolormesh(I)
+    axes["intensity"].text(0.2, 0.9,"intensity(retrieved)", fontsize=10, ha='center', transform=axes["intensity"].transAxes, backgroundcolor="cyan")
+    fig.colorbar(im, ax=axes["intensity"])
+
+    im = axes["measured"].pcolormesh(np.squeeze(retrieved_obj["measured_pattern"]))
+    axes["measured"].text(0.2, 0.9,"measured", fontsize=10, ha='center', transform=axes["measured"].transAxes, backgroundcolor="cyan")
+    fig.colorbar(im, ax=axes["measured"])
+
+    im = axes["reconstructed"].pcolormesh(np.squeeze(retrieved_obj["tf_reconstructed_diff"]))
+    axes["reconstructed"].text(0.2, 0.9,"reconstructed", fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
+
+    # calc mse
+    A = retrieved_obj["measured_pattern"].reshape(-1)
+    B = retrieved_obj["tf_reconstructed_diff"].reshape(-1)
+    mse = (np.square(A-B)).mean()
+    mse = str(mse)
+    axes["reconstructed"].text(0.2, 1.1,"mse(reconstructed, measured): "+mse, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
+
+    fig.colorbar(im, ax=axes["reconstructed"])
+
+    im = axes["real"].pcolormesh(np.squeeze(retrieved_obj["real_output"]))
+    axes["real"].text(0.2, 0.9,"real(retrieved)", fontsize=10, ha='center', transform=axes["real"].transAxes, backgroundcolor="cyan")
+    fig.colorbar(im, ax=axes["real"])
+
+    im = axes["imag"].pcolormesh(np.squeeze(retrieved_obj["imag_output"]))
+    axes["imag"].text(0.2, 0.9,"imag(retrieved)", fontsize=10, ha='center', transform=axes["imag"].transAxes, backgroundcolor="cyan")
+    fig.colorbar(im, ax=axes["imag"])
+
+    return fig
+
 def plot_image_show_centroid_distance(mat, title, figurenum):
     """
     plots an image and shows the distance from the centroid to the image center

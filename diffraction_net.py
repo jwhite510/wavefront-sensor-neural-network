@@ -675,35 +675,23 @@ class DiffractionNet():
                 logger_name = "measured_"+str(_orientation)+"_"+str(_scale).replace(".","-")+"_reconstructed"
                 print("testing measured trace: "+logger_name)
                 # get the reconstructed trace
-                measured_reconstructed = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:trace})
-                measured_real = self.sess.run(self.nn_nodes["real_out"], feed_dict={self.x:trace})
-                measured_imag = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:trace})
+                # use measured trace retrieval plotting function
+                retrieved_obj = {}
+                retrieved_obj["measured_pattern"] = trace
+                retrieved_obj["tf_reconstructed_diff"] = self.sess.run(
+                        self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:trace})
+                retrieved_obj["real_output"] = self.sess.run(
+                        self.nn_nodes["real_out"], feed_dict={self.x:trace})
+                retrieved_obj["imag_output"] = self.sess.run(
+                        self.nn_nodes["imag_out"], feed_dict={self.x:trace})
 
-                # create plot axes
-                axes_obj = PlotAxes(logger_name + "_epoch: "+str(self.epoch))
+                fig = diffraction_functions.plot_amplitude_phase_meas_retreival(
+                        retrieved_obj,
+                        logger_name + "_epoch: "+str(self.epoch))
 
-                im = axes_obj.diffraction_samples.pcolormesh(np.squeeze(trace))
-                axes_obj.fig.colorbar(im, ax=axes_obj.diffraction_samples)
-
-                # im = axes_obj.object_real_samples.pcolormesh(object_real_samples[index,:,:,0])
-                # axes_obj.fig.colorbar(im, ax=axes_obj.object_real_samples)
-
-                im = axes_obj.real_output.pcolormesh(np.squeeze(measured_real))
-                axes_obj.fig.colorbar(im, ax=axes_obj.real_output)
-
-                # im = axes_obj.object_imag_samples.pcolormesh(object_imag_samples[index,:,:,0])
-                # axes_obj.fig.colorbar(im, ax=axes_obj.object_imag_samples)
-
-                im = axes_obj.imag_output.pcolormesh(np.squeeze(measured_imag))
-                axes_obj.fig.colorbar(im, ax=axes_obj.imag_output)
-
-                # tensorflow reconstructed diffraction pattern
-                im = axes_obj.tf_reconstructed_diff.pcolormesh(np.squeeze(measured_reconstructed))
-                axes_obj.fig.colorbar(im, ax=axes_obj.tf_reconstructed_diff)
-
-                axes_obj.save("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+"measured"+"/"+logger_name)
-                axes_obj.close()
-                del axes_obj
+                filename = "nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+"measured"+"/"+logger_name
+                fig.savefig(filename)
+                plt.close(fig)
 
 
 
