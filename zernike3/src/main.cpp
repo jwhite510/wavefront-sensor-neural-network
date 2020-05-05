@@ -655,8 +655,12 @@ struct DataGenerator
     // TODO: do not set the electric field normalized after multiplying by the wavefront mask
     // !!! -- make it between something and 1, not 0 and 1
 
-    // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
-    // multiplby wavefront sensor
+    // set phase at center to 0
+    complex<float> z_center = interped_arr(interped_arr.size_0/2, interped_arr.size_1/2);
+    // add the opposite of the angle at the center
+    for(int i=0; i < interped_arr.length; i++)
+      interped_arr.data[i]*=exp(complex<float>(0,-arg(z_center)));
+
     for(int i=0; i < interped_arr.length; i++)
       interped_arr.data[i] *= wavefonts.wavefrontsensor->data[i];
     // normalize

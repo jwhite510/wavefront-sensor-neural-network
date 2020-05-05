@@ -37,6 +37,56 @@ def plot_complex(array):
 
     # plt.show()
 
+def plot_complex_phaseplots(array):
+    try:
+        fig = plt.figure(figsize=(18,4))
+        gs = fig.add_gridspec(1,6)
+
+        ax = fig.add_subplot(gs[0,0])
+        im = ax.imshow(np.angle(array))
+        fig.colorbar(im, ax=ax)
+        ax.set_title("angle")
+
+        ax = fig.add_subplot(gs[0,1])
+        im = ax.imshow(np.real(array))
+        fig.colorbar(im, ax=ax)
+        ax.set_title("real")
+        ax.axhline(y=np.shape(array)[0]/2, color="blue", alpha=0.5)
+        ax.axvline(x=np.shape(array)[1]/2, color="blue", alpha=0.5)
+
+        ax = fig.add_subplot(gs[0,2])
+        im = ax.imshow(np.imag(array))
+        fig.colorbar(im, ax=ax)
+        ax.set_title("imag")
+        ax.axhline(y=np.shape(array)[0]/2, color="red", alpha=0.5)
+        ax.axvline(x=np.shape(array)[1]/2, color="red", alpha=0.5)
+
+        ax = fig.add_subplot(gs[0,3])
+        im = ax.imshow(np.abs(array))
+        fig.colorbar(im, ax=ax)
+        ax.set_title("abs")
+
+        ax = fig.add_subplot(gs[0,4])
+        center_row=np.shape(array)[0]
+        center_col=np.shape(array)[1]
+        ax.plot(np.real(array[int(center_row/2),:]), color="blue")
+        ax.plot(np.imag(array[int(center_row/2),:]), color="red")
+        ax.axvline(x=np.shape(array)[0]/2, color="black", alpha=0.5)
+        ax.axhline(y=0, color="black", alpha=0.5)
+
+        ax = fig.add_subplot(gs[0,5])
+        center_row=np.shape(array)[0]
+        center_col=np.shape(array)[1]
+        ax.plot(np.real(array[:,int(center_col/2)]), color="blue")
+        ax.plot(np.imag(array[:,int(center_col/2)]), color="red")
+        ax.axvline(x=np.shape(array)[1]/2, color="black", alpha=0.5)
+        ax.axhline(y=0, color="black", alpha=0.5)
+
+        # plt.show()
+    except Exception as e:
+        print("DANGER WILL ROBINSON")
+        print(e)
+
 def plot_zernike(array):
 
     try:
