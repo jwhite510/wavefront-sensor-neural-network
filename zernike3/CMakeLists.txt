@@ -18,8 +18,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_executable(
 	a.out
 	src/main.cpp
-	src/utility.h
+	)
+add_executable(
+	b.out
+	src/testprop.cpp
 	)
 target_link_libraries(a.out fftw3 ${PYTHON_LIBRARIES} GSL::gsl ${MPI_LIBRARIES} MPI::MPI_CXX)
+target_link_libraries(b.out fftw3 ${PYTHON_LIBRARIES} GSL::gsl ${MPI_LIBRARIES} MPI::MPI_CXX)
 
 # PYTHON_CONFIGURE_OPTS="--enable-shared"
