@@ -125,6 +125,54 @@ def get_measured_diffraction_pattern_grid():
 
     return measured_axes, measured_pattern
 
+
+def get_amplitude_mask_and_imagesize2(image_dimmension, desired_mask_width):
+
+        # image_dimmension must be divisible by 4
+        assert image_dimmension/4 == int(image_dimmension/4)
+        # get the png image for amplitude
+        im = Image.open("siemens_star_2048_psize_7nm.png")
+        # im = PIL.ImageOps.invert(im)
+
+        size1 = im.size[0]
+        im_size_nm = 7*im.size[0] * 1e-9 # meters
+        # print("im_size_nm =>", im_size_nm)
+
+        # scale down the image
+        im = im.resize((desired_mask_width,desired_mask_width))
+        size2 = im.size[0]
+        im = np.array(im)[:,:,1]
+
+        # im=np.invert(im)# this is not physical
+
+
+        # # # # # # # # # # # # #
+        # # # pad the image # # #
+        # # # # # # # # # # # # #
+
+        # determine width of mask
+        pad_amount = int((image_dimmension - desired_mask_width)/2)
+        amplitude_mask = np.pad(im, pad_width=pad_amount, mode="constant", constant_values=0)
+        amplitude_mask = amplitude_mask.astype(np.float64)
+        amplitude_mask *= 1/np.max(amplitude_mask) # normalize
+        assert amplitude_mask.shape[0] == image_dimmension
+        size3 = np.shape(amplitude_mask)[0]
+        ratio = size3 / size2
+        # print("ratio =>", ratio)
+        im_size_nm *= ratio # object image size [m]
+
+        measured_axes = {}
+        measured_axes["object"] = {}
+        measured_axes["object"]["dx"] = im_size_nm / image_dimmension
+        measured_axes["object"]["xmax"] = im_size_nm/2
+        measured_axes["object"]["x"] = np.arange(-(measured_axes["object"]["xmax"]), (measured_axes["object"]["xmax"]), measured_axes["object"]["dx"])
+        measured_axes["diffraction_plane"] = {}
+        measured_axes["diffraction_plane"]["df"] = 1 / (image_dimmension * measured_axes["object"]["dx"]) # frequency axis in diffraction plane
+        measured_axes["diffraction_plane"]["fmax"] = (measured_axes["diffraction_plane"]["df"] * image_dimmension) / 2
+        measured_axes["diffraction_plane"]["f"] = np.arange(-measured_axes["diffraction_plane"]["fmax"], measured_axes["diffraction_plane"]["fmax"], measured_axes["diffraction_plane"]["df"])
+
+        return measured_axes, amplitude_mask
+
 def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
 
         # image_dimmension must be divisible by 4

@@ -46,10 +46,12 @@ int main(){
 
   Fft2 fft2(1024);
 
+  Python.call_function_np("plot_complex", wave.data, vector<int>{wave.size_0,wave.size_1}, PyArray_COMPLEX64);
   for(int i=0; i<steps_Si; i++) // 50 nm & dz: 10 nm
     forward_propagate(wave, slice_Si, f, params_Si, fft2);
   for(int i=0; i<steps_cu; i++)
     forward_propagate(wave, slice_cu, f, params_cu, fft2);
   Python.call_function_np("plot_complex", wave.data, vector<int>{wave.size_0,wave.size_1}, PyArray_COMPLEX64);
+  Python.call("show");
 
 }
