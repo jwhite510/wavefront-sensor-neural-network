@@ -34,10 +34,8 @@ int main(){
   // params_Si.delta_Ta = 0.02661;
 
   create_slice(slice_cu, object, params_cu);
-  create_slice(slice_Si, object, params_cu);
+  // create_slice(slice_Si, object, params_cu);
 
-  // Python.call_function_np("plot", object.data, vector<int>{object.size_0,object.size_1}, PyArray_FLOAT32);
-  // Python.call_function_np("plot_complex", slice_cu.data, vector<int>{slice_cu.size_0,slice_cu.size_1}, PyArray_COMPLEX64);
   // float Si_distance = 50e-9;
   float cu_distance = 100e-9;
 
@@ -46,11 +44,16 @@ int main(){
 
   Fft2 fft2(1024);
 
-  Python.call_function_np("plot_complex", wave.data, vector<int>{wave.size_0,wave.size_1}, PyArray_COMPLEX64);
   // for(int i=0; i<steps_Si; i++) // 50 nm & dz: 10 nm
   //   forward_propagate(wave, slice_Si, f, params_Si, fft2);
-  for(int i=0; i<steps_cu; i++)
+  // Python.call_function_np("plot", object.data, vector<int>{object.size_0,object.size_1}, PyArray_FLOAT32);
+  // Python.call_function_np("plot_complex", slice_cu.data, vector<int>{slice_cu.size_0,slice_cu.size_1}, PyArray_COMPLEX64);
+  // Python.call_function_np("plot_complex", wave.data, vector<int>{wave.size_0,wave.size_1}, PyArray_COMPLEX64);
+
+  Python.call_function_np("plot_complex", wave.data, vector<int>{wave.size_0,wave.size_1}, PyArray_COMPLEX64);
+  for(int i=0; i<steps_cu; i++) {
     forward_propagate(wave, slice_cu, f, params_cu, fft2);
+  }
   Python.call_function_np("plot_complex", wave.data, vector<int>{wave.size_0,wave.size_1}, PyArray_COMPLEX64);
   Python.call("show");
 

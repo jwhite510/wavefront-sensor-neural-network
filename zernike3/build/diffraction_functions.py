@@ -126,19 +126,36 @@ def get_measured_diffraction_pattern_grid():
     return measured_axes, measured_pattern
 
 
+def halve_imag(im):
+        dim = im.size[0]
+        left=int(dim/2)-int(dim/4)
+        right=int(dim/2)+int(dim/4)
+        top=int(dim/2)-int(dim/4)
+        bottom=int(dim/2)+int(dim/4)
+        im=im.crop((left,top,right,bottom))
+        return im
+
 def get_amplitude_mask_and_imagesize2(image_dimmension, desired_mask_width):
 
         # image_dimmension must be divisible by 4
         assert image_dimmension/4 == int(image_dimmension/4)
         # get the png image for amplitude
         im = Image.open("siemens_star_2048_psize_7nm.png")
-        # im.show()
+        size1 = im.size[0]
+        im_size_nm = 7*im.size[0] * 1e-9 # meters
+
+        # zoom into image
+        im = halve_imag(im)
+        im_size_nm*=0.5
+        im = halve_imag(im)
+        im_size_nm*=0.5
+        im = halve_imag(im)
+        im_size_nm*=0.5
+        # print(im.size)
         # exit()
         # im = PIL.ImageOps.invert(im)
         #TODO crop the image and adjust the image size
 
-        size1 = im.size[0]
-        im_size_nm = 7*im.size[0] * 1e-9 # meters
         # print("im_size_nm =>", im_size_nm)
 
         # scale down the image
