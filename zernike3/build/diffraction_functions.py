@@ -132,7 +132,10 @@ def get_amplitude_mask_and_imagesize2(image_dimmension, desired_mask_width):
         assert image_dimmension/4 == int(image_dimmension/4)
         # get the png image for amplitude
         im = Image.open("siemens_star_2048_psize_7nm.png")
+        # im.show()
+        # exit()
         # im = PIL.ImageOps.invert(im)
+        #TODO crop the image and adjust the image size
 
         size1 = im.size[0]
         im_size_nm = 7*im.size[0] * 1e-9 # meters

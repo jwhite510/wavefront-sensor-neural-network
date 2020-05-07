@@ -97,8 +97,8 @@ struct Parameters
 {
   float beta_Ta;
   float delta_Ta;
-  const float dz = 1e-9;
-  const float lam = 13.5e-9;
+  const float dz = 10e-9;
+  const float lam = 18.1e-9;
   const float k = 2 * M_PI / lam;
 };
 
