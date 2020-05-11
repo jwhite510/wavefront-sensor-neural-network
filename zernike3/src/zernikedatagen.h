@@ -282,9 +282,11 @@ void forward_propagate(array2d<complex<float>> &E, array2d<complex<float>> &slic
 
   for(int i=0; i<E.size_0;i++)
     for(int j=0; j<E.size_1;j++) {
-      float gamma = sqrt(1 - pow((p.lam * f(i)),2) - pow((p.lam * f(j)),2));
+
+      complex<float> gamma = sqrt(complex<float>(1 - pow((p.lam * f(i)),2) - pow((p.lam * f(j)),2),0));
+      // gamma is a complex number if evanescent waves
       float k_sq = 2 * M_PI * p.dz / p.lam;
-      complex<float> H = exp(complex<float>(0,gamma*k_sq));
+      complex<float> H = exp(complex<float>(0,gamma.real()*k_sq))*exp(complex<float>(-1*gamma.imag()*k_sq,0));
       // complex<float> H = exp(complex<float>(0,2 * M_PI * p.dz / p.lam));
       E(i,j) *= H;
     }

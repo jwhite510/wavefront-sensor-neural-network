@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 def get_object_sensor(a):
     N = 1024
     _, b = diffraction_functions.get_amplitude_mask_and_imagesize2(N, int(N/2))
+    # _, b = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
     b = b.astype(np.float32)
     return b
     # return np.ones((128,128)).astype(np.float32)
@@ -12,6 +13,7 @@ def get_object_sensor(a):
 def get_object_sensor_f(a):
     N = 1024
     measured_axes, b = diffraction_functions.get_amplitude_mask_and_imagesize2(N, int(N/2))
+    # measured_axes, b = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
     # b = b.astype(np.float32)
     b = measured_axes["diffraction_plane"]["f"].astype(np.float32)
     return b
