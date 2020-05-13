@@ -8,17 +8,22 @@ class GetMeasuredDiffractionPattern():
     for getting a measured diffraction pattern and formatting it to match the
     frequency axis of the simulation grid
     """
-    def __init__(self, N_sim, N_meas):
+    def __init__(self, N_sim, N_meas, experimental_params):
+        """
+        experimental_params: dict{}
+        experimental_params['pixel_size']
+        experimental_params['z_distance']
+        experimental_params['wavelength']
+        """
+
+
         # get the axes of the simulation
         self.N_sim = N_sim # size of the measured simulated pattern
+        self.experimental_params = experimental_params
         self.N_meas = N_meas
         self.simulation_axes, _ = diffraction_functions.get_amplitude_mask_and_imagesize(self.N_sim, int(self.N_sim/2))
 
         # parameters for the input measured diffraction pattern
-        self.experimental_params = {}
-        self.experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
-        self.experimental_params['z_distance'] = 33e-3 # [meters] distance from camera
-        self.experimental_params['wavelength'] = 13.5e-9 #[meters] wavelength
         self.measured_axes = {}
         self.measured_axes["diffraction_plane"]={}
         self.calculate_measured_axes()
@@ -32,11 +37,12 @@ class GetMeasuredDiffractionPattern():
 
     def calculate_measured_axes(self):
         # calculate delta frequency
+        self.measured_axes["diffraction_plane"]["df"] = self.experimental_params['pixel_size'] / (self.experimental_params['wavelength'] * self.experimental_params['z_distance'])
         self.measured_axes["diffraction_plane"]["xmax"] = self.N_meas * (self.experimental_params['pixel_size'] / 2)
         self.measured_axes["diffraction_plane"]["x"] = np.arange(-(self.measured_axes["diffraction_plane"]["xmax"]), (self.measured_axes["diffraction_plane"]["xmax"]), self.experimental_params['pixel_size'])
-
         self.measured_axes["diffraction_plane"]["f"] = self.measured_axes["diffraction_plane"]["x"] / (self.experimental_params['wavelength'] * self.experimental_params['z_distance'])
-        self.measured_axes["diffraction_plane"]["df"] = self.measured_axes["diffraction_plane"]["f"][-1] - self.measured_axes["diffraction_plane"]["f"][-2]
+        # self.measured_axes["diffraction_plane"]["df"] = self.measured_axes["diffraction_plane"]["f"][-1] - self.measured_axes["diffraction_plane"]["f"][-2]
+
 
     def format_measured_diffraction_pattern(self, measured_diffraction_pattern, transform):
         """
@@ -83,10 +89,17 @@ if __name__ == "__main__":
     N_meas = np.shape(measured_pattern)[0]
     measured_pattern = measured_pattern.astype(np.float64)
 
-    getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128, N_meas=N_meas)
+    experimental_params = {}
+    experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
+    experimental_params['z_distance'] = 33e-3 # [meters] distance from camera
+    experimental_params['wavelength'] = 13.5e-9 #[meters] wavelength
+
+    getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128, N_meas=N_meas, experimental_params=experimental_params)
+
     transform={}
     transform["rotation_angle"]=3
     transform["scale"]=1
+    # transform["flip"]="lr"
     transform["flip"]=None
     m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_pattern, transform)
     m2 = diffraction_functions.get_and_format_experimental_trace(128, transform)
