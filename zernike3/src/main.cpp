@@ -76,7 +76,9 @@ int main(int argc, char *argv[])
 
   // create data generator and buffers
   array2d<complex<float>> interped_arr(n_interp, n_interp);
+  array2d<complex<float>> interped_arr_wavefront(n_interp, n_interp);
   array3d<complex<float>> samples_buffer(buffer_size,n_interp,n_interp);
+  array3d<complex<float>> interped_arr_wavefront_buffer(buffer_size,n_interp,n_interp);
   DataGenerator datagenerator("/home/jonathon/Projects/diffraction_net/venv/",
       N_computational, // N_computational
       crop_size, // crop_size
@@ -94,12 +96,14 @@ int main(int argc, char *argv[])
   for(int i=0; i < samples_per_process; i++) {
     if(i%20==0)
       cout << "process" << process_Rank << "generating sample: " << i << endl;
-    datagenerator.makesample(interped_arr);
+    datagenerator.makesample(interped_arr, interped_arr_wavefront);
 
     // add to buffer
     for(int i=0; i < n_interp; i++)
-      for(int j=0; j < n_interp; j++)
+      for(int j=0; j < n_interp; j++) {
         samples_buffer(current_buffer_index,i,j) = interped_arr(i,j);
+        interped_arr_wavefront_buffer(current_buffer_index,i,j) = interped_arr_wavefront(i,j);
+      }
     current_buffer_index++;
 
     if(current_buffer_index == buffer_size) {
@@ -109,6 +113,7 @@ int main(int argc, char *argv[])
       for(int i=0; i < size_Of_Cluster; i++) {
         MPI_Barrier(MPI_COMM_WORLD);
         if(process_Rank == i) {
+          // TODO: make this python function accept both the wavefront and the wavefront multiplied by sensor
           cout << "process " << process_Rank << " save to hdf5 " << endl;
           datagenerator.Python.call_function_np("save_to_hdf5",runParameters.RunName.c_str(), samples_buffer.data, vector<int>{samples_buffer.size_0,samples_buffer.size_1,samples_buffer.size_2}, PyArray_COMPLEX64);
         }

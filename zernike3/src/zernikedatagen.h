@@ -7,6 +7,7 @@
 #include <fftw3.h>
 #include <ctime>
 #include <gsl/gsl_interp2d.h>
+#include <climits>
 
 
 using namespace std::chrono;
@@ -592,7 +593,7 @@ struct DataGenerator
 
 
   }
-  void makesample(array2d<complex<float>>  &interped_arr)
+  void makesample(array2d<complex<float>>  &interped_arr, array2d<complex<float>>  &interped_arr_wavefront)
   {
     // auto time1 = high_resolution_clock::now();
     // get a random value for each coefficient
@@ -621,7 +622,7 @@ struct DataGenerator
     // Python.call_function_np("plot_zernike", complex_object.data, vector<int>{complex_object.size_0,complex_object.size_1}, PyArray_COMPLEX64);
     cropinterp.crop_interp(complex_object,
         interped_arr, // OUT
-        0.5 // between 0 and 1 : the minimum image scale after interpolation
+        0.2 // between 0 and 1 : the minimum image scale after interpolation
         );
     // Python.call_function_np("plot_complex", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
     // Python.call("show");
@@ -636,10 +637,22 @@ struct DataGenerator
     for(int i=0; i < interped_arr.length; i++)
       interped_arr.data[i]*=exp(complex<float>(0,-arg(z_center)));
 
+    // find the factor to normalize by
+    float normalize_factor=-99999;
+    for(int i=0; i < interped_arr.length; i++)
+      if(abs(interped_arr.data[i] * wavefonts.wavefrontsensor->data[i]) > normalize_factor)
+        normalize_factor=abs(interped_arr.data[i] * wavefonts.wavefrontsensor->data[i]);
+
+    // divide by the normalization factor
+    for(int i=0; i < interped_arr.length; i++)
+      interped_arr.data[i]/=normalize_factor;
+
+    for(int i=0; i < interped_arr_wavefront.length; i++)
+      interped_arr_wavefront.data[i]=interped_arr.data[i];
+
+    // multiply by wavefront sensor
     for(int i=0; i < interped_arr.length; i++)
       interped_arr.data[i] *= wavefonts.wavefrontsensor->data[i];
-    // normalize
-    normalize(interped_arr);
 
     // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
     // propagate through materials
