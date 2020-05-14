@@ -50,11 +50,11 @@ int main(){
   // Python.call_function_np("plot_complex", slice_cu.data, vector<int>{slice_cu.size_0,slice_cu.size_1}, PyArray_COMPLEX64);
   // Python.call_function_np("plot_complex", wave.data, vector<int>{wave.size_0,wave.size_1}, PyArray_COMPLEX64);
 
-  Python.call_function_np("plot_complex", wave.data, vector<int>{wave.size_0,wave.size_1}, PyArray_COMPLEX64);
+  // Python.call_function_np("plot_large", wave.data, vector<int>{wave.size_0,wave.size_1}, PyArray_COMPLEX64);
   for(int i=0; i<steps_cu; i++) {
     forward_propagate(wave, slice_cu, f, params_cu, fft2);
   }
-  Python.call_function_np("plot_complex", wave.data, vector<int>{wave.size_0,wave.size_1}, PyArray_COMPLEX64);
+  Python.call_function_np("plot_large", wave.data, vector<int>{wave.size_0,wave.size_1}, PyArray_COMPLEX64);
   Python.call("show");
 
 }

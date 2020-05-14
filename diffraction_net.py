@@ -8,6 +8,7 @@ import tables
 import diffraction_functions
 import pickle
 import sys
+from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
 
 
 class GetData():
@@ -166,41 +167,42 @@ class DiffractionNet():
         transform["scale"] = 0.9
 
         self.experimental_traces = {}
-        transform = {}
+
+        print("self.get_data.N =>", self.get_data.N)
+        experimental_params = {}
+        experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
+        experimental_params['z_distance'] = 33e-3 # [meters] distance from camera
+        experimental_params['wavelength'] = 13.5e-9 #[meters] wavelength
+
+        s1 = diffraction_functions.fits_to_numpy("m3_scan_0000.fits")
+
+        getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=self.get_data.N,
+                N_meas=np.shape(s1)[0], # for calculating the measured frequency axis (not really needed)
+                experimental_params=experimental_params)
+
         orientations = [None, "lr", "ud", "lrud"]
         scales = [1.1, 1.0, 0.9]
         for _orientation in orientations:
-            if not _orientation in self.experimental_traces.keys():
-                self.experimental_traces[_orientation] = {}
             for _scale in scales:
-
-                transform["flip"] = _orientation
-                transform["scale"] = _scale
-
-                trace = diffraction_functions.get_and_format_experimental_trace(
-                        self.get_data.N, transform)
-
-                self.experimental_traces[_orientation][_scale] = trace
-
-
-        # print(experimental_traces.keys())
-        # for _orientation in experimental_traces.keys():
-        #     for _scale in experimental_traces[_orientation].keys():
-        #         trace = experimental_traces[_orientation][_scale]
-        #         plt.figure()
-        #         plt.title(str(_orientation) + " : " + str(_scale))
-        #         plt.imshow(np.squeeze(trace))
+                transform={}
+                transform["rotation_angle"]=3
+                transform["scale"]=_scale
+                # transform["flip"]="lr"
+                transform["flip"]=_orientation
+                sample_name = "s1_"+str(_orientation)+"_"+str(_scale).replace(".","-")
+                m1 = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(s1, transform)
+                self.experimental_traces[sample_name] = m1
 
         # create tf loggers for experimental traces
         self.tf_loggers_experimentaltrace = {}
         self.setup_experimentaltrace_logging()
 
     def setup_experimentaltrace_logging(self):
-        for _orientation in self.experimental_traces.keys():
-            for _scale in self.experimental_traces[_orientation].keys():
-                trace = self.experimental_traces[_orientation][_scale]
-                logger_name = "measured_"+str(_orientation)+"_"+str(_scale).replace(".","-")+"_reconstructed"
-                self.tf_loggers_experimentaltrace[logger_name] = tf.summary.scalar(logger_name, self.nn_nodes["reconstruction_loss"])
+
+        for key in self.experimental_traces.keys():
+            trace = self.experimental_traces[key]
+            logger_name = key+"_reconstructed"
+            self.tf_loggers_experimentaltrace[logger_name] = tf.summary.scalar(logger_name, self.nn_nodes["reconstruction_loss"])
 
     def update_error_plot_values(self):
         """
@@ -254,29 +256,29 @@ class DiffractionNet():
             with open(filename, "a") as file:
                 file.write(datastring)
 
-        # plot the measured trace error
-        for _orientation in self.experimental_traces.keys():
-            for _scale in self.experimental_traces[_orientation].keys():
-                trace = self.experimental_traces[_orientation][_scale]
-                # reconstruction
-                reconstruction_loss = self.sess.run(self.nn_nodes["reconstruction_loss"],
-                        feed_dict={self.x:trace})
 
-                logger_name = "measured_"+str(_orientation)+"_"+str(_scale).replace(".","-")+"_reconstructed"
-                filename = "mp_plotdata/"+self.name+"/"+logger_name+".dat"
-                if not os.path.exists(filename):
-                    with open(filename, "w") as file:
-                        file.write("# time[s] epoch reconstruction_loss\n")
+        for key in self.experimental_traces.keys():
+            trace = self.experimental_traces[key]
 
-                datastring = ""
-                datastring+= str(time.time())
-                datastring+= "  "
-                datastring+= str(self.epoch)
-                datastring+= "  "
-                datastring+= str(reconstruction_loss)
-                datastring+= "\n"
-                with open(filename, "a") as file:
-                    file.write(datastring)
+            # reconstruction
+            reconstruction_loss = self.sess.run(self.nn_nodes["reconstruction_loss"],
+                    feed_dict={self.x:trace})
+
+            logger_name = key+"_reconstructed"
+            filename = "mp_plotdata/"+self.name+"/"+logger_name+".dat"
+            if not os.path.exists(filename):
+                with open(filename, "w") as file:
+                    file.write("# time[s] epoch reconstruction_loss\n")
+
+            datastring = ""
+            datastring+= str(time.time())
+            datastring+= "  "
+            datastring+= str(self.epoch)
+            datastring+= "  "
+            datastring+= str(reconstruction_loss)
+            datastring+= "\n"
+            with open(filename, "a") as file:
+                file.write(datastring)
 
 
 
@@ -577,12 +579,12 @@ class DiffractionNet():
 
 
         # add tensorboard values for experimental trace
-        for _orientation in self.experimental_traces.keys():
-            for _scale in self.experimental_traces[_orientation].keys():
-                trace = self.experimental_traces[_orientation][_scale]
-                logger_name = "measured_"+str(_orientation)+"_"+str(_scale).replace(".","-")+"_reconstructed"
-                summ = self.sess.run(self.tf_loggers_experimentaltrace[logger_name], feed_dict={self.x:trace})
-                self.writer.add_summary(summ, global_step=self.epoch)
+        for key in self.experimental_traces.keys():
+            trace = self.experimental_traces[key]
+            logger_name = key+"_reconstructed"
+            summ = self.sess.run(self.tf_loggers_experimentaltrace[logger_name], feed_dict={self.x:trace})
+            self.writer.add_summary(summ, global_step=self.epoch)
+
 
         self.writer.flush()
 
@@ -669,29 +671,28 @@ class DiffractionNet():
 
     def evaluate_performance_measureddata(self):
         # view reconstruction from measured trace at various scales and orientations
-        for _orientation in self.experimental_traces.keys():
-            for _scale in self.experimental_traces[_orientation].keys():
-                trace = self.experimental_traces[_orientation][_scale]
-                logger_name = "measured_"+str(_orientation)+"_"+str(_scale).replace(".","-")+"_reconstructed"
-                print("testing measured trace: "+logger_name)
-                # get the reconstructed trace
-                # use measured trace retrieval plotting function
-                retrieved_obj = {}
-                retrieved_obj["measured_pattern"] = trace
-                retrieved_obj["tf_reconstructed_diff"] = self.sess.run(
-                        self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:trace})
-                retrieved_obj["real_output"] = self.sess.run(
-                        self.nn_nodes["real_out"], feed_dict={self.x:trace})
-                retrieved_obj["imag_output"] = self.sess.run(
-                        self.nn_nodes["imag_out"], feed_dict={self.x:trace})
+        for key in self.experimental_traces.keys():
+            trace = self.experimental_traces[key]
+            logger_name = key+"_reconstructed"
+            print("testing measured trace: "+logger_name)
+            # get the reconstructed trace
+            # use measured trace retrieval plotting function
+            retrieved_obj = {}
+            retrieved_obj["measured_pattern"] = trace
+            retrieved_obj["tf_reconstructed_diff"] = self.sess.run(
+                    self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:trace})
+            retrieved_obj["real_output"] = self.sess.run(
+                    self.nn_nodes["real_out"], feed_dict={self.x:trace})
+            retrieved_obj["imag_output"] = self.sess.run(
+                    self.nn_nodes["imag_out"], feed_dict={self.x:trace})
 
-                fig = diffraction_functions.plot_amplitude_phase_meas_retreival(
-                        retrieved_obj,
-                        logger_name + "_epoch: "+str(self.epoch))
+            fig = diffraction_functions.plot_amplitude_phase_meas_retreival(
+                    retrieved_obj,
+                    logger_name + "_epoch: "+str(self.epoch))
 
-                filename = "nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+"measured"+"/"+logger_name
-                fig.savefig(filename)
-                plt.close(fig)
+            filename = "nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+"measured"+"/"+logger_name
+            fig.savefig(filename)
+            plt.close(fig)
 
 
 

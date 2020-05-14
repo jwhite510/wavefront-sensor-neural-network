@@ -48,6 +48,14 @@ def plot_complex(array):
     fig.colorbar(im, ax=ax)
     ax.set_title("abs")
 
+def plot_large(array):
+
+    plt.figure()
+    plt.pcolormesh(np.angle(array),cmap='jet')
+    plt.title("angle")
+    plt.gcf().text(0.5, 0.95, "my propagation code", ha="center")
+    plt.colorbar()
+
 def show(a):
     plt.show()
 

@@ -9,4 +9,7 @@ tensorboard_graph/
 .grep*
 models/
 matlab_cdi/*.mat
+mp_plotdata/
+__pycache__/
+venv
 
