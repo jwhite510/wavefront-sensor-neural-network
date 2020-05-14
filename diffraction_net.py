@@ -174,24 +174,55 @@ class DiffractionNet():
         experimental_params['z_distance'] = 33e-3 # [meters] distance from camera
         experimental_params['wavelength'] = 13.5e-9 #[meters] wavelength
 
-        s1 = diffraction_functions.fits_to_numpy("m3_scan_0000.fits")
+        filenames = [
+                "m3_scan_0000.fits",
+                "Data_for_Jonathon/multiple_measurements/m3_scan_0000.fits",
+                "Data_for_Jonathon/multiple_measurements/m3_scan_0001.fits",
+                "Data_for_Jonathon/multiple_measurements/m3_scan_0002.fits",
+                "Data_for_Jonathon/multiple_measurements/m3_scan_0003.fits",
+                "Data_for_Jonathon/multiple_measurements/m3_scan_0004.fits",
+                "Data_for_Jonathon/multiple_measurements/m3_scan_0005.fits",
+                "Data_for_Jonathon/multiple_measurements/m3_scan_0006.fits",
+                "Data_for_Jonathon/multiple_measurements/m3_scan_0007.fits",
+                "Data_for_Jonathon/multiple_measurements/m3_scan_0008.fits",
+                "Data_for_Jonathon/multiple_measurements/m3_scan_0009.fits",
+                "Data_for_Jonathon/z0/1.fits",
+                "Data_for_Jonathon/z0/2.fits",
+                "Data_for_Jonathon/z0/3.fits",
+                "Data_for_Jonathon/z-500/1.fits",
+                "Data_for_Jonathon/z-500/2.fits",
+                "Data_for_Jonathon/z-500/3.fits",
+                "Data_for_Jonathon/z-1000/1.fits",
+                "Data_for_Jonathon/z-1000/2.fits",
+                "Data_for_Jonathon/z-1000/3.fits"
+                ]
+
+        getMeasuredDiffractionPattern=None
+        orientations = [None, "lr", "ud", "lrud"]
+        scales = [1.0]
+        for filename in filenames:
+            s = diffraction_functions.fits_to_numpy(filename)
+
+            if not getMeasuredDiffractionPattern:
+
+                getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=self.get_data.N,
+                        N_meas=np.shape(s)[0], # for calculating the measured frequency axis (not really needed)
+                        experimental_params=experimental_params)
+
+            for _orientation in orientations:
+                for _scale in scales:
+                    transform={}
+                    transform["rotation_angle"]=3
+                    transform["scale"]=_scale
+                    # transform["flip"]="lr"
+                    transform["flip"]=_orientation
+                    sample_name = filename.replace("/","_").replace(".","-")+"_"+str(_orientation)+"_"+str(_scale).replace(".","-")
+                    m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(s, transform)
+                    self.experimental_traces[sample_name] = m
 
         getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=self.get_data.N,
                 N_meas=np.shape(s1)[0], # for calculating the measured frequency axis (not really needed)
                 experimental_params=experimental_params)
-
-        orientations = [None, "lr", "ud", "lrud"]
-        scales = [1.1, 1.0, 0.9]
-        for _orientation in orientations:
-            for _scale in scales:
-                transform={}
-                transform["rotation_angle"]=3
-                transform["scale"]=_scale
-                # transform["flip"]="lr"
-                transform["flip"]=_orientation
-                sample_name = "s1_"+str(_orientation)+"_"+str(_scale).replace(".","-")
-                m1 = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(s1, transform)
-                self.experimental_traces[sample_name] = m1
 
         # create tf loggers for experimental traces
         self.tf_loggers_experimentaltrace = {}
