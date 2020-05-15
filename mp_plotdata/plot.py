@@ -49,37 +49,69 @@ def makeplots(run_name):
 
 
     measured_trace_data = {}
-    for file in glob.glob(r'./{}/measured*1-0*'.format(run_name)):
+    for file in glob.glob(r'./{}/*1-0*'.format(run_name)):
         data = np.loadtxt(file)
         measured_trace_data[os.path.split(file)[-1].split(".")[0]] = data
 
     # plt.show()
-    plt.figure()
+    # plt.figure()
+    added_labels={}
     for m in measured_trace_data.keys():
-        measured_trace_data[m]
-        label=""
-        if "_None_" in m:
-            label="None"
-        if "_lr_" in m:
-            label="Left->Right"
-        if "_lrud_" in m:
-            label="Left->Right & Up->Down"
-        if "_ud_" in m:
-            label="Up->Down"
+        _label=""
 
-        plt.plot(measured_trace_data[m][:,1] # epoch
-                , measured_trace_data[m][:,2]*1e3, # reconstruction_loss
-                label=label
-                )
-        plt.title("Measured Trace Reconstruction Error [mse]")
+        if "multiple_measurements" in m:
+            fignum=3
+            figtitle="multiple_measurements"
+        if "z0" in m:
+            fignum=4
+            figtitle="z0"
+        if "z-500" in m:
+            fignum=5
+            figtitle="z-500"
+        if "z-1000" in m:
+            fignum=6
+            figtitle="z-1000"
+
+        if "_None_" in m:
+            color="red"
+            _label="NONE"
+
+        if "_lr_" in m:
+            color="blue"
+            _label="LR"
+
+        if "_lrud_" in m:
+            color="green"
+            _label="LRUD"
+
+        if "_ud_" in m:
+            color="orange"
+            _label="UD"
+
+        plt.figure(fignum)
+        plt.title(figtitle)
+        if str(fignum)+_label in added_labels.keys():
+            plt.plot(measured_trace_data[m][:,1] # epoch
+                    , measured_trace_data[m][:,2]*1e3, # reconstruction_loss
+                    color=color
+                    )
+        else:
+            plt.plot(measured_trace_data[m][:,1] # epoch
+                    , measured_trace_data[m][:,2]*1e3, # reconstruction_loss
+                    label=_label,
+                    color=color
+                    )
+        added_labels[str(fignum)+_label]=True
+        # plt.title("Measured Trace Reconstruction Error [mse]")
         plt.xlabel("epoch")
         plt.ylabel(r"error [mse] $\cdot 10^3$")
-    plt.legend()
+        plt.legend()
+
     plt.savefig("./measured_trace_error_{}.png".format(run_name))
 
 
 if __name__ == "__main__":
-    makeplots("measuredretrievaltest_5")
+    makeplots("multiplefiles_5_test_A-6_0--S-0_5")
     plt.show()
 
 
