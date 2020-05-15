@@ -220,9 +220,9 @@ class DiffractionNet():
                     m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(s, transform)
                     self.experimental_traces[sample_name] = m
 
-        getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=self.get_data.N,
-                N_meas=np.shape(s1)[0], # for calculating the measured frequency axis (not really needed)
-                experimental_params=experimental_params)
+        # getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=self.get_data.N,
+        #         N_meas=np.shape(s1)[0], # for calculating the measured frequency axis (not really needed)
+        #         experimental_params=experimental_params)
 
         # create tf loggers for experimental traces
         self.tf_loggers_experimentaltrace = {}
