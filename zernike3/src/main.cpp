@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
         if(process_Rank == i) {
           // TODO: make this python function accept both the wavefront and the wavefront multiplied by sensor
           cout << "process " << process_Rank << " save to hdf5 " << endl;
-          datagenerator.Python.call_function_np("save_to_hdf5",runParameters.RunName.c_str(), samples_buffer.data, vector<int>{samples_buffer.size_0,samples_buffer.size_1,samples_buffer.size_2}, PyArray_COMPLEX64);
+          datagenerator.Python.call2("save_to_hdf5", runParameters.RunName.c_str(), samples_buffer, interped_arr_wavefront_buffer);
         }
       }
       MPI_Barrier(MPI_COMM_WORLD);

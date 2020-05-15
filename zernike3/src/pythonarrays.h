@@ -3,6 +3,7 @@
 #include <vector>
 #include "numpy/arrayobject.h"
 #include <complex>
+#include "c_arrays.h"
 
 using namespace std;
 
@@ -234,5 +235,30 @@ class PythonInterp
     for(int i=0; i < arraysize; i++) {
       data_out[i] = vec_array_pointer[i];
     }
+  }
+  PyObject* call2(const char* functionname, const char* stringarg, array3d<complex<float>> &ndarray1, array3d<complex<float>> &ndarray2)
+  {
+    PyObject* pValue;
+    PyObject* pFunc;
+    PyObject* pArgs;
+    PyObject* vec_array_reshaped1;
+    PyObject* vec_array_reshaped2;
+
+    pFunc = PyObject_GetAttrString(pModule, functionname);
+    if(!pFunc || !PyCallable_Check(pFunc))
+      cout << "function: " << functionname << " not found!" << endl;
+
+    pArgs = PyTuple_New(3);
+    PyObject* _string_arg = PyUnicode_DecodeFSDefault(stringarg);
+    PyTuple_SetItem(pArgs, 0, _string_arg);
+    vec_array_reshaped1 = array_to_nparray(ndarray1.data, vector<int>{ndarray1.size_0, ndarray1.size_1, ndarray1.size_2}, PyArray_COMPLEX64);
+    PyTuple_SetItem(pArgs, 1, vec_array_reshaped1);
+    vec_array_reshaped2 = array_to_nparray(ndarray2.data, vector<int>{ndarray2.size_0, ndarray2.size_1, ndarray1.size_2}, PyArray_COMPLEX64);
+    PyTuple_SetItem(pArgs, 2, vec_array_reshaped2);
+
+    pValue = PyObject_CallObject(pFunc, pArgs);
+    if(pValue == NULL)
+      cout << "NULL value in " << pFunc << " python call!" << endl;
+    return pValue;
   }
 };

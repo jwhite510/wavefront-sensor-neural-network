@@ -1,7 +1,6 @@
 #include <iostream>
 #include <chrono>
 #include "pythonarrays.h"
-#include "c_arrays.h"
 #include "utility.h"
 #include <assert.h>
 #include <fftw3.h>

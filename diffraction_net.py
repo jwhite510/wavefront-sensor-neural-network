@@ -431,8 +431,8 @@ class DiffractionNet():
         # the output is now between -1 and 1
 
         # constrain the output to the mask
-        _nodes["real_out"] = _nodes["real_out"] * self.amplitude_mask
-        _nodes["imag_out"] = _nodes["imag_out"] * self.amplitude_mask
+        # _nodes["real_out"] = _nodes["real_out"] * self.amplitude_mask
+        # _nodes["imag_out"] = _nodes["imag_out"] * self.amplitude_mask
 
     def setup_logging(self):
         self.tf_loggers["real_loss_training"] = tf.summary.scalar("real_loss_training", self.nn_nodes["real_loss"])

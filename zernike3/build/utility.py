@@ -394,25 +394,34 @@ def view_array(array):
     plt.imshow(np.abs(array[2,:,:]))
     plt.show()
 
-def save_to_hdf5(filename, array):
+def save_to_hdf5(filename, wavefront_sensor, wavefront):
+
+    # plt.figure()
+    # plt.imshow(np.real(wavefront[0,:,:]))
+    # plt.title("wavefront")
+    # plt.colorbar()
+
+    # plt.figure()
+    # plt.imshow(np.real(wavefront_sensor[0,:,:]))
+    # plt.title("wavefront_sensor")
+    # plt.colorbar()
+    # plt.show()
     print("save_to_hdf5 called")
     try:
 
-        if True in np.isnan(array):
+        if True in np.isnan(wavefront):
             print("complex_object is NAN!!!!!!!")
-            print("continuing")
             return
 
-        if True in np.isinf(array):
+        if True in np.isinf(wavefront):
             print("complex_object is inf!!!!!!!")
-            print("continuing")
             return
 
         with tables.open_file(filename, mode='a') as hd5file:
-            for i in range(np.shape(array)[0]):
-                object_real = np.real(array[i,:,:])
-                object_imag = np.imag(array[i,:,:])
-                diffraction_pattern_with_noise = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(array[i,:,:]))))**2
+            for i in range(np.shape(wavefront)[0]):
+                object_real = np.real(wavefront[i,:,:])
+                object_imag = np.imag(wavefront[i,:,:])
+                diffraction_pattern_with_noise = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(wavefront_sensor[i,:,:]))))**2
 
                 # normalize
                 diffraction_pattern_with_noise = diffraction_pattern_with_noise / np.max(diffraction_pattern_with_noise)
@@ -424,16 +433,15 @@ def save_to_hdf5(filename, array):
             print("calling flush")
             hd5file.flush()
 
-            # plt.figure()
-            # plt.title(str(i))
-            # plt.imshow(object_real)
-            # plt.figure()
-            # plt.title(str(i))
-            # plt.imshow(diffraction_pattern_with_noise)
-            # plt.show()
-
     except Exception as e:
         print(e)
+
+def testcall2(filename, array1, array2):
+    print("filename =>", filename)
+    print("np.shape(array2) => ",np.shape(array2))
+    print("np.shape(array1) => ",np.shape(array1))
+    print("testcall2 called")
+    print("in python")
 
 
 if __name__ == "__main__":
