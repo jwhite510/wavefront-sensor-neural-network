@@ -722,6 +722,10 @@ class DiffractionNet():
                     logger_name + "_epoch: "+str(self.epoch))
 
             filename = "nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+"measured"+"/"+logger_name
+
+            # save the retrieved file as a pickle
+            with open(filename+".p", "wb") as file:
+                pickle.dump(retrieved_obj, file)
             fig.savefig(filename)
             plt.close(fig)
 
