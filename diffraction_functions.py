@@ -50,7 +50,10 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title):
 
     # calculate the phase
     # subtract phase at intensity peak
-    m_index = unravel_index(I.argmax(), I.shape)
+    # m_index = unravel_index(I.argmax(), I.shape)
+    m_index=[0,0]
+    m_index[0] = np.argmax(np.sum(I,axis=1))
+    m_index[1] = np.argmax(np.sum(I,axis=0))
     phase_Imax = np.angle(complex_obj[m_index[0], m_index[1]])
     complex_obj *= np.exp(-1j * phase_Imax)
 
