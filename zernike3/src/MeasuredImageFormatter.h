@@ -3,10 +3,10 @@
 class MeasuredImageFormatter
 {
   public:
-  int value;
+  double df_ratio;
   array2d<double> Adif_in;
   array2d<double> Adif_out;
-  MeasuredImageFormatter(int i,
+  MeasuredImageFormatter(double df_ratio,
       double*dif_in, int dif_in_s0, int dif_in_s1,
       double*dif_out, int dif_out_s0, int dif_out_s1
       );
