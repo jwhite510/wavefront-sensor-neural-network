@@ -28,10 +28,17 @@ MeasuredImageFormatter::MeasuredImageFormatter(double df_ratio,
   interp_y1=new double[Adif_in.size_1];
   interp_x2=new double[Adif_in_scaled.size_0];
   interp_y2=new double[Adif_in_scaled.size_1];
+  cout<<"initializing MeasuredImageFormatter"<<endl;
+  // TODO fix might need to fix linspace
+  // Linspace(interp_x1,Adif_in.size_0,nextafter((double)-1,-10),nextafter((double)1,10));
+  // Linspace(interp_y1,Adif_in.size_1,nextafter((double)-1,-10),nextafter((double)1,10));
 
-  // linspace between -1 and 1
+  // Linspace(interp_x1,Adif_in.size_0,-1.1,1.1);
+  // Linspace(interp_y1,Adif_in.size_1,-1.1,1.1);
+
   Linspace(interp_x1,Adif_in.size_0,-1,1);
   Linspace(interp_y1,Adif_in.size_1,-1,1);
+
   Linspace(interp_x2,Adif_in_scaled.size_0,-1,1);
   Linspace(interp_y2,Adif_in_scaled.size_1,-1,1);
 
@@ -58,15 +65,24 @@ void MeasuredImageFormatter::Format(){
   std::cout << "Adif_in_scaled.size_0" << " => " << Adif_in_scaled.size_0 << std::endl;
   std::cout << "Adif_in_scaled.size_1" << " => " << Adif_in_scaled.size_1 << std::endl;
 
-  // interpolate input onto Adif_in_scaled
   for(int i=0; i < Adif_in_scaled.size_0; i++)
     for(int j=0; j < Adif_in_scaled.size_1; j++)
-      Adif_in_scaled(i,j)=gsl_interp2d_eval(
-          Interp,interp_x1,interp_y1,Adif_in.data,
-          interp_x2[j],interp_y2[i],
-          interp_xa,interp_ya
-          );
+    {
 
+      bool a=(interp_x2[j]>=interp_x1[Adif_in.size_0-1]);
+      bool b=(interp_x2[j]<=interp_x1[0]);
+      bool c=(interp_y2[i]>=interp_y1[Adif_in.size_1-1]);
+      bool d=(interp_y2[i]<=interp_y1[0]);
+      if(a||b||c||d){
+        // cout<<"interpolation is out of range"<<endl;
+      }else{
+        Adif_in_scaled(i,j)=gsl_interp2d_eval(
+            Interp,interp_x1,interp_y1,Adif_in.data,
+            interp_x2[j],interp_y2[i],
+            interp_xa,interp_ya
+            );
+      }
+    }
   ofstream f;
 
   f.open("Adif_in.dat");

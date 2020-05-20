@@ -29,5 +29,5 @@ target_link_libraries(b.out fftw3 ${PYTHON_LIBRARIES} GSL::gsl ${MPI_LIBRARIES} 
 
 add_library(MeasuredImageFormatter SHARED src/MeasuredImageFormatter.cpp)
 add_library(MeasuredImageFormatterWrapper SHARED src/MeasuredImageFormatterWrapper.cpp)
-target_link_libraries(MeasuredImageFormatterWrapper MeasuredImageFormatter)
+target_link_libraries(MeasuredImageFormatterWrapper MeasuredImageFormatter GSL::gsl)
 # PYTHON_CONFIGURE_OPTS="--enable-shared"
