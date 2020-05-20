@@ -1,4 +1,6 @@
 #include <complex>
+#include<iostream>
+using namespace std;
 
 template<class T>
 class array1d{
@@ -27,17 +29,29 @@ class array2d{
     int size_0;
     int size_1;
     int length;
+    bool ownspointer=false;
     T* data;
     array2d(int size_0_in, int size_1_in)
     {
+      ownspointer=true;
       data = new T[size_0_in * size_1_in];
+      size_0 = size_0_in;
+      size_1 = size_1_in;
+      length = size_1 * size_0;
+    }
+    array2d(T* data, int size_0_in, int size_1_in)
+    {
+      ownspointer=false;
+      this->data = data;
       size_0 = size_0_in;
       size_1 = size_1_in;
       length = size_1 * size_0;
     }
     ~array2d()
     {
-      delete [] data;
+      if(ownspointer){
+        delete [] data;
+      }
     }
     inline T operator() (int index_0, int index_1) const {
       // cout << endl << "retrieving index_0:" << index_0 << " index_1:" << index_1 << endl;

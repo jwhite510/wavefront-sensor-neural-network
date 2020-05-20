@@ -9,6 +9,7 @@ void* MeasuredImageFormatter_new(int i,
     double* dif_out, int dif_out_s0, int dif_out_s1);
 
 void MeasuredImageFormatter_PrintInt(void*p);
+void MeasuredImageFormatter_Format(void*p);
 
 #ifdef __cplusplus
 }

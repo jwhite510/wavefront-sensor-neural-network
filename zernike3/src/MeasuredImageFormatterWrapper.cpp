@@ -18,6 +18,10 @@ extern "C"{
     MeasuredImageFormatter*m=(MeasuredImageFormatter*)p;
     m->PrintInt();
   }
+  void MeasuredImageFormatter_Format(void*p){
+    MeasuredImageFormatter*m=(MeasuredImageFormatter*)p;
+    m->Format();
+  }
 }
 
 
