@@ -18,7 +18,7 @@ rot_angle=-3
 dif_in=np.zeros(np.shape(s),dtype=np.double)
 np.copyto(dif_in,s)
 c_double_p=ctypes.POINTER(ctypes.c_double)
-dif_out=np.zeros((256,256),dtype=np.double)
+dif_out=np.zeros((128,128),dtype=np.double)
 a=lib.MeasuredImageFormatter_new(
         ctypes.c_double(df_ratio),ctypes.c_double(rot_angle),
         dif_in.ctypes.data_as(c_double_p),dif_in.shape[0],dif_in.shape[1],

@@ -131,6 +131,26 @@ void MeasuredImageFormatter::Format(){
     f.close();
 
 
+  // write the image to the output
+  for(int i=0; i < Adif_out.size_0; i++){
+    for(int j=0; j < Adif_out.size_1; j++){
+
+      // Adif_out.size_0
+      // Adif_out.size_1
+      int _i=Adif_in_scaled_rot.size_0/2-Adif_out.size_0/2+i;
+      int _j=Adif_in_scaled_rot.size_1/2-Adif_out.size_1/2+j;
+      Adif_out(i,j)=Adif_in_scaled_rot(_i,_j);
+    }
+  }
+  f.open("Adif_out.dat");
+  for(int i=0; i < Adif_out.size_0; i++){
+      for(int j=0; j < Adif_out.size_1; j++){
+        f<<Adif_out(i,j)<<"  ";
+      }f<<endl;
+    }
+    f.close();
+
+
 
   // for(int i=0; i < Adif_in.size_0; i++){
   //     for(int j=0; j < Adif_in.size_1; j++){

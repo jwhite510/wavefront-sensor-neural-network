@@ -11,3 +11,7 @@ gnuplot -persist <<EOF
 set term wxt
 plot 'Adif_in_scaled_rot.dat' matrix with image
 EOF
+gnuplot -persist <<EOF
+set term wxt
+plot 'Adif_out.dat' matrix with image
+EOF
