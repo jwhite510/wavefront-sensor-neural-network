@@ -3,6 +3,7 @@
 #include<fstream>
 #include<opencv2/core/core.hpp>
 #include<opencv2/highgui/highgui.hpp>
+#include<opencv2/imgproc/imgproc.hpp>
 #include<algorithm>
 
 using namespace std;
@@ -21,7 +22,9 @@ MeasuredImageFormatter::MeasuredImageFormatter(double df_ratio,double rot_angle,
       Adif_in(dif_in,dif_in_s0,dif_in_s1),
       Adif_out(dif_out,dif_out_s0,dif_out_s1),
       Adif_in_scaled(dif_in_s0*df_ratio,dif_in_s1*df_ratio),
-      Adif_in_scaled_rot(dif_in_s0*df_ratio,dif_in_s1*df_ratio)
+      Adif_in_scaled_rot(dif_in_s0*df_ratio,dif_in_s1*df_ratio),
+      opencvm1(Adif_in_scaled.size_0,Adif_in_scaled.size_1,CV_64F)
+
 {
   this->df_ratio=df_ratio;
   this->rot_angle=rot_angle;
@@ -108,68 +111,50 @@ void MeasuredImageFormatter::Format(){
     f.close();
 
 
-  cv::Mat opencvm1(Adif_in_scaled.size_0,Adif_in_scaled.size_1,CV_64F);
+  // copy Adif_in_scaled to opencv matrix
   // open in opencv
   for(int i=0; i < Adif_in_scaled.size_0; i++)
     for(int j=0; j < Adif_in_scaled.size_1; j++)
       opencvm1.at<double>(cv::Point(i,j))=Adif_in_scaled(i,j);
 
   f.open("opencvm1.dat");
-  for(int i=0; i < Adif_in_scaled.size_0; i++){
-      for(int j=0; j < Adif_in_scaled.size_1; j++){
+  for(int i=0; i < opencvm1.rows; i++){
+      for(int j=0; j < opencvm1.cols; j++){
+        f<<opencvm1.at<double>(cv::Point(i,j))<<"  ";
+      }f<<endl;
+    }
+    f.close();
+
+  // rotate matrix
+  cv::Point2f pc(opencvm1.cols/2,opencvm1.rows/2);
+  cv::Mat rotationmatrix=cv::getRotationMatrix2D(pc,rot_angle,1.0);
+  cv::warpAffine(opencvm1,opencvm1,rotationmatrix,opencvm1.size());
+
+
+  f.open("opencvm1_rot.dat");
+  for(int i=0; i < opencvm1.rows; i++){
+      for(int j=0; j < opencvm1.cols; j++){
         f<<opencvm1.at<double>(cv::Point(i,j))<<"  ";
       }f<<endl;
     }
     f.close();
 
 
-  // normalize to use imshow
-  auto maxp=max_element(opencvm1.ptr<double>(),opencvm1.ptr<double>()+Adif_in_scaled.length);
-  double maxv=*maxp;
-  for(int i=0; i < Adif_in_scaled.size_0; i++)
-    for(int j=0; j < Adif_in_scaled.size_1; j++)
-      opencvm1.at<double>(cv::Point(i,j))/=maxv;
+  // // normalize to use imshow
+  // auto maxp=max_element(opencvm1.ptr<double>(),opencvm1.ptr<double>()+Adif_in_scaled.length);
+  // double maxv=*maxp;
+  // for(int i=0; i < Adif_in_scaled.size_0; i++)
+    // for(int j=0; j < Adif_in_scaled.size_1; j++)
+      // opencvm1.at<double>(cv::Point(i,j))/=maxv;
 
-  cv::imshow("opencvm1",opencvm1);
-  cv::waitKey();
-
-
-  // rotate the image
-  cout<<"rotate the image by "<<this->rot_angle<<"  degrees to the rotated matrix"<<endl;
-  double rot_angle_rad=rot_angle * M_PI / 180.0;
-  for(int i=0; i <Adif_in_scaled.size_0; i++){
-    for(int j=0; j <Adif_in_scaled.size_1; j++){
-      // centered
-      int x = j - Adif_in_scaled.size_1/2;
-      int y = i - Adif_in_scaled.size_0/2;
-
-      int xnew=x*cos(rot_angle_rad) - y*sin(rot_angle_rad);
-      int ynew=x*sin(rot_angle_rad) + y*cos(rot_angle_rad);
-
-      int inew = ynew+Adif_in_scaled.size_0/2;
-      int jnew = xnew+Adif_in_scaled.size_1/2;
-      if(inew>=0&&inew<Adif_in_scaled_rot.size_0&&jnew>=0&&jnew<Adif_in_scaled_rot.size_1)
-        Adif_in_scaled_rot(inew,jnew) = Adif_in_scaled(i,j);
-    }
-  }
-  f.open("Adif_in_scaled_rot.dat");
-  for(int i=0; i < Adif_in_scaled_rot.size_0; i++){
-      for(int j=0; j < Adif_in_scaled_rot.size_1; j++){
-        f<<Adif_in_scaled_rot(i,j)<<"  ";
-      }f<<endl;
-    }
-    f.close();
-
-
+  // cv::imshow("opencvm1",opencvm1);
+  // cv::waitKey();
   // write the image to the output
   for(int i=0; i < Adif_out.size_0; i++){
     for(int j=0; j < Adif_out.size_1; j++){
-
-      // Adif_out.size_0
-      // Adif_out.size_1
-      int _i=Adif_in_scaled_rot.size_0/2-Adif_out.size_0/2+i;
-      int _j=Adif_in_scaled_rot.size_1/2-Adif_out.size_1/2+j;
-      Adif_out(i,j)=Adif_in_scaled_rot(_i,_j);
+      int _i=opencvm1.rows/2-Adif_out.size_0/2+i;
+      int _j=opencvm1.cols/2-Adif_out.size_1/2+j;
+      Adif_out(i,j)=opencvm1.at<double>(cv::Point(_i,_j));
     }
   }
   f.open("Adif_out.dat");

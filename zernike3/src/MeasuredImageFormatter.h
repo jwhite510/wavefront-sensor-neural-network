@@ -1,5 +1,6 @@
 #include"c_arrays.h"
 #include <gsl/gsl_interp2d.h>
+#include<opencv2/core/core.hpp>
 
 class MeasuredImageFormatter
 {
@@ -10,6 +11,7 @@ class MeasuredImageFormatter
   array2d<double> Adif_out;
   array2d<double> Adif_in_scaled;
   array2d<double> Adif_in_scaled_rot;
+  cv::Mat opencvm1;
 
   // 2d interpolation
   gsl_interp2d* Interp;
