@@ -9,6 +9,7 @@ set(PYTHON_LIBRARIES "/home/hi76tor/python_compiled_2/lib/libpython3.6m.so")
 set(PYTHON_INCLUDE_DIRS "/home/hi76tor/python_compiled_2/include/python3.6m")
 find_package( GSL REQUIRED )
 find_package(MPI REQUIRED)
+find_package(OpenCV REQUIRED)
 
 include_directories(${PYTHON_INCLUDE_DIRS} ${numpydir})
 
@@ -29,5 +30,5 @@ target_link_libraries(b.out fftw3 ${PYTHON_LIBRARIES} GSL::gsl ${MPI_LIBRARIES} 
 
 add_library(MeasuredImageFormatter SHARED src/MeasuredImageFormatter.cpp)
 add_library(MeasuredImageFormatterWrapper SHARED src/MeasuredImageFormatterWrapper.cpp)
-target_link_libraries(MeasuredImageFormatterWrapper MeasuredImageFormatter GSL::gsl)
+target_link_libraries(MeasuredImageFormatterWrapper MeasuredImageFormatter GSL::gsl ${OpenCV_LIBS})
 # PYTHON_CONFIGURE_OPTS="--enable-shared"

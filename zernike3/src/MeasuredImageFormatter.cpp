@@ -1,6 +1,9 @@
 #include"MeasuredImageFormatter.h"
 #include<iostream>
 #include<fstream>
+#include<opencv2/core/core.hpp>
+#include<opencv2/highgui/highgui.hpp>
+#include<algorithm>
 
 using namespace std;
 
@@ -103,6 +106,33 @@ void MeasuredImageFormatter::Format(){
       }f<<endl;
     }
     f.close();
+
+
+  cv::Mat opencvm1(Adif_in_scaled.size_0,Adif_in_scaled.size_1,CV_64F);
+  // open in opencv
+  for(int i=0; i < Adif_in_scaled.size_0; i++)
+    for(int j=0; j < Adif_in_scaled.size_1; j++)
+      opencvm1.at<double>(cv::Point(i,j))=Adif_in_scaled(i,j);
+
+  f.open("opencvm1.dat");
+  for(int i=0; i < Adif_in_scaled.size_0; i++){
+      for(int j=0; j < Adif_in_scaled.size_1; j++){
+        f<<opencvm1.at<double>(cv::Point(i,j))<<"  ";
+      }f<<endl;
+    }
+    f.close();
+
+
+  // normalize to use imshow
+  auto maxp=max_element(opencvm1.ptr<double>(),opencvm1.ptr<double>()+Adif_in_scaled.length);
+  double maxv=*maxp;
+  for(int i=0; i < Adif_in_scaled.size_0; i++)
+    for(int j=0; j < Adif_in_scaled.size_1; j++)
+      opencvm1.at<double>(cv::Point(i,j))/=maxv;
+
+  cv::imshow("opencvm1",opencvm1);
+  cv::waitKey();
+
 
   // rotate the image
   cout<<"rotate the image by "<<this->rot_angle<<"  degrees to the rotated matrix"<<endl;
