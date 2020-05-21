@@ -12,14 +12,16 @@ void Linspace(double* data, int size, double min, double max){
   }
 }
 
-MeasuredImageFormatter::MeasuredImageFormatter(double df_ratio,
+MeasuredImageFormatter::MeasuredImageFormatter(double df_ratio,double rot_angle,
       double*dif_in, int dif_in_s0, int dif_in_s1,
       double*dif_out, int dif_out_s0, int dif_out_s1):
       Adif_in(dif_in,dif_in_s0,dif_in_s1),
       Adif_out(dif_out,dif_out_s0,dif_out_s1),
-      Adif_in_scaled(dif_in_s0*df_ratio,dif_in_s1*df_ratio)
+      Adif_in_scaled(dif_in_s0*df_ratio,dif_in_s1*df_ratio),
+      Adif_in_scaled_rot(dif_in_s0*df_ratio,dif_in_s1*df_ratio)
 {
   this->df_ratio=df_ratio;
+  this->rot_angle=rot_angle;
 
   // initialize interpolator
   Interp = gsl_interp2d_alloc(gsl_interp2d_bilinear, Adif_in.size_0, Adif_in.size_1);
@@ -75,6 +77,7 @@ void MeasuredImageFormatter::Format(){
       bool d=(interp_y2[i]<=interp_y1[0]);
       if(a||b||c||d){
         // cout<<"interpolation is out of range"<<endl;
+        Adif_in_scaled(i,j)=0;
       }else{
         Adif_in_scaled(i,j)=gsl_interp2d_eval(
             Interp,interp_x1,interp_y1,Adif_in.data,
@@ -86,21 +89,48 @@ void MeasuredImageFormatter::Format(){
   ofstream f;
 
   f.open("Adif_in.dat");
-
   for(int i=0; i < Adif_in.size_0; i++){
-    for(int j=0; j < Adif_in.size_1; j++){
-      f<<Adif_in(i,j)<<"  ";
-    }f<<endl;
-  }
-  f.close();
+      for(int j=0; j < Adif_in.size_1; j++){
+        f<<Adif_in(i,j)<<"  ";
+      }f<<endl;
+    }
+    f.close();
 
   f.open("Adif_in_scaled.dat");
   for(int i=0; i < Adif_in_scaled.size_0; i++){
-    for(int j=0; j < Adif_in_scaled.size_1; j++){
-      f<<Adif_in_scaled(i,j)<<"  ";
-    }f<<endl;
+      for(int j=0; j < Adif_in_scaled.size_1; j++){
+        f<<Adif_in_scaled(i,j)<<"  ";
+      }f<<endl;
+    }
+    f.close();
+
+  // rotate the image
+  cout<<"rotate the image by "<<this->rot_angle<<"  degrees to the rotated matrix"<<endl;
+  double rot_angle_rad=rot_angle * M_PI / 180.0;
+  for(int i=0; i <Adif_in_scaled.size_0; i++){
+    for(int j=0; j <Adif_in_scaled.size_1; j++){
+      // centered
+      int x = j - Adif_in_scaled.size_1/2;
+      int y = i - Adif_in_scaled.size_0/2;
+
+      int xnew=x*cos(rot_angle_rad) - y*sin(rot_angle_rad);
+      int ynew=x*sin(rot_angle_rad) + y*cos(rot_angle_rad);
+
+      int inew = ynew+Adif_in_scaled.size_0/2;
+      int jnew = xnew+Adif_in_scaled.size_1/2;
+      if(inew>=0&&inew<Adif_in_scaled_rot.size_0&&jnew>=0&&jnew<Adif_in_scaled_rot.size_1)
+        Adif_in_scaled_rot(inew,jnew) = Adif_in_scaled(i,j);
+    }
   }
-  f.close();
+  f.open("Adif_in_scaled_rot.dat");
+  for(int i=0; i < Adif_in_scaled_rot.size_0; i++){
+      for(int j=0; j < Adif_in_scaled_rot.size_1; j++){
+        f<<Adif_in_scaled_rot(i,j)<<"  ";
+      }f<<endl;
+    }
+    f.close();
+
+
 
   // for(int i=0; i < Adif_in.size_0; i++){
   //     for(int j=0; j < Adif_in.size_1; j++){

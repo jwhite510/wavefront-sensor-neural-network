@@ -14,6 +14,11 @@ from scipy.misc import factorial
 from skimage.transform import resize
 from scipy import ndimage
 
+def fits_to_numpy(fits_file_name):
+    thing = fits.open(fits_file_name)
+    nparr = thing[0].data[0,:,:]
+    nparr = nparr.astype(np.float64)
+    return nparr
 def plot_image_show_centroid_distance(mat, title, figurenum):
     """
     plots an image and shows the distance from the centroid to the image center
