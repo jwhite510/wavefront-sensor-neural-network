@@ -182,6 +182,22 @@ void fft2shift(array2d<complex<float>> & arrayin)
       arrayin(i+arrayin.size_0/2,j) = placeholder;
   }
 }
+void fft2shift(array2d<complex<double>> & arrayin)
+{
+  complex<double> placeholder(0,0);
+  for(int i=0; i< arrayin.size_0; i++)
+    for(int j=0; j<arrayin.size_1/2; j++) {
+      placeholder = arrayin(i,j);
+      arrayin(i,j) = arrayin(i,j+arrayin.size_1/2);
+      arrayin(i,j+arrayin.size_1/2) = placeholder;
+  }
+  for(int i=0; i< arrayin.size_0/2; i++)
+    for(int j=0; j<arrayin.size_1; j++) {
+      placeholder = arrayin(i,j);
+      arrayin(i,j) = arrayin(i+arrayin.size_0/2,j);
+      arrayin(i+arrayin.size_0/2,j) = placeholder;
+  }
+}
 
 class Fft2
 {
@@ -200,7 +216,8 @@ class Fft2
     plan_forward =  fftw_plan_dft_2d(N, N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
     plan_backward =  fftw_plan_dft_2d(N, N, in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
   }
-  void execute_fft(array2d<complex<float>> & complex_arr)
+  template<class T>
+  void execute_fft(array2d<complex<T>> & complex_arr)
   {
     for(int i=0; i < N; i++)
       for(int j=0; j < N; j++) {
@@ -211,10 +228,11 @@ class Fft2
     fftw_execute(plan_forward); /* repeat as needed */
     for(int i=0; i < N; i++)
       for(int j=0; j < N; j++) {
-        complex_arr(i,j) = complex<float>(out[i*N+j][0], out[i*N+j][1]);
+        complex_arr(i,j) = complex<T>(out[i*N+j][0], out[i*N+j][1]);
       }
   }
-  void execute_ifft(array2d<complex<float>> & complex_arr)
+  template<class T>
+  void execute_ifft(array2d<complex<T>> & complex_arr)
   {
     for(int i=0; i < N; i++)
       for(int j=0; j < N; j++) {
@@ -225,7 +243,7 @@ class Fft2
     fftw_execute(plan_backward); /* repeat as needed */
     for(int i=0; i < N; i++)
       for(int j=0; j < N; j++) {
-        complex_arr(i,j) = complex<float>(out[i*N+j][0], out[i*N+j][1]);
+        complex_arr(i,j) = complex<T>(out[i*N+j][0], out[i*N+j][1]);
       }
   }
   ~Fft2()

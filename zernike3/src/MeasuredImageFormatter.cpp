@@ -110,10 +110,10 @@ void MeasuredImageFormatter::Format(){
   for(int i=0; i < opencvm1.rows; i++){
     for(int j=0; j < opencvm1.cols; j++){
 
-      if(i>10&&i<20&&j>40&&j<50)
+      if(i>10&&i<20&&j>300&&j<310)
         opencvm1.at<double>(cv::Point(i,j))=100*maxv;
 
-      if(i>50&&i<60&&j>40&&j<50)
+      if(i>50&&i<60&&j>300&&j<310)
         opencvm1.at<double>(cv::Point(i,j))=100*maxv;
 
     }
@@ -144,30 +144,37 @@ void MeasuredImageFormatter::Format(){
       sum_cols(_row)+=opencvm1.at<double>(cv::Point(_row,_col));
     }
   }
-  f.open("sum_rows.dat");
-  for(int i=0; i < sum_rows.size_0; i++){
-    f<<sum_rows(i)<<endl;
-  }
-  f.close();
-  f.open("sum_cols.dat");
-  for(int i=0; i < sum_cols.size_0; i++){
-    f<<sum_cols(i)<<endl;
-  }
-  f.close();
 
-  int c_col=FindCentroid(sum_rows);
-  int c_row=FindCentroid(sum_cols);
+  double c_col=FindCentroid(sum_rows);
+  double c_row=FindCentroid(sum_cols);
   cout << "c_col => " << c_col << endl;
   cout << "c_row => " << c_row << endl;
 
-  for(int i=0; i < opencvm1.rows; i++){
-    for(int j=0; j < opencvm1.cols; j++){
-      // summation along col
-      opencvm1.at<double>(cv::Point(i,j));
-    }
-  }
-  // opencvm1
+  double distance_col=(opencvm1.cols/2)-c_col;
+  double distance_row=(opencvm1.rows/2)-c_row;
 
+  cout << "distance_col => " << distance_col << endl;
+  cout << "distance_row => " << distance_row << endl;
+
+  // shift by distance with FFT
+  array2d<complex<double>> opencvm1_complex(opencvm1.rows,opencvm1.cols);
+  for(int i=0; i < opencvm1.rows; i++)
+    for(int j=0; j < opencvm1.cols; j++)
+      opencvm1_complex(i,j)=complex<double>(opencvm1.at<double>(cv::Point(i,j)),0);
+
+  Fft2 fft2(opencvm1_complex.size_0);
+  fft2shift(opencvm1_complex);
+  fft2.execute_fft(opencvm1_complex);
+  fft2shift(opencvm1_complex);
+  f.open("opencvm1_complex.dat");
+  for(int i=0; i < opencvm1_complex.size_0; i++){
+      for(int j=0; j < opencvm1_complex.size_1; j++){
+        f<<abs(opencvm1_complex(i,j))<<"  ";
+      }f<<endl;
+    }
+    f.close();
+
+  // apply phase
 
   // // normalize to use imshow
   // auto maxp=max_element(opencvm1.ptr<double>(),opencvm1.ptr<double>()+Adif_in_scaled.length);
@@ -219,7 +226,7 @@ void MeasuredImageFormatter::Format(){
 
 
 }
-int MeasuredImageFormatter::FindCentroid(array1d<double> &arr){
+double MeasuredImageFormatter::FindCentroid(array1d<double> &arr){
   double sum=0;
   double a_sum=0;
   for(int i=0; i < arr.size_0; i++){

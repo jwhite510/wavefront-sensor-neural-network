@@ -1,4 +1,4 @@
-#include"c_arrays.h"
+#include"zernikedatagen.h"
 #include <gsl/gsl_interp2d.h>
 #include<opencv2/core/core.hpp>
 
@@ -28,7 +28,7 @@ class MeasuredImageFormatter
       );
   void PrintInt();
   void Format();
-  static int FindCentroid(array1d<double> &arr);
+  static double FindCentroid(array1d<double> &arr);
 };
 
 void Linspace(double* data, int size, double min, double max);
