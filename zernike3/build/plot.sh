@@ -1,25 +1,11 @@
 #!/bin/bash
-#gnuplot -persist <<EOF
-#set term wxt
-#plot 'Adif_in.dat' matrix with image
-#EOF
-# gnuplot -persist <<EOF
-# set term wxt
-# plot 'Adif_in_scaled.dat' matrix with image
-# EOF
 gnuplot -persist <<EOF
 set term wxt
 plot 'opencvm1.dat' matrix with image
 EOF
+
 gnuplot -persist <<EOF
 set term wxt
-plot 'opencvm1_rot.dat' matrix with image
-EOF
-# gnuplot -persist <<EOF
-# set term wxt
-# plot 'Adif_in_scaled_rot.dat' matrix with image
-# EOF
-gnuplot -persist <<EOF
-set term wxt
-plot 'Adif_out.dat' matrix with image
+plot 'sum_rows.dat' with line,\
+	'sum_cols.dat' with line
 EOF

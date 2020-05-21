@@ -28,6 +28,7 @@ class MeasuredImageFormatter
       );
   void PrintInt();
   void Format();
+  static int FindCentroid(array1d<double> &arr);
 };
 
 void Linspace(double* data, int size, double min, double max);
