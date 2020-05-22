@@ -110,10 +110,10 @@ void MeasuredImageFormatter::Format(){
   for(int i=0; i < opencvm1.rows; i++){
     for(int j=0; j < opencvm1.cols; j++){
 
-      if(i>10&&i<20&&j>300&&j<310)
+      if(i>100&&i<120&&j>200&&j<310)
         opencvm1.at<double>(cv::Point(i,j))=100*maxv;
 
-      if(i>50&&i<60&&j>300&&j<310)
+      if(i>200&&i<220&&j>200&&j<310)
         opencvm1.at<double>(cv::Point(i,j))=100*maxv;
 
     }
@@ -170,9 +170,9 @@ void MeasuredImageFormatter::Format(){
     }
     f.close();
 
+  Fft2 fft2(opencvm1_complex.size_0);
   for(int m=0; m < 10; m++){
 
-    Fft2 fft2(opencvm1_complex.size_0);
     fft2shift(opencvm1_complex);
     fft2.execute_fft(opencvm1_complex);
     fft2shift(opencvm1_complex);
@@ -180,16 +180,20 @@ void MeasuredImageFormatter::Format(){
     // apply linear phase
     for(int i=0; i < opencvm1_complex.size_0; i++)
       for(int j=0; j < opencvm1_complex.size_1; j++){
-        double phi= -0.1*m*(double)(i-(opencvm1_complex.size_0/2));
-        opencvm1_complex(i,j)*=exp(complex<double>(0,phi));
+
+        int p_i=i-(opencvm1_complex.size_0/2); // pixel axis
+        double f_i = (double)p_i/(double)opencvm1_complex.size_0;
+        double shift=2.5; // the amount shifted in pixels
+        double phi = shift*2*M_PI*f_i;
+        // need frequency axis
+        opencvm1_complex(i,j)*=exp(complex<double>(0,-phi));
       }
 
     fft2shift(opencvm1_complex);
     fft2.execute_ifft(opencvm1_complex);
     fft2shift(opencvm1_complex);
-    for(int i=0; i < opencvm1_complex.length; i++){
+    for(int i=0; i < opencvm1_complex.length; i++)
       opencvm1_complex.data[i]/=opencvm1_complex.length;
-    }
 
     f.open("opencvm1_complex_after"+to_string(m)+".dat");
     for(int i=0; i < opencvm1_complex.size_0; i++){
