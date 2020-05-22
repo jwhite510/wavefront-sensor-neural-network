@@ -11,12 +11,14 @@ lib=ctypes.cdll.LoadLibrary('libMeasuredImageFormatterWrapper.so')
 s=diffraction_functions.fits_to_numpy("../../m3_scan_0000.fits")
 
 # df ratio
-df_ratio=0.7272727272727273
-rot_angle=-3
+df_ratio=1.0
+rot_angle=0
 
 
-dif_in=np.zeros(np.shape(s),dtype=np.double)
-np.copyto(dif_in,s)
+dif_in=np.zeros((8,8),dtype=np.double)
+dif_in[5,5]=1
+dif_in[6,5]=1
+# np.copyto(dif_in,s)
 c_double_p=ctypes.POINTER(ctypes.c_double)
 dif_out=np.zeros((128,128),dtype=np.double)
 a=lib.MeasuredImageFormatter_new(

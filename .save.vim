@@ -7,8 +7,8 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +4 zernike3/CMakeLists.txt
-badd +188 zernike3/src/MeasuredImageFormatter.cpp
+badd +1 zernike3/CMakeLists.txt
+badd +160 zernike3/src/MeasuredImageFormatter.cpp
 badd +11 zernike3/src/MeasuredImageFormatterWrapper.cpp
 badd +11 zernike3/build/MeasuredImageFormatterTest.py
 badd +1 zernike3/src/MeasuredImageFormatter.h
@@ -17,7 +17,7 @@ badd +304 zernike3/src/zernikedatagen.h
 badd +1 GetMeasuredDiffractionPattern.py
 badd +140 diffraction_functions.py
 badd +4 zernike3/src/MeasuredImageFormatterWrapper.h
-badd +91 term://.//26288:/bin/bash
+badd +91 term://.//763:/bin/bash
 badd +1 run.sh
 badd +1 rungdb.sh
 badd +937 term://.//7144:/bin/bash
@@ -30,20 +30,23 @@ badd +1 zernike3/build/plot.gnu
 badd +1 todo.txt
 badd +12 zernike3/build/diffraction_functions.py
 badd +1 zernike3/build/plot.sh
-badd +114 term://.//26416:/bin/bash
+badd +114 term://.//898:/bin/bash
 badd +46 term://.//13290:/bin/bash
 badd +357 term://.//15313:/bin/bash
 badd +1 something.txt
-badd +1 term://.//26236:/bin/bash
+badd +1 term://.//711:/bin/bash
 badd +520 term://.//27412:/bin/bash
-badd +1 term://.//26331:/bin/bash
+badd +1 term://.//806:/bin/bash
 badd +39 term://.//1666:/bin/bash
-badd +1 term://.//26505:/bin/bash
+badd +1 term://.//968:/bin/bash
 badd +668 term://.//13811:/bin/bash
 badd +55 zernike3/src/testprop.cpp
 badd +815 term://.//19963:/bin/bash
 badd +408 term://.//24327:/bin/bash
-badd +0 term://.//29707:/bin/bash
+badd +1 term://.//1017:/bin/bash
+badd +11 subpixelshifttest.py
+badd +0 term://.//8620:/bin/bash
+badd +9 phase_normalization.py
 argglobal
 %argdel
 $argadd ~/Projects/diffraction_net/
@@ -82,7 +85,7 @@ normal! 0
 lcd ~/Projects/diffraction_net
 wincmd w
 argglobal
-if bufexists("term://.//26236:/bin/bash") | buffer term://.//26236:/bin/bash | else | edit term://.//26236:/bin/bash | endif
+if bufexists("term://.//711:/bin/bash") | buffer term://.//711:/bin/bash | else | edit term://.//711:/bin/bash | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -91,16 +94,75 @@ setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-let s:l = 46 - ((45 * winheight(0) + 23) / 46)
+let s:l = 261 - ((45 * winheight(0) + 23) / 46)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-46
-normal! 0
+261
+normal! 050|
 lcd ~/Projects/diffraction_net
 wincmd w
 exe 'vert 1resize ' . ((&columns * 106 + 106) / 212)
 exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
+tabedit ~/Projects/diffraction_net/subpixelshifttest.py
+set splitbelow splitright
+wincmd _ | wincmd |
+vsplit
+1wincmd h
+wincmd w
+set nosplitbelow
+set nosplitright
+wincmd t
+set winminheight=0
+set winheight=1
+set winminwidth=0
+set winwidth=1
+exe 'vert 1resize ' . ((&columns * 86 + 106) / 212)
+exe 'vert 2resize ' . ((&columns * 125 + 106) / 212)
+argglobal
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+silent! normal! zE
+8,33fold
+7,33fold
+7
+normal! zo
+8
+normal! zo
+let s:l = 16 - ((15 * winheight(0) + 23) / 46)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+16
+normal! 08|
+lcd ~/Projects/diffraction_net
+wincmd w
+argglobal
+if bufexists("term://.//8620:/bin/bash") | buffer term://.//8620:/bin/bash | else | edit term://.//8620:/bin/bash | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+let s:l = 1945 - ((45 * winheight(0) + 23) / 46)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+1945
+normal! 050|
+lcd ~/Projects/diffraction_net
+wincmd w
+exe 'vert 1resize ' . ((&columns * 86 + 106) / 212)
+exe 'vert 2resize ' . ((&columns * 125 + 106) / 212)
 tabedit ~/Projects/diffraction_net/GetMeasuredDiffractionPattern.py
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -135,14 +197,14 @@ exe '2resize ' . ((&lines * 11 + 24) / 49)
 exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
 exe '3resize ' . ((&lines * 15 + 24) / 49)
 exe 'vert 3resize ' . ((&columns * 106 + 106) / 212)
-exe '4resize ' . ((&lines * 14 + 24) / 49)
+exe '4resize ' . ((&lines * 5 + 24) / 49)
 exe 'vert 4resize ' . ((&columns * 106 + 106) / 212)
-exe '5resize ' . ((&lines * 3 + 24) / 49)
+exe '5resize ' . ((&lines * 12 + 24) / 49)
 exe 'vert 5resize ' . ((&columns * 106 + 106) / 212)
 exe '6resize ' . ((&lines * 34 + 24) / 49)
 exe 'vert 6resize ' . ((&columns * 105 + 106) / 212)
 argglobal
-if bufexists("term://.//26288:/bin/bash") | buffer term://.//26288:/bin/bash | else | edit term://.//26288:/bin/bash | endif
+if bufexists("term://.//763:/bin/bash") | buffer term://.//763:/bin/bash | else | edit term://.//763:/bin/bash | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -151,16 +213,16 @@ setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-let s:l = 11 - ((10 * winheight(0) + 5) / 11)
+let s:l = 352 - ((10 * winheight(0) + 5) / 11)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-11
+352
 normal! 0
 lcd ~/Projects/diffraction_net
 wincmd w
 argglobal
-if bufexists("term://.//26331:/bin/bash") | buffer term://.//26331:/bin/bash | else | edit term://.//26331:/bin/bash | endif
+if bufexists("term://.//806:/bin/bash") | buffer term://.//806:/bin/bash | else | edit term://.//806:/bin/bash | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -222,7 +284,7 @@ normal! zo
 normal! zo
 213
 normal! zo
-let s:l = 219 - ((4 * winheight(0) + 7) / 14)
+let s:l = 219 - ((0 * winheight(0) + 2) / 5)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -241,7 +303,7 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 10 - ((0 * winheight(0) + 1) / 3)
+let s:l = 10 - ((1 * winheight(0) + 6) / 12)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -259,13 +321,13 @@ setlocal fdl=2
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-23
+25
 normal! zo
-let s:l = 23 - ((15 * winheight(0) + 17) / 34)
+let s:l = 19 - ((18 * winheight(0) + 17) / 34)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-23
+19
 normal! 0
 lcd ~/Projects/diffraction_net
 wincmd w
@@ -275,9 +337,9 @@ exe '2resize ' . ((&lines * 11 + 24) / 49)
 exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
 exe '3resize ' . ((&lines * 15 + 24) / 49)
 exe 'vert 3resize ' . ((&columns * 106 + 106) / 212)
-exe '4resize ' . ((&lines * 14 + 24) / 49)
+exe '4resize ' . ((&lines * 5 + 24) / 49)
 exe 'vert 4resize ' . ((&columns * 106 + 106) / 212)
-exe '5resize ' . ((&lines * 3 + 24) / 49)
+exe '5resize ' . ((&lines * 12 + 24) / 49)
 exe 'vert 5resize ' . ((&columns * 106 + 106) / 212)
 exe '6resize ' . ((&lines * 34 + 24) / 49)
 exe 'vert 6resize ' . ((&columns * 105 + 106) / 212)
@@ -294,8 +356,8 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe 'vert 1resize ' . ((&columns * 148 + 106) / 212)
-exe 'vert 2resize ' . ((&columns * 63 + 106) / 212)
+exe 'vert 1resize ' . ((&columns * 124 + 106) / 212)
+exe 'vert 2resize ' . ((&columns * 87 + 106) / 212)
 argglobal
 setlocal fdm=indent
 setlocal fde=0
@@ -307,34 +369,72 @@ setlocal fdn=20
 setlocal fen
 68
 normal! zo
+77
+normal! zo
+80
+normal! zo
+88
+normal! zo
+89
+normal! zo
+98
+normal! zo
 111
 normal! zo
-113
+122
 normal! zo
+129
+normal! zo
+149
+normal! zo
+154
+normal! zo
+154
+normal! zc
 162
 normal! zo
-167
+172
 normal! zo
-167
+174
+normal! zc
+188
 normal! zo
-176
+204
 normal! zo
-182
+188
 normal! zo
-200
+196
 normal! zo
-220
+196
+normal! zc
+202
 normal! zo
-let s:l = 111 - ((23 * winheight(0) + 23) / 46)
+202
+normal! zc
+225
+normal! zo
+225
+normal! zc
+231
+normal! zo
+231
+normal! zc
+246
+normal! zo
+253
+normal! zo
+261
+normal! zo
+let s:l = 149 - ((20 * winheight(0) + 23) / 46)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-111
-normal! 05|
+149
+normal! 03|
 lcd ~/Projects/diffraction_net
 wincmd w
 argglobal
-if bufexists("term://.//26416:/bin/bash") | buffer term://.//26416:/bin/bash | else | edit term://.//26416:/bin/bash | endif
+if bufexists("term://.//898:/bin/bash") | buffer term://.//898:/bin/bash | else | edit term://.//898:/bin/bash | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -343,16 +443,16 @@ setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-let s:l = 294 - ((45 * winheight(0) + 23) / 46)
+let s:l = 32 - ((31 * winheight(0) + 23) / 46)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-294
+32
 normal! 0
 lcd ~/Projects/diffraction_net
 wincmd w
-exe 'vert 1resize ' . ((&columns * 148 + 106) / 212)
-exe 'vert 2resize ' . ((&columns * 63 + 106) / 212)
+exe 'vert 1resize ' . ((&columns * 124 + 106) / 212)
+exe 'vert 2resize ' . ((&columns * 87 + 106) / 212)
 tabedit ~/Projects/diffraction_net/zernike3/build/plot.sh
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -369,7 +469,7 @@ set winwidth=1
 exe '1resize ' . ((&lines * 11 + 24) / 49)
 exe '2resize ' . ((&lines * 34 + 24) / 49)
 argglobal
-if bufexists("term://.//26505:/bin/bash") | buffer term://.//26505:/bin/bash | else | edit term://.//26505:/bin/bash | endif
+if bufexists("term://.//968:/bin/bash") | buffer term://.//968:/bin/bash | else | edit term://.//968:/bin/bash | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -378,12 +478,12 @@ setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-let s:l = 146 - ((10 * winheight(0) + 5) / 11)
+let s:l = 13 - ((8 * winheight(0) + 5) / 11)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-146
-normal! 0
+13
+normal! 065|
 lcd ~/Projects/diffraction_net
 wincmd w
 argglobal
@@ -396,42 +496,16 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 22 - ((19 * winheight(0) + 17) / 34)
+let s:l = 13 - ((12 * winheight(0) + 17) / 34)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-22
-normal! 017|
+13
+normal! 0
 lcd ~/Projects/diffraction_net
 wincmd w
 exe '1resize ' . ((&lines * 11 + 24) / 49)
 exe '2resize ' . ((&lines * 34 + 24) / 49)
-tabnew
-set splitbelow splitright
-set nosplitbelow
-set nosplitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
-argglobal
-if bufexists("term://.//29707:/bin/bash") | buffer term://.//29707:/bin/bash | else | edit term://.//29707:/bin/bash | endif
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-let s:l = 1 - ((0 * winheight(0) + 23) / 46)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-1
-normal! 050|
-lcd ~/Projects/diffraction_net
 tabedit ~/Projects/diffraction_net/diffraction_net.py
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -564,7 +638,7 @@ normal! zt
 14
 normal! 017|
 lcd ~/Projects/diffraction_net
-tabnext 3
+tabnext 2
 set stal=1
 if exists('s:wipebuf') && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf

@@ -105,29 +105,16 @@ void MeasuredImageFormatter::Format(){
   cv::warpAffine(opencvm1,opencvm1,rotationmatrix,opencvm1.size());
 
   // make rectangle
-  auto maxp=max_element(opencvm1.ptr<double>(),opencvm1.ptr<double>()+opencvm1.rows*opencvm1.cols);
-  double maxv=*maxp;
-  for(int i=0; i < opencvm1.rows; i++){
-    for(int j=0; j < opencvm1.cols; j++){
-
-      if(i>100&&i<120&&j>200&&j<310)
-        opencvm1.at<double>(cv::Point(i,j))=100*maxv;
-
-      if(i>200&&i<220&&j>200&&j<310)
-        opencvm1.at<double>(cv::Point(i,j))=100*maxv;
-
-    }
-  }
-
-
   ofstream f;
   f.open("opencvm1.dat");
   for(int i=0; i < opencvm1.rows; i++){
-      for(int j=0; j < opencvm1.cols; j++){
-        f<<opencvm1.at<double>(cv::Point(i,j))<<"  ";
-      }f<<endl;
-    }
-    f.close();
+    for(int j=0; j < opencvm1.cols; j++){
+      f<<opencvm1.at<double>(cv::Point(i,j))<<"  ";
+    }f<<endl;
+  }
+  f.close();
+
+
   // calculate distance to centroid, then shift sub pixel
   // find summation along row and col axes
   array1d<double>sum_rows(opencvm1.cols);
@@ -162,48 +149,94 @@ void MeasuredImageFormatter::Format(){
     for(int j=0; j < opencvm1.cols; j++)
       opencvm1_complex(i,j)=complex<double>(opencvm1.at<double>(cv::Point(i,j)),0);
 
-  f.open("opencvm1_complex_before.dat");
+  // f.open("opencvm1_complex.dat");
+  // for(int i=0; i < opencvm1_complex.size_0; i++){
+    // // // for(int j=0; j < opencvm1_complex.size_1; j++){
+      // // // f<<opencvm1_complex(i,j).real()<<"  ";
+    // // // }f<<endl;
+  // } f.close();
+
+  Fft2 fft2_1(opencvm1_complex.size_0);
+  Fft2 fft2_2_zerop(opencvm1_complex.size_0+2);
+  array2d<complex<double>>opencvm1_complex_zeropadded(
+      opencvm1_complex.size_0+2,opencvm1_complex.size_0+2
+      );
+
+  // zero padded fft shift
+  fft2shift(opencvm1_complex);
+  fft2_1.execute_fft(opencvm1_complex);
+  fft2shift(opencvm1_complex);
+
+  // apply linear phase
+  for(int i=0; i < opencvm1_complex.size_0; i++)
+    for(int j=0; j < opencvm1_complex.size_1; j++){
+
+      int p_i=i-(opencvm1_complex.size_0/2); // pixel axis
+      double f_i = (double)p_i/(double)opencvm1_complex.size_0;
+      double shift=2.5; // the amount shifted in pixels
+      double phi = shift*2*M_PI*f_i;
+      // need frequency axis
+      // opencvm1_complex(i,j)*=exp(complex<double>(0,-phi));
+    }
+
+  // zero the padded array
+  for(int i=0; i < opencvm1_complex_zeropadded.length; i++)
+    opencvm1_complex_zeropadded.data[i]=complex<double>(0,0);
+
+  // copy opencvm1_complex to the zero padded array
+  for(int i=0; i < opencvm1_complex.size_0; i++)
+    for(int j=0; j < opencvm1_complex.size_1; j++){
+      int _i = opencvm1_complex_zeropadded.size_0/2-opencvm1_complex.size_0/2+i;
+      int _j = opencvm1_complex_zeropadded.size_1/2-opencvm1_complex.size_1/2+j;
+      opencvm1_complex_zeropadded(_i,_j)=opencvm1_complex(i,j);
+    }
+
+  f.open("opencvm1_complex.dat");
   for(int i=0; i < opencvm1_complex.size_0; i++){
-      for(int j=0; j < opencvm1_complex.size_1; j++){
-        f<<opencvm1_complex(i,j).real()<<"  ";
-      }f<<endl;
-    }
-    f.close();
+    for(int j=0; j < opencvm1_complex.size_1; j++){
+      f<<opencvm1_complex(i,j).real()<<"  ";
+    }f<<endl;
+  } f.close();
+  f.open("opencvm1_complex_zeropadded.dat");
+  for(int i=0; i < opencvm1_complex_zeropadded.size_0; i++){
+    for(int j=0; j < opencvm1_complex_zeropadded.size_1; j++){
+      f<<opencvm1_complex_zeropadded(i,j).real()<<"  ";
+    }f<<endl;
+  } f.close();
 
-  Fft2 fft2(opencvm1_complex.size_0);
-  for(int m=0; m < 10; m++){
 
-    fft2shift(opencvm1_complex);
-    fft2.execute_fft(opencvm1_complex);
-    fft2shift(opencvm1_complex);
+  // inverse fft the zero padded array
+  fft2shift(opencvm1_complex_zeropadded);
+  fft2_2_zerop.execute_ifft(opencvm1_complex_zeropadded);
+  fft2shift(opencvm1_complex_zeropadded);
+  for(int i=0; i < opencvm1_complex_zeropadded.length; i++)
+    opencvm1_complex_zeropadded.data[i]/=opencvm1_complex_zeropadded.length;
 
-    // apply linear phase
-    for(int i=0; i < opencvm1_complex.size_0; i++)
-      for(int j=0; j < opencvm1_complex.size_1; j++){
+  // inverse fft
+  // inverse fft the zero padded array
+  fft2shift(opencvm1_complex);
+  fft2_1.execute_ifft(opencvm1_complex);
+  fft2shift(opencvm1_complex);
+  for(int i=0; i < opencvm1_complex.length; i++)
+    opencvm1_complex.data[i]/=opencvm1_complex.length;
 
-        int p_i=i-(opencvm1_complex.size_0/2); // pixel axis
-        double f_i = (double)p_i/(double)opencvm1_complex.size_0;
-        double shift=2.5; // the amount shifted in pixels
-        double phi = shift*2*M_PI*f_i;
-        // need frequency axis
-        opencvm1_complex(i,j)*=exp(complex<double>(0,-phi));
-      }
+  f.open("opencvm1_complex_ft.dat");
+  for(int i=0; i < opencvm1_complex.size_0; i++){
+    for(int j=0; j < opencvm1_complex.size_1; j++){
+      f<<opencvm1_complex(i,j).real()<<"  ";
+    }f<<endl;
+  } f.close();
+  f.open("opencvm1_complex_zeropadded_ft.dat");
+  for(int i=0; i < opencvm1_complex_zeropadded.size_0; i++){
+    for(int j=0; j < opencvm1_complex_zeropadded.size_1; j++){
+      f<<opencvm1_complex_zeropadded(i,j).real()<<"  ";
+    }f<<endl;
+  } f.close();
 
-    fft2shift(opencvm1_complex);
-    fft2.execute_ifft(opencvm1_complex);
-    fft2shift(opencvm1_complex);
-    for(int i=0; i < opencvm1_complex.length; i++)
-      opencvm1_complex.data[i]/=opencvm1_complex.length;
 
-    f.open("opencvm1_complex_after"+to_string(m)+".dat");
-    for(int i=0; i < opencvm1_complex.size_0; i++){
-      for(int j=0; j < opencvm1_complex.size_1; j++){
-        f<<opencvm1_complex(i,j).real()<<"  ";
-      }f<<endl;
-    }
-    f.close();
 
-  }
+
+
   // apply phase
 
   // // normalize to use imshow
@@ -225,11 +258,11 @@ void MeasuredImageFormatter::Format(){
   }
   f.open("Adif_out.dat");
   for(int i=0; i < Adif_out.size_0; i++){
-      for(int j=0; j < Adif_out.size_1; j++){
-        f<<Adif_out(i,j)<<"  ";
-      }f<<endl;
-    }
-    f.close();
+    for(int j=0; j < Adif_out.size_1; j++){
+      f<<Adif_out(i,j)<<"  ";
+    }f<<endl;
+  }
+  f.close();
 
 
 

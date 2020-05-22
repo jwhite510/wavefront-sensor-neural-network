@@ -7,25 +7,39 @@
 
 gnuplot -persist <<EOF
 set term wxt
-# set arrow nohead from 0,0 to 100,100 front lc "black"
-plot 'opencvm1_complex_before.dat' matrix with image
+plot 'opencvm1_complex.dat' matrix with image
 EOF
-
 
 gnuplot -persist <<EOF
-
 set term wxt
-
-while 1{
-	do for [i=1:9]{
-		# plot 'opencvm1_complex_after1.dat' matrix with image
-		plot sprintf('opencvm1_complex_after%d.dat',i) matrix with image
-		set title sprintf('%d', i)
-		pause 0.2
-		reread
-	}
-}
+plot 'opencvm1_complex_zeropadded.dat' matrix with image
 EOF
+
+gnuplot -persist <<EOF
+set term wxt
+plot 'opencvm1_complex_ft.dat' matrix with image
+EOF
+
+gnuplot -persist <<EOF
+set term wxt
+plot 'opencvm1_complex_zeropadded_ft.dat' matrix with image
+EOF
+
+
+# gnuplot -persist <<EOF
+# 
+# set term wxt
+# 
+# while 1{
+# 	do for [i=1:9]{
+# 		# plot 'opencvm1_complex_after1.dat' matrix with image
+# 		plot sprintf('opencvm1_complex_after%d.dat',i) matrix with image
+# 		set title sprintf('%d', i)
+# 		pause 0.2
+# 		reread
+# 	}
+# }
+# EOF
 # gnuplot -persist <<EOF
 # set term wxt
 # plot 'sum_rows.dat' with line,\
