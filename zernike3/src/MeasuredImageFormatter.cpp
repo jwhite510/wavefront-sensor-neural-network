@@ -162,18 +162,44 @@ void MeasuredImageFormatter::Format(){
     for(int j=0; j < opencvm1.cols; j++)
       opencvm1_complex(i,j)=complex<double>(opencvm1.at<double>(cv::Point(i,j)),0);
 
-  Fft2 fft2(opencvm1_complex.size_0);
-  fft2shift(opencvm1_complex);
-  fft2.execute_fft(opencvm1_complex);
-  fft2shift(opencvm1_complex);
-  f.open("opencvm1_complex.dat");
+  f.open("opencvm1_complex_before.dat");
   for(int i=0; i < opencvm1_complex.size_0; i++){
       for(int j=0; j < opencvm1_complex.size_1; j++){
-        f<<abs(opencvm1_complex(i,j))<<"  ";
+        f<<opencvm1_complex(i,j).real()<<"  ";
       }f<<endl;
     }
     f.close();
 
+  for(int m=0; m < 10; m++){
+
+    Fft2 fft2(opencvm1_complex.size_0);
+    fft2shift(opencvm1_complex);
+    fft2.execute_fft(opencvm1_complex);
+    fft2shift(opencvm1_complex);
+
+    // apply linear phase
+    for(int i=0; i < opencvm1_complex.size_0; i++)
+      for(int j=0; j < opencvm1_complex.size_1; j++){
+        double phi= -0.1*m*(double)(i-(opencvm1_complex.size_0/2));
+        opencvm1_complex(i,j)*=exp(complex<double>(0,phi));
+      }
+
+    fft2shift(opencvm1_complex);
+    fft2.execute_ifft(opencvm1_complex);
+    fft2shift(opencvm1_complex);
+    for(int i=0; i < opencvm1_complex.length; i++){
+      opencvm1_complex.data[i]/=opencvm1_complex.length;
+    }
+
+    f.open("opencvm1_complex_after"+to_string(m)+".dat");
+    for(int i=0; i < opencvm1_complex.size_0; i++){
+      for(int j=0; j < opencvm1_complex.size_1; j++){
+        f<<opencvm1_complex(i,j).real()<<"  ";
+      }f<<endl;
+    }
+    f.close();
+
+  }
   // apply phase
 
   // // normalize to use imshow
