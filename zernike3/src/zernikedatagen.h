@@ -602,9 +602,9 @@ struct DataGenerator
     // for each zernike coeffieicent
     for(int i=0; i < zernike_cvector.size(); i++) {
       // make random scalar
-      float r1 = RandomF();
+      float r1 = 3.0;
       r1 *= 6; // scalar
-      if(RandomF() > 0.5)
+      if(1.0 > 0.5)
         r1 *= -1;
 
       // float r1 = 2.0; // TODO return this to normal, its disabled to show the cropping
@@ -621,7 +621,7 @@ struct DataGenerator
     // Python.call_function_np("plot_zernike", complex_object.data, vector<int>{complex_object.size_0,complex_object.size_1}, PyArray_COMPLEX64);
     cropinterp.crop_interp(complex_object,
         interped_arr, // OUT
-        0.2 // between 0 and 1 : the minimum image scale after interpolation
+        1.0 // between 0 and 1 : the minimum image scale after interpolation
         );
     // Python.call_function_np("plot_complex", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
     // Python.call("show");
@@ -687,28 +687,17 @@ struct DataGenerator
       f<<(*wavefonts.f)(i)<<endl;
     }f.close();
 
-    f.open("arr_before_prop.dat");
-    for(int i=0; i < interped_arr.size_0; i++){
-      for(int j=0; j < interped_arr.size_1; j++){
-        f<<abs(interped_arr(i,j))<<" ";
-      }f<<endl;
-    } f.close();
-
-
+    write_complex_array(slice_Si,"slice_Si");
+    write_complex_array(slice_cu,"slice_cu");
+    write_complex_array(interped_arr,"interped_arr_before");
 
     for(int i=0; i<steps_Si; i++) // 50 nm & dz: 10 nm
       forward_propagate(interped_arr, slice_Si, *wavefonts.f, params_Si, fft_2_interp);
     for(int i=0; i<steps_cu; i++)
       forward_propagate(interped_arr, slice_cu, *wavefonts.f, params_cu, fft_2_interp);
 
-    f.open("arr_prop.dat");
-    for(int i=0; i < interped_arr.size_0; i++){
-      for(int j=0; j < interped_arr.size_1; j++){
-        f<<abs(interped_arr(i,j))<<" ";
-      }f<<endl;
-    } f.close();
+    write_complex_array(interped_arr,"interped_arr_after");
     exit(0);
-
   }
 
   ~DataGenerator()

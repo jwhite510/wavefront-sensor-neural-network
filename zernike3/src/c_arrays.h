@@ -1,4 +1,5 @@
 #include <complex>
+#include <fstream>
 using namespace std;
 
 template<class T>
@@ -121,6 +122,24 @@ void normalize(const array2d<complex<float>> & arr)
     arr.data[i] /= maxval;
 }
 
+
+void write_complex_array(array2d<complex<float>>&arr, string filenameprefix)
+{
+  ofstream f;
+  f.open(filenameprefix+"_real.dat");
+  for(int i=0; i < arr.size_0; i++){
+    for(int j=0; j < arr.size_1; j++){
+      f<<arr(i,j).real()<<" ";
+    }f<<endl;
+  } f.close();
+
+  f.open(filenameprefix+"_imag.dat");
+  for(int i=0; i < arr.size_0; i++){
+    for(int j=0; j < arr.size_1; j++){
+      f<<arr(i,j).imag()<<" ";
+    }f<<endl;
+  } f.close();
+}
 
 
 
