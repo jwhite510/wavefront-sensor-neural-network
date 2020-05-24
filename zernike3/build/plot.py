@@ -112,8 +112,8 @@ if __name__ == "__main__":
     wavefront_before=np.expand_dims(wavefront_before,-1)
     with tf.Session() as sess:
         out=sess.run(propagate.through_wf,feed_dict={propagate.wavefront:wavefront_before})
-        plt.figure()
-        plt.imshow(np.squeeze(np.abs(out)))
+        # plt.figure()
+        # plt.imshow(np.squeeze(np.abs(out)))
 
     # propagate.through_wfs(wavefront_before)
     interped_arr_before=read_complex_array("interped_arr_before")
