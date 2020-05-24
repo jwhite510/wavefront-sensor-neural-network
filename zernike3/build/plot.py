@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-class params():
+
+class Params():
     def __init__(self):
         self.beta_Ta=None
         self.delta_Ta=None
@@ -22,24 +23,23 @@ def loadparams(filename,obj):
     obj.lam=tmp_params["lam"]
     obj.k=tmp_params["k"]
 
+class Propagate():
+    def __init__(self):
+        self.steps_Si=None
+        with open("steps_Si.dat","r") as file:
+            self.steps_Si=int(file.readlines()[0])
+        self.steps_cu=None
+        with open("steps_cu.dat","r") as file:
+            self.steps_cu=int(file.readlines()[0])
 
-def propagate():
+        self.params_Si=Params()
+        loadparams("params_Si.dat",self.params_Si)
+        self.params_cu=Params()
+        loadparams("params_cu.dat",self.params_cu)
 
-    steps_Si=None
-    with open("steps_Si.dat","r") as file:
-        steps_Si=int(file.readlines()[0])
-    steps_cu=None
-    with open("steps_cu.dat","r") as file:
-        steps_cu=int(file.readlines()[0])
-
-    params_Si=params()
-    loadparams("params_Si.dat",params_Si)
-    params_cu=params()
-    loadparams("params_cu.dat",params_cu)
-
-    wf_f=None
-    with open("wfs_f.dat","r") as file:
-        wf_f=np.array(file.readlines(),dtype=np.double)
+        self.wf_f=None
+        with open("wfs_f.dat","r") as file:
+            self.wf_f=np.array(file.readlines(),dtype=np.double)
 
 def plot_diffraction(arr):
     fig, ax = plt.subplots(1,2, figsize=(15,5))
@@ -49,12 +49,8 @@ def plot_diffraction(arr):
     ax[1].pcolormesh(np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(arr))))**2)
 
 if __name__ == "__main__":
-    propagate()
-    # plot_diffraction("arr_before_prop.dat")
-    # plot_diffraction("arr_prop.dat")
-
-
-    plt.show()
+    propagate=Propagate()
+    # plt.show()
 
 
 
