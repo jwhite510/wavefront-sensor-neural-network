@@ -12,4 +12,5 @@ matlab_cdi/*.mat
 mp_plotdata/
 __pycache__/
 venv
+zernike3/build/*.dat
 

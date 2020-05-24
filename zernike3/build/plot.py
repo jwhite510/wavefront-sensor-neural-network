@@ -1,55 +1,61 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def readarray(filename):
+class params():
+    def __init__(self):
+        self.beta_Ta=None
+        self.delta_Ta=None
+        self.dz=None
+        self.lam=None
+        self.k=None
 
-    shape = None
-    datatype = None
-    total_elems = 1
+def loadparams(filename,obj):
+    tmp_params={}
+    with open(filename) as file:
+        for line in file.readlines():
+            linesplit=line.replace(":","").split()
+            tmp_params[linesplit[0]]=float(linesplit[1])
 
-    # determine size and shape
-    with open(filename, "r") as file:
-        for linenum, line in enumerate(file.readlines()):
-            # determine data type
-            if linenum == 1:
-                if line.strip() == "float":
-                    datatype = np.float
-                if line.strip() == "complex_float":
-                    datatype = np.complex64
+    obj.beta_Ta=tmp_params["beta_Ta"]
+    obj.delta_Ta=tmp_params["delta_Ta"]
+    obj.dz=tmp_params["dz"]
+    obj.lam=tmp_params["lam"]
+    obj.k=tmp_params["k"]
 
-            # determine shape
-            elif linenum == 3:
-                shape = line.split()
-                shape = [int(s) for s in shape]
-                for e in shape:
-                    total_elems *= e
-                shape = tuple(shape)
-                break
-    arr = np.zeros((int(total_elems)), dtype=datatype)
-    index = 0
-    with open(filename, "r") as file:
-        for linenum, line in enumerate(file.readlines()):
 
-            if linenum > 4:
+def propagate():
 
-                if datatype == np.float:
-                    arr[index] = float(line)
+    steps_Si=None
+    with open("steps_Si.dat","r") as file:
+        steps_Si=int(file.readlines()[0])
+    steps_cu=None
+    with open("steps_cu.dat","r") as file:
+        steps_cu=int(file.readlines()[0])
 
-                elif datatype == np.complex64:
-                    arr[index] = complex(line)
+    params_Si=params()
+    loadparams("params_Si.dat",params_Si)
+    params_cu=params()
+    loadparams("params_cu.dat",params_cu)
 
-                index += 1
-    arr = arr.reshape(shape)
+    wf_f=None
+    with open("wfs_f.dat","r") as file:
+        wf_f=np.array(file.readlines(),dtype=np.double)
 
-    return arr
-
+def plot_diffraction(arr):
+    fig, ax = plt.subplots(1,2, figsize=(15,5))
+    fig.suptitle(arr)
+    arr=np.loadtxt(arr)
+    ax[0].pcolormesh(np.abs(arr))
+    ax[1].pcolormesh(np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(arr))))**2)
 
 if __name__ == "__main__":
+    propagate()
+    # plot_diffraction("arr_before_prop.dat")
+    # plot_diffraction("arr_prop.dat")
 
-    arr = readarray("zernike_polynom_com.txt")
 
-    # plt.figure()
-    # plt.pcolormesh(arr)
-    print(arr)
-    # plt.colorbar()
-    # plt.show()
+    plt.show()
+
+
+
+
