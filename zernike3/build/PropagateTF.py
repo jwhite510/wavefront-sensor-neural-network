@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import diffraction_functions
+import os
 
 def read_complex_array(filenameprefix):
     a=np.loadtxt(filenameprefix+"_real.dat")
@@ -30,31 +31,30 @@ def loadparams(filename,obj):
     obj.k=tmp_params["k"]
 
 class PropagateTF():
-    def __init__(self):
+    def __init__(self,fileprefix=""):
+
         self.steps_Si=None
-        with open("steps_Si.dat","r") as file:
+        with open(os.path.join(fileprefix,"steps_Si.dat"),"r") as file:
             self.steps_Si=int(file.readlines()[0])
         self.steps_cu=None
-        with open("steps_cu.dat","r") as file:
+        with open(os.path.join(fileprefix,"steps_cu.dat"),"r") as file:
             self.steps_cu=int(file.readlines()[0])
 
         self.params_Si=Params()
-        loadparams("params_Si.dat",self.params_Si)
+        loadparams(os.path.join(fileprefix,"params_Si.dat"),self.params_Si)
         self.params_cu=Params()
-        loadparams("params_cu.dat",self.params_cu)
+        loadparams(os.path.join(fileprefix,"params_cu.dat"),self.params_cu)
 
         self.wf_f=None
-        with open("wfs_f.dat","r") as file:
+        with open(os.path.join(fileprefix,"wfs_f.dat"),"r") as file:
             self.wf_f=np.array(file.readlines(),dtype=np.double)
 
-        self.slice_Si=read_complex_array("slice_Si")
-        self.slice_cu=read_complex_array("slice_cu")
-        self.wavefront=tf.placeholder(tf.complex64,shape=[None,128,128,1])
-        self.through_wf=self.setup_graph_through_wfs()
+        self.slice_Si=read_complex_array(os.path.join(fileprefix,"slice_Si"))
+        self.slice_cu=read_complex_array(os.path.join(fileprefix,"slice_cu"))
 
-    def setup_graph_through_wfs(self):
+    def setup_graph_through_wfs(self, wavefront):
 
-        wavefront_ref=self.wavefront
+        wavefront_ref=wavefront
         for _ in range(self.steps_Si):
             wavefront_ref=forward_propagate(wavefront_ref,self.slice_Si,self.wf_f,self.params_Si)
         for _ in range(self.steps_cu):

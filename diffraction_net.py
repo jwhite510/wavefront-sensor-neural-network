@@ -9,6 +9,7 @@ import diffraction_functions
 import pickle
 import sys
 from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
+from zernike3.build.PropagateTF import *
 
 
 class GetData():
@@ -106,7 +107,8 @@ class DiffractionNet():
         # reconstruction loss
         #####################
         # self.nn_nodes["recons_loss"] = TODO
-        self.nn_nodes["recons_diffraction_pattern"] = diffraction_functions.tf_reconstruct_diffraction_pattern(real_norm=self.nn_nodes["real_out"], imag_norm=self.nn_nodes["imag_out"])
+        propagateTF=PropagateTF("zernike3/build/")
+        self.nn_nodes["recons_diffraction_pattern"] = diffraction_functions.tf_reconstruct_diffraction_pattern(real_norm=self.nn_nodes["real_out"], imag_norm=self.nn_nodes["imag_out"],propagateTF=propagateTF)
         self.nn_nodes["reconstruction_loss"] = tf.losses.mean_squared_error(labels=self.x, predictions=self.nn_nodes["recons_diffraction_pattern"])
 
         self.nn_nodes["cost_function"] = self.nn_nodes["real_loss"] + self.nn_nodes["imag_loss"]

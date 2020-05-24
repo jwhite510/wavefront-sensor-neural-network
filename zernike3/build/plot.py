@@ -13,11 +13,15 @@ def plot_diffraction(arr,name):
 
 if __name__ == "__main__":
     propagate=PropagateTF()
+    wavefront=tf.placeholder(tf.complex64,shape=[None,128,128,1])
+    through_wf=propagate.setup_graph_through_wfs(wavefront)
+
+
     wavefront_before=read_complex_array("interped_arr_before")
     wavefront_before=np.expand_dims(wavefront_before,0)
     wavefront_before=np.expand_dims(wavefront_before,-1)
     with tf.Session() as sess:
-        out=sess.run(propagate.through_wf,feed_dict={propagate.wavefront:wavefront_before})
+        out=sess.run(through_wf,feed_dict={wavefront:wavefront_before})
         # plt.figure()
         # plt.imshow(np.squeeze(np.abs(out)))
 

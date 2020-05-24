@@ -366,7 +366,7 @@ def zernike_polynomial(N, m, n, scalef):
 
 
 
-def tf_reconstruct_diffraction_pattern(real_norm, imag_norm):
+def tf_reconstruct_diffraction_pattern(real_norm, imag_norm, propagateTF):
 
     # real_norm *= 2 # between 0 and 2
     # imag_norm *= 2 # between 0 and 2
@@ -374,7 +374,11 @@ def tf_reconstruct_diffraction_pattern(real_norm, imag_norm):
     # real_norm -= 1 # between -1 and 1
     # imag_norm -= 1 # between -1 and 1
 
-    complex_object_retrieved = tf.complex(real=real_norm, imag=imag_norm)
+    # propagate through wavefront
+    wavefront=tf.complex(real=real_norm,imag=imag_norm)
+    through_wf=propagateTF.setup_graph_through_wfs(wavefront)
+
+    complex_object_retrieved = tf.complex(real=tf.real(through_wf), imag=tf.imag(through_wf))
     diffraction_pattern = tf.abs(tf_fft2(complex_object_retrieved, dimmensions=[1,2]))**2
 
     diffraction_pattern = diffraction_pattern / tf.reduce_max(diffraction_pattern, keepdims=True, axis=[1,2]) # normalize the diffraction pattern
@@ -421,6 +425,35 @@ def tf_fft2(image_in, dimmensions):
 
     image_in = tf.transpose(image_in, perm=[0,3,1,2])
     image_in = tf.fft2d(image_in)
+    image_in = tf.transpose(image_in, perm=[0,2,3,1])
+
+    for _i in dimmensions:
+        dim_shift = int(int(image_in.shape[_i]) / 2)
+        image_in = tf.manip.roll(image_in, shift=dim_shift, axis=_i)
+
+    return image_in
+
+def tf_ifft2(image_in, dimmensions):
+    """
+        2D fourer transform matrix along dimmensions
+
+        image_in: n-dimmensional complex tensor
+        dimmensions: the dimmensions to do 2D FFt
+    """
+    assert len(dimmensions) == 2
+
+    # image_shifted = np.array(image_in)
+    for _i in dimmensions:
+        assert int(image_in.shape[_i]) % 2 == 0
+        dim_shift = int(int(image_in.shape[_i]) / 2)
+        image_in = tf.manip.roll(image_in, shift=dim_shift, axis=_i)
+
+    # function is only made for inner two dimmensions to be fourier transformed
+    # assert image_in.shape[0] == 1
+    assert image_in.shape[3] == 1
+
+    image_in = tf.transpose(image_in, perm=[0,3,1,2])
+    image_in = tf.ifft2d(image_in)
     image_in = tf.transpose(image_in, perm=[0,2,3,1])
 
     for _i in dimmensions:
