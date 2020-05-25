@@ -662,7 +662,7 @@ struct DataGenerator
     // Python.call_function_np("plot_zernike", complex_object.data, vector<int>{complex_object.size_0,complex_object.size_1}, PyArray_COMPLEX64);
     cropinterp.crop_interp(complex_object,
         interped_arr, // OUT
-        0.2 // between 0 and 1 : the minimum image scale after interpolation
+        0.5 // between 0 and 1 : the minimum image scale after interpolation
         );
     // Python.call_function_np("plot_complex", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
     // Python.call("show");
