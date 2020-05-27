@@ -2,16 +2,13 @@
 
 # set -e
 
-source zernike3/loadmodules.sh
+# source zernike3/loadmodules.sh
 
 declare -a runs=(
-
-"mpidata_36000_28_lrdynamic_no_output_constraint"
+# "newgputest"
+# "200"
+"teslatest1"
 "36000"
-
-"mpidata_36000_29_lrdynamic_no_output_constraint"
-"36000"
-
 )
 i=0
 while (( $i < ${#runs[@]}))
@@ -31,32 +28,7 @@ do
 	mpirun -np 20 a.out --count $training_samples --name train.hdf5 --buffersize 100
 	cd ../..
 
-	export batch_run_name=$run_name
-	echo submtting network training job $batch_run_name
-	sbatch --wait submit_gpu_job.slurm # start training network
-	export batch_run_name=$run_name
-	echo submtting network training job $batch_run_name
-	sbatch --wait submit_gpu_job.slurm # start training network
-	export batch_run_name=$run_name
-	echo submtting network training job $batch_run_name
-	sbatch --wait submit_gpu_job.slurm # start training network
-	export batch_run_name=$run_name
-	echo submtting network training job $batch_run_name
-	sbatch --wait submit_gpu_job.slurm # start training network
-	export batch_run_name=$run_name
-	echo submtting network training job $batch_run_name
-	sbatch --wait submit_gpu_job.slurm # start training network
-	export batch_run_name=$run_name
-	echo submtting network training job $batch_run_name
-	sbatch --wait submit_gpu_job.slurm # start training network
-	export batch_run_name=$run_name
-	echo submtting network training job $batch_run_name
-	sbatch --wait submit_gpu_job.slurm # start training network
-	export batch_run_name=$run_name
-	echo submtting network training job $batch_run_name
-	sbatch --wait submit_gpu_job.slurm # start training network
-	# 8 hours total runtime
-
+	python diffraction_net.py $run_name
 
 	i=$i+2
 done

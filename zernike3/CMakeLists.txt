@@ -4,9 +4,9 @@ project(zernikec2)
 add_definitions("-std=c++11 -O3 -ffast-math")
 
 # set numpy and python directories
-set(numpydir "/home/hi76tor/python_compiled/lib/python3.6/site-packages/numpy/core/include")
-set(PYTHON_LIBRARIES "/home/hi76tor/python_compiled_2/lib/libpython3.6m.so")
-set(PYTHON_INCLUDE_DIRS "/home/hi76tor/python_compiled_2/include/python3.6m")
+set(numpydir "/home/jonathon/mypython/lib/python3.6/site-packages/numpy/core/include")
+set(PYTHON_LIBRARIES "/usr/lib/x86_64-linux-gnu/libpython3.6m.so")
+set(PYTHON_INCLUDE_DIRS "/usr/include/python3.6m")
 find_package( GSL REQUIRED )
 find_package(MPI REQUIRED)
 

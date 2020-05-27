@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   array2d<complex<float>> interped_arr_wavefront(n_interp, n_interp);
   array3d<complex<float>> samples_buffer(buffer_size,n_interp,n_interp);
   array3d<complex<float>> interped_arr_wavefront_buffer(buffer_size,n_interp,n_interp);
-  DataGenerator datagenerator("/home/jonathon/Projects/diffraction_net/venv/",
+  DataGenerator datagenerator("/home/jonathon/mypython/",
       N_computational, // N_computational
       crop_size, // crop_size
       n_interp // n_interp
