@@ -111,7 +111,7 @@ class DiffractionNet():
         self.nn_nodes["recons_diffraction_pattern"] = diffraction_functions.tf_reconstruct_diffraction_pattern(real_norm=self.nn_nodes["real_out"], imag_norm=self.nn_nodes["imag_out"],propagateTF=propagateTF)
         self.nn_nodes["reconstruction_loss"] = tf.losses.mean_squared_error(labels=self.x, predictions=self.nn_nodes["recons_diffraction_pattern"])
 
-        self.nn_nodes["cost_function"] = self.nn_nodes["real_loss"] + self.nn_nodes["imag_loss"]
+        self.nn_nodes["cost_function"] = self.nn_nodes["real_loss"] + self.nn_nodes["imag_loss"] + self.nn_nodes["reconstruction_loss"]
         # + self.nn_nodes["imag_norm_factor_loss"]
 
         optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
@@ -716,6 +716,9 @@ class DiffractionNet():
 
     def evaluate_performance_measureddata(self):
         # view reconstruction from measured trace at various scales and orientations
+        calculate_retrieval_time=True
+        time1=None
+        time2=None
         for key in self.experimental_traces.keys():
             trace = self.experimental_traces[key]
             logger_name = key+"_reconstructed"
@@ -726,10 +729,19 @@ class DiffractionNet():
             retrieved_obj["measured_pattern"] = trace
             retrieved_obj["tf_reconstructed_diff"] = self.sess.run(
                     self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:trace})
+
+            if calculate_retrieval_time:
+                time1=time.time()
+
             retrieved_obj["real_output"] = self.sess.run(
                     self.nn_nodes["real_out"], feed_dict={self.x:trace})
             retrieved_obj["imag_output"] = self.sess.run(
                     self.nn_nodes["imag_out"], feed_dict={self.x:trace})
+
+            if calculate_retrieval_time:
+                time2=time.time()
+                print("time to retrieve real and imaginary part:"+str(time2-time1))
+                calculate_retrieval_time=False
 
             fig = diffraction_functions.plot_amplitude_phase_meas_retreival(
                     retrieved_obj,
