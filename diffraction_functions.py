@@ -182,7 +182,7 @@ def center_image_at_centroid(mat):
     dis_y = (s_x / 2) - c_y
 
     # scipy im shift
-    matsc = sc_im_shift(mat,(dis_y,dis_x)) # x / y notation is opposite from the roll, i checked
+    mat = sc_im_shift(mat,(dis_y,dis_x)) # x / y notation is opposite from the roll, i checked
     # mat = np.roll(mat, shift=int(dis_x), axis=1)
     # mat = np.roll(mat, shift=int(dis_y), axis=0)
 
