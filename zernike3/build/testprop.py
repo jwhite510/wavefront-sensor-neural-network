@@ -1,6 +1,8 @@
 import numpy as np
-import diffraction_functions
 import matplotlib.pyplot as plt
+import os
+os.sys.path.append("../..")
+import diffraction_functions
 
 def get_object_sensor(a):
     N = 1024

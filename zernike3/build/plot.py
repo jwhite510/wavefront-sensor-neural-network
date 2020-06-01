@@ -1,4 +1,6 @@
 import numpy as np
+import os
+os.sys.path.append("../..")
 import diffraction_functions
 import matplotlib.pyplot as plt
 import tensorflow as tf

@@ -5,8 +5,10 @@ import pickle
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
 import PIL.ImageOps
-import diffraction_functions
 import tables
+import os
+os.sys.path.append("../..")
+import diffraction_functions
 
 
 

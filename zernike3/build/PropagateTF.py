@@ -1,7 +1,8 @@
 import tensorflow as tf
 import numpy as np
-import diffraction_functions
 import os
+os.sys.path.append("../..")
+import diffraction_functions
 
 def read_complex_array(filenameprefix):
     a=np.loadtxt(filenameprefix+"_real.dat")
