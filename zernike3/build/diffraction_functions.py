@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage.interpolation import rotate
 from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.interpolation import shift as sc_shift
+from scipy.ndimage import shift as sc_im_shift
 from  astropy.io import fits
 from scipy.misc import factorial
 from skimage.transform import resize
@@ -82,8 +83,9 @@ def center_image_at_centroid(mat):
     # distance from centroid
     dis_x = (s_x / 2) - c_x
     dis_y = (s_x / 2) - c_y
-    mat = np.roll(mat, shift=int(dis_x), axis=1)
-    mat = np.roll(mat, shift=int(dis_y), axis=0)
+    mat = sc_im_shift(mat,(dis_y,dis_x)) # x / y notation is opposite from the roll, i checked
+    # mat = np.roll(mat, shift=int(dis_x), axis=1)
+    # mat = np.roll(mat, shift=int(dis_y), axis=0)
     return mat
 
 
