@@ -15,6 +15,7 @@ from scipy.ndimage import shift as sc_im_shift
 from scipy.misc import factorial
 from skimage.transform import resize
 from scipy import ndimage
+import scipy.io
 
 def fits_to_numpy(fits_file_name):
     thing = fits.open(fits_file_name)

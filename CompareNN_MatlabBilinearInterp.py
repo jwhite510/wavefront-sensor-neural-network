@@ -1,4 +1,5 @@
 import numpy as np
+import scipy
 import diffraction_functions
 import matplotlib.pyplot as plt
 import pickle
@@ -13,25 +14,27 @@ if __name__ == "__main__":
     filename=os.path.join(folder_dir,sample_name)
     print("filename =>", filename)
     with open(filename,"rb") as file:
-        obj=pickle.load(file)
-    # complex_beam=np.squeeze(obj["real_output"]+1j*obj["imag_output"])
-    diffraction_functions.plot_amplitude_phase_meas_retreival(obj,"obj")
+        nn_retrieved=pickle.load(file)
+    # complex_beam=np.squeeze(nn_retrieved["real_output"]+1j*nn_retrieved["imag_output"])
+
+    diffraction_functions.plot_amplitude_phase_meas_retreival(nn_retrieved,"nn_retrieved")
 
     # run retreival on this with matlab
-    print(obj.keys())
+    print(nn_retrieved.keys())
     plt.figure()
-    plt.pcolormesh(np.squeeze(obj['measured_pattern']))
+    plt.pcolormesh(np.squeeze(nn_retrieved['measured_pattern']))
     plt.title("measured_pattern")
 
     # get amplitude mask
-    N = np.shape(obj["measured_pattern"])[1]
+    N = np.shape(nn_retrieved["measured_pattern"])[1]
     _, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
     plt.figure()
     plt.pcolormesh(amplitude_mask)
     plt.title("amplitude_mask")
 
     # retrieve the object from matlab CDI code
-    retrieved_obj=diffraction_functions.matlab_cdi_retrieval(np.squeeze(obj['measured_pattern']),amplitude_mask)
+    matlabcdi_retrieved=diffraction_functions.matlab_cdi_retrieval(np.squeeze(nn_retrieved['measured_pattern']),amplitude_mask)
+    diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved,"matlabcdi_retrieved")
 
 
     plt.show()
