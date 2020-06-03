@@ -861,6 +861,49 @@ def get_and_format_experimental_trace(N, transform):
 
     return measured_pattern
 
+def matlab_cdi_retrieval(diffraction_pattern, support):
+
+    # move to matlab cdi folder
+    start_dir = os.getcwd()
+    os.chdir("matlab_cdi")
+
+    randomid_num = np.random.randint(10,size=10)
+    randomid = ""
+    for r in randomid_num:
+        randomid += str(r)
+
+    diffraction_pattern_file = randomid + "_diffraction.mat"
+    support_file = randomid + "_support.mat"
+
+    retrieved_obj_file = randomid + "_retrieved_obj.mat"
+    reconstructed_file = randomid + "_reconstructed.mat"
+
+    scipy.io.savemat(support_file, {'support':support})
+    scipy.io.savemat(diffraction_pattern_file, {'diffraction':diffraction_pattern})
+
+    # matlab load file
+    with open("loaddata.m", "w") as file:
+        file.write("function [diffraction_pattern_file, support_file, retrieved_obj_file, reconstructed_file] = loaddata()\n")
+        file.write("diffraction_pattern_file = '{}';\n".format(diffraction_pattern_file))
+        file.write("support_file = '{}';\n".format(support_file))
+        file.write("retrieved_obj_file = '{}';\n".format(retrieved_obj_file))
+        file.write("reconstructed_file = '{}';\n".format(reconstructed_file))
+        file.flush()
+    os.system('matlab -nodesktop -r seeded_run_CDI_noprocessing')
+
+    # load the results from matlab run
+    rec_object = scipy.io.loadmat(retrieved_obj_file)['rec_object']
+    recon_diffracted = scipy.io.loadmat(reconstructed_file)['recon_diffracted']
+
+    # go back to starting dir
+    os.chdir(start_dir)
+
+    retrieved_obj = {}
+    retrieved_obj["measured_pattern"] = diffraction_pattern
+    retrieved_obj["tf_reconstructed_diff"] = recon_diffracted
+    retrieved_obj["real_output"] = np.real(rec_object)
+    retrieved_obj["imag_output"] = np.imag(rec_object)
+    return retrieved_obj
 
 
 
