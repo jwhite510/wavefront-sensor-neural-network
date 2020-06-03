@@ -4,6 +4,7 @@ import diffraction_functions
 import matplotlib.pyplot as plt
 import pickle
 import os
+from scipy import interpolate
 
 def get_interpolation_points(amplitude_mask):
     """
@@ -69,27 +70,57 @@ if __name__ == "__main__":
     N = np.shape(nn_retrieved["measured_pattern"])[1]
     _, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
     # get interpolation points
-    points=get_interpolation_points(amplitude_mask)
+    x,y=points=get_interpolation_points(amplitude_mask)
 
     plt.figure()
     plt.pcolormesh(amplitude_mask)
     plt.title("amplitude_mask")
 
-    # retrieve the object from matlab CDI code
-    matlabcdi_retrieved=diffraction_functions.matlab_cdi_retrieval(np.squeeze(nn_retrieved['measured_pattern']),amplitude_mask)
+    # # retrieve the object from matlab CDI code
+    # matlabcdi_retrieved=diffraction_functions.matlab_cdi_retrieval(np.squeeze(nn_retrieved['measured_pattern']),amplitude_mask)
+    # with open("matlabcdi_retrieved.p","wb") as file:
+        # pickle.dump(matlabcdi_retrieved,file)
+    with open("matlabcdi_retrieved.p","rb") as file:
+        matlabcdi_retrieved=pickle.load(file)
     diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved,"matlabcdi_retrieved")
-
-
-
 
     # check if t
     matlab_complex_object=matlabcdi_retrieved["real_output"]+1j*matlabcdi_retrieved["imag_output"]
-    plt.figure(10)
+
+    z=[]
+    plt.figure()
+    plt.title("interpolation points")
     plt.pcolormesh(np.real(matlab_complex_object))
-    plt.figure(11)
-    plt.pcolormesh(np.imag(matlab_complex_object))
+    for _x,_y in zip(x,y):
+        plt.scatter(_x,_y,s=2.0,color="red")
+        z.append(matlab_complex_object[_y,_x])
+    z=np.array(z)
 
+    finterp_real=interpolate.interp2d(x,y,np.real(z),kind='linear')
+    finterp_imag=interpolate.interp2d(x,y,np.imag(z),kind='linear')
 
+    interp_x=np.linspace(0,128,100) # x / columns
+    interp_y=np.linspace(0,128,100) # y / rows
+    z_interp_real=finterp_real(
+            interp_x,
+            interp_y
+            )
+    z_interp_imag=finterp_imag(
+            interp_x,
+            interp_y
+            )
+
+    fig,ax=plt.subplots(1,2)
+    ax[0].pcolormesh(np.real(matlab_complex_object))
+    ax[0].set_title("real")
+    ax[1].pcolormesh(np.imag(matlab_complex_object))
+    ax[1].set_title("imag")
+
+    fig,ax=plt.subplots(1,2)
+    ax[0].pcolormesh(interp_x,interp_y,z_interp_real)
+    ax[0].set_title("real, INTERP")
+    ax[1].pcolormesh(interp_x,interp_y,z_interp_imag)
+    ax[1].set_title("imag, INTERP")
 
     plt.show()
 
