@@ -26,7 +26,15 @@ def fits_to_numpy(fits_file_name):
 
 def plot_amplitude_phase_meas_retreival(retrieved_obj, title):
 
-    # print(retrieved_obj.keys())
+    # get axes for retrieved object and diffraction pattern
+    N=np.shape(np.squeeze(retrieved_obj['measured_pattern']))[0]
+    simulation_axes, _ = get_amplitude_mask_and_imagesize(N, int(N/2))
+
+    # object
+    x=simulation_axes['object']['x'] # meters
+    x*=1e6
+    f=simulation_axes['diffraction_plane']['f'] # 1/meters
+    f*=1e-6
 
     fig = plt.figure(figsize=(10,10))
     gs = fig.add_gridspec(4,2)
@@ -71,28 +79,30 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title):
     # obj_phase[:, 10:20] = np.max(obj_phase)
     # obj_phase[:, -30:-20] = np.max(obj_phase)
 
-    im = axes["phase"].pcolormesh(obj_phase)
+    im = axes["phase"].pcolormesh(x,x,obj_phase)
     axes["phase"].text(0.2, 0.9,"phase(retrieved)", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["phase"])
-    axes["phase"].axvline(x=m_index[1], color="red", alpha=0.8)
-    axes["phase"].axhline(y=m_index[0], color="blue", alpha=0.8)
+    axes["phase"].axvline(x=x[m_index[1]], color="red", alpha=0.8)
+    axes["phase"].axhline(y=x[m_index[0]], color="blue", alpha=0.8)
 
-    axes["phase_horizontal"].plot(obj_phase[m_index[0], :], color="blue")
+    axes["phase_horizontal"].plot(x,obj_phase[m_index[0], :], color="blue")
     axes["phase_horizontal"].text(0.2, -0.25,"phase(horizontal)", fontsize=10, ha='center', transform=axes["phase_horizontal"].transAxes, backgroundcolor="blue")
 
-    axes["phase_vertical"].plot(obj_phase[:, m_index[1]], color="red")
+    axes["phase_vertical"].plot(x,obj_phase[:, m_index[1]], color="red")
     axes["phase_vertical"].text(0.2, -0.25,"phase(vertical)", fontsize=10, ha='center', transform=axes["phase_vertical"].transAxes, backgroundcolor="red")
 
 
-    im = axes["intensity"].pcolormesh(I)
+    im = axes["intensity"].pcolormesh(x,x,I)
     axes["intensity"].text(0.2, 0.9,"intensity(retrieved)", fontsize=10, ha='center', transform=axes["intensity"].transAxes, backgroundcolor="cyan")
+    axes["intensity"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["intensity"])
 
-    im = axes["measured"].pcolormesh(np.squeeze(retrieved_obj["measured_pattern"]))
+    im = axes["measured"].pcolormesh(f,f,np.squeeze(retrieved_obj["measured_pattern"]))
+    axes["measured"].set_ylabel(r"frequency [1/m]$\cdot 10^{6}$")
     axes["measured"].text(0.2, 0.9,"measured", fontsize=10, ha='center', transform=axes["measured"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["measured"])
 
-    im = axes["reconstructed"].pcolormesh(np.squeeze(retrieved_obj["tf_reconstructed_diff"]))
+    im = axes["reconstructed"].pcolormesh(f,f,np.squeeze(retrieved_obj["tf_reconstructed_diff"]))
     axes["reconstructed"].text(0.2, 0.9,"reconstructed", fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
 
     # calc mse
@@ -104,11 +114,12 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title):
 
     fig.colorbar(im, ax=axes["reconstructed"])
 
-    im = axes["real"].pcolormesh(np.squeeze(retrieved_obj["real_output"]))
+    im = axes["real"].pcolormesh(x,x,np.squeeze(retrieved_obj["real_output"]))
     axes["real"].text(0.2, 0.9,"real(retrieved)", fontsize=10, ha='center', transform=axes["real"].transAxes, backgroundcolor="cyan")
+    axes["real"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["real"])
 
-    im = axes["imag"].pcolormesh(np.squeeze(retrieved_obj["imag_output"]))
+    im = axes["imag"].pcolormesh(x,x,np.squeeze(retrieved_obj["imag_output"]))
     axes["imag"].text(0.2, 0.9,"imag(retrieved)", fontsize=10, ha='center', transform=axes["imag"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["imag"])
 
