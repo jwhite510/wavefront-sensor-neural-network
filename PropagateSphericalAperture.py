@@ -44,11 +44,25 @@ if __name__ == "__main__":
     steps_cu=int(round(cu_distance/params_cu.dz))
     steps_Si=int(round(si_distance/params_Si.dz))
 
+    # steps_Si=None
+    # with open(os.path.join("zernike3/build/steps_Si.dat"),"r") as file:
+        # steps_Si=int(file.readlines()[0])
+    # steps_cu=None
+    # with open(os.path.join("zernike3/build/steps_cu.dat"),"r") as file:
+        # steps_cu=int(file.readlines()[0])
+
     # create the material
     slice_Si=create_aperture_material(N,x,params_Si)
     slice_cu=create_aperture_material(N,x,params_cu)
+
+    # test the wavefront sensor
     # slice_Si=PropagateTF.read_complex_array("zernike3/build/slice_Si")
     # slice_cu=PropagateTF.read_complex_array("zernike3/build/slice_cu")
+
+
+    # increasing the wavelength will show the effect of propagation
+    # params_Si.lam*=20
+    # params_cu.lam*=20
 
     propagated=wavefront
     for _ in range(steps_Si):
