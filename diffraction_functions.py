@@ -24,7 +24,7 @@ def fits_to_numpy(fits_file_name):
     return nparr
 
 
-def plot_amplitude_phase_meas_retreival(retrieved_obj, title):
+def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_aperture=False):
 
     # get axes for retrieved object and diffraction pattern
     N=np.shape(np.squeeze(retrieved_obj['measured_pattern']))[0]
@@ -93,6 +93,14 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title):
 
 
     im = axes["intensity"].pcolormesh(x,x,I)
+
+    # plot the spherical aperture
+    if plot_spherical_aperture:
+        # circle to show where the wavefront originates
+        circle=plt.Circle((0,0),2.7,color='r',fill=False,linewidth=2.0)
+        axes["intensity"].add_artist(circle)
+        axes["intensity"].text(0.8, 0.7,"Spherical\nAperture\n2.7 um", fontsize=10, ha='center', transform=axes["intensity"].transAxes,color="red")
+
     axes["intensity"].text(0.2, 0.9,"intensity(retrieved)", fontsize=10, ha='center', transform=axes["intensity"].transAxes, backgroundcolor="cyan")
     axes["intensity"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["intensity"])

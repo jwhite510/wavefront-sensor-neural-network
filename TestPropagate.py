@@ -76,7 +76,7 @@ if __name__=="__main__":
                 "tf_reconstructed_diff":np.zeros_like(np.abs(complex_beam_prop)),
                 "real_output":np.real(complex_beam_prop),
                 "imag_output":np.imag(complex_beam_prop)},
-                "z:-500 um -> + "+str(round(z*1e6,1))+" um [Simulated]")
+                "z:-500 um -> + "+str(round(z*1e6,1))+" um [Simulated]",plot_spherical_aperture=True)
         plt.savefig(str(_i)+"_SIMULATEDpropfrom-500z__"+str(round(z*1e6,1))+"_um_prop.png")
         plt.close(fig)
         print("saving:"+str(z*1e6)+"um")
