@@ -8,8 +8,12 @@ try photon counts with different numbers
 
 		-- add poisson noise first, then add gaussian noise --done
 
-	-- use matlab code for interpolation of wavefront
 
+-- add square wavefront sensor
+-- python script for adding noise to hdf5 dataset
+
+
+-- use matlab code for interpolation of wavefront
 
 with the square wavefront sensor
 	pixel size -
