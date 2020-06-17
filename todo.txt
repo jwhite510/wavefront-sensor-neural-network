@@ -1,0 +1,24 @@
+
+test with squares or circles as the wavefront sensor
+
+try photon counts with different numbers
+	-- poisson noise
+	-- gaussian noise at different levels
+	-- use dark image for noise distribution
+
+		-- add poisson noise first, then add gaussian noise
+
+	-- use matlab code for interpolation of wavefront
+
+
+with the square wavefront sensor
+	pixel size -
+		4.8 um
+		2048x2592
+
+	distance -
+		16 mm distance
+
+	wavelength -
+
+
