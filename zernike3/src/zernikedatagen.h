@@ -594,6 +594,9 @@ struct DataGenerator
     // write the parameters to files
     writeparamfiles();
 
+    // initialize date noise generator
+    Python.call2("initialize_camera_noise","../../SquareWFtest/CameraNoise/1_1000/Bild_1.png");
+
 
   }
   void writeparamfiles()

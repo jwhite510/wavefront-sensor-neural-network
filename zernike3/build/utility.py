@@ -11,6 +11,21 @@ os.sys.path.append("../..")
 import diffraction_functions
 
 
+class CameraNoise():
+    def __init__(self,imagefile):
+        print("init camera noise")
+        self.imagefile=imagefile
+        self.im = Image.open(self.imagefile)
+        self.im=self.im.convert("L")
+        self.im=np.array(self.im)
+
+        # flatten the array
+        self.distribution=self.im.reshape(-1)
+
+def initialize_camera_noise(imagefile):
+    print("called initialize_camera_noise")
+    global GLOBAL_cameranoise
+    GLOBAL_cameranoise=CameraNoise(imagefile)
 
 def plot(array):
     plt.figure()
@@ -397,17 +412,6 @@ def view_array(array):
     plt.show()
 
 def save_to_hdf5(filename, wavefront_sensor, wavefront):
-
-    # plt.figure()
-    # plt.imshow(np.real(wavefront[0,:,:]))
-    # plt.title("wavefront")
-    # plt.colorbar()
-
-    # plt.figure()
-    # plt.imshow(np.real(wavefront_sensor[0,:,:]))
-    # plt.title("wavefront_sensor")
-    # plt.colorbar()
-    # plt.show()
     print("save_to_hdf5 called")
     try:
 
@@ -423,14 +427,38 @@ def save_to_hdf5(filename, wavefront_sensor, wavefront):
             for i in range(np.shape(wavefront)[0]):
                 object_real = np.real(wavefront[i,:,:])
                 object_imag = np.imag(wavefront[i,:,:])
-                diffraction_pattern_with_noise = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(wavefront_sensor[i,:,:]))))**2
+                diffraction_pattern_sim = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(wavefront_sensor[i,:,:]))))**2
 
-                # normalize
-                diffraction_pattern_with_noise = diffraction_pattern_with_noise / np.max(diffraction_pattern_with_noise)
-                diffraction_pattern_with_noise = diffraction_functions.center_image_at_centroid(diffraction_pattern_with_noise)
+                # apply poisson noise
+                peak_signal_counts=50
+                scalar=peak_signal_counts/np.max(diffraction_pattern_sim)
+
+                diffraction_pattern_with_noise_poisson=diffraction_pattern_sim*scalar
+                diffraction_pattern_with_noise_poisson=np.random.poisson(diffraction_pattern_with_noise_poisson)
+
+                # draw from random sample
+                # apply camera noise
+                total_sim_size=diffraction_pattern_sim.shape[0]*diffraction_pattern_sim.shape[1]
+                camera_noise=np.random.choice(GLOBAL_cameranoise.distribution,size=total_sim_size)
+                camera_noise=camera_noise.reshape(diffraction_pattern_sim.shape)
+
+                diffraction_pattern_with_noise_poisson_and_camera=diffraction_pattern_with_noise_poisson+camera_noise
+
+                diffraction_pattern_sim=diffraction_pattern_with_noise_poisson_and_camera
+
+                # plt.figure()
+                # plt.pcolormesh(diffraction_pattern_with_noise_poisson_and_camera)
+                # plt.colorbar()
+                # plt.show()
+
+                # take the original noise free diffraction pattern
+                diffraction_pattern_sim = diffraction_pattern_sim / np.max(diffraction_pattern_sim)
+
+
+                diffraction_pattern_sim = diffraction_functions.center_image_at_centroid(diffraction_pattern_sim)
                 hd5file.root.object_real.append(object_real.reshape(1,-1))
                 hd5file.root.object_imag.append(object_imag.reshape(1,-1))
-                hd5file.root.diffraction.append(diffraction_pattern_with_noise.reshape(1,-1))
+                hd5file.root.diffraction.append(diffraction_pattern_sim.reshape(1,-1))
 
             print("calling flush")
             hd5file.flush()

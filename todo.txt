@@ -2,11 +2,11 @@
 test with squares or circles as the wavefront sensor
 
 try photon counts with different numbers
-	-- poisson noise
-	-- gaussian noise at different levels
-	-- use dark image for noise distribution
+	-- poisson noise --done
+	-- gaussian noise at different levels --done
+	-- use dark image for noise distribution --done
 
-		-- add poisson noise first, then add gaussian noise
+		-- add poisson noise first, then add gaussian noise --done
 
 	-- use matlab code for interpolation of wavefront
 
