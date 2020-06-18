@@ -49,6 +49,9 @@ if __name__ == "__main__":
             print("samples =>", samples)
             for _i in range(samples):
 
+                if _i % 100 == 0:
+                    print("add noise to sample:"+str(_i))
+
                 object_real=hd5file.root.object_real[_i, :].reshape(N,N)
                 object_imag=hd5file.root.object_imag[_i, :].reshape(N,N)
                 diffraction=hd5file.root.diffraction[_i, :].reshape(N,N)

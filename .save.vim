@@ -2,37 +2,53 @@ let SessionLoad = 1
 let s:so_save = &so | let s:siso_save = &siso | set so=0 siso=0
 let v:this_session=expand("<sfile>:p")
 silent only
-cd ~/Projects/diffraction_net
+cd ~/diffraction_net
 if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +30 run_tests.sh
-badd +0 term://.//2562:/bin/bash
-badd +9 term://.//2919:/bin/bash
-badd +0 term://.//3267:/bin/bash
-badd +218 diffraction_net.py
-badd +97 zernike3/src/main.cpp
-badd +290 zernike3/src/zernikedatagen.h
-badd +0 todo.txt
-badd +19 diffraction_functions.py
-badd +2 term://.//4630:/bin/bash
-badd +0 term://.//4780:/bin/bash
-badd +0 term://.//4842:/bin/bash
-badd +0 .git/index
+badd +9 todo.txt
+badd +1 todo_old.txt
+badd +33 zernike3/src/main.cpp
+badd +278 zernike3/src/pythonarrays.h
+badd +43 zernike3/build/utility.py
+badd +10008 term://.//45556:/bin/bash
+badd +5 zernike3/runmpi.sh
+badd +25 run_tests.sh
+badd +538 zernike3/src/zernikedatagen.h
+badd +205 diffraction_functions.py
+badd +20 diffraction_net.py
+badd +22 term://.//20302:/bin/bash
+badd +1 .git/index
+badd +385 term://.//20502:/bin/bash
+badd +0 term://.//20791:/bin/bash
+badd +2843 term://.//37544:/bin/bash
+badd +36 zernike3/build/addnoise.py
+badd +4 add_noise.sh
+badd +1 term://.//44787:/bin/bash
+badd +1 fugitive:///home/jonathon/diffraction_net/.git//0/zernike3/build/addnoise.py
+badd +786 term://.//657:/bin/bash
+badd +0 term://.//783:/bin/bash
+badd +47 zernike3/build/PropagateTF.py
+badd +153 ~/.bashrc
+badd +0 term://.//6602:/bin/bash
 argglobal
 %argdel
-$argadd .
+$argadd ./
 set stal=2
-edit run_tests.sh
+edit add_noise.sh
 set splitbelow splitright
+wincmd _ | wincmd |
+split
+1wincmd k
 wincmd _ | wincmd |
 vsplit
 1wincmd h
 wincmd w
+wincmd w
 wincmd _ | wincmd |
-split
-1wincmd k
+vsplit
+1wincmd h
 wincmd w
 set nosplitbelow
 set nosplitright
@@ -41,13 +57,16 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe 'vert 1resize ' . ((&columns * 105 + 105) / 211)
-exe '2resize ' . ((&lines * 15 + 29) / 58)
-exe 'vert 2resize ' . ((&columns * 105 + 105) / 211)
-exe '3resize ' . ((&lines * 39 + 29) / 58)
-exe 'vert 3resize ' . ((&columns * 105 + 105) / 211)
+exe '1resize ' . ((&lines * 11 + 24) / 49)
+exe 'vert 1resize ' . ((&columns * 106 + 106) / 212)
+exe '2resize ' . ((&lines * 11 + 24) / 49)
+exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
+exe '3resize ' . ((&lines * 34 + 24) / 49)
+exe 'vert 3resize ' . ((&columns * 110 + 106) / 212)
+exe '4resize ' . ((&lines * 34 + 24) / 49)
+exe 'vert 4resize ' . ((&columns * 101 + 106) / 212)
 argglobal
-if bufexists("term://.//2562:/bin/bash") | buffer term://.//2562:/bin/bash | else | edit term://.//2562:/bin/bash | endif
+if bufexists("term://.//44787:/bin/bash") | buffer term://.//44787:/bin/bash | else | edit term://.//44787:/bin/bash | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -56,31 +75,13 @@ setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-let s:l = 1798 - ((54 * winheight(0) + 27) / 55)
+let s:l = 333 - ((10 * winheight(0) + 5) / 11)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-1798
-normal! 050|
-lcd ~/Projects/diffraction_net
-wincmd w
-argglobal
-if bufexists("term://.//3267:/bin/bash") | buffer term://.//3267:/bin/bash | else | edit term://.//3267:/bin/bash | endif
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-let s:l = 20 - ((14 * winheight(0) + 7) / 15)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-20
+333
 normal! 0
-lcd ~/Projects/diffraction_net
+lcd ~/diffraction_net
 wincmd w
 argglobal
 setlocal fdm=manual
@@ -92,28 +93,86 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 12 - ((11 * winheight(0) + 19) / 39)
+let s:l = 4 - ((2 * winheight(0) + 5) / 11)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-12
-normal! 02|
-lcd ~/Projects/diffraction_net
+4
+normal! 0
+lcd ~/diffraction_net
 wincmd w
-exe 'vert 1resize ' . ((&columns * 105 + 105) / 211)
-exe '2resize ' . ((&lines * 15 + 29) / 58)
-exe 'vert 2resize ' . ((&columns * 105 + 105) / 211)
-exe '3resize ' . ((&lines * 39 + 29) / 58)
-exe 'vert 3resize ' . ((&columns * 105 + 105) / 211)
-tabedit ~/Projects/diffraction_net/diffraction_net.py
+argglobal
+if bufexists("~/diffraction_net/zernike3/build/addnoise.py") | buffer ~/diffraction_net/zernike3/build/addnoise.py | else | edit ~/diffraction_net/zernike3/build/addnoise.py | endif
+setlocal fdm=indent
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=
+setlocal fdl=2
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+12
+normal! zo
+26
+normal! zo
+45
+normal! zo
+47
+normal! zo
+52
+normal! zo
+53
+normal! zo
+let s:l = 42 - ((16 * winheight(0) + 17) / 34)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+42
+normal! 05|
+lcd ~/diffraction_net
+wincmd w
+argglobal
+if bufexists("term://.//783:/bin/bash") | buffer term://.//783:/bin/bash | else | edit term://.//783:/bin/bash | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+let s:l = 2 - ((1 * winheight(0) + 17) / 34)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+2
+normal! 012|
+lcd ~/diffraction_net
+wincmd w
+exe '1resize ' . ((&lines * 11 + 24) / 49)
+exe 'vert 1resize ' . ((&columns * 106 + 106) / 212)
+exe '2resize ' . ((&lines * 11 + 24) / 49)
+exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
+exe '3resize ' . ((&lines * 34 + 24) / 49)
+exe 'vert 3resize ' . ((&columns * 110 + 106) / 212)
+exe '4resize ' . ((&lines * 34 + 24) / 49)
+exe 'vert 4resize ' . ((&columns * 101 + 106) / 212)
+tabedit ~/diffraction_net/run_tests.sh
 set splitbelow splitright
+wincmd _ | wincmd |
+split
+1wincmd k
 wincmd _ | wincmd |
 vsplit
 1wincmd h
 wincmd w
+wincmd w
 wincmd _ | wincmd |
-split
-1wincmd k
+vsplit
+wincmd _ | wincmd |
+vsplit
+2wincmd h
+wincmd w
 wincmd w
 set nosplitbelow
 set nosplitright
@@ -122,56 +181,18 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe 'vert 1resize ' . ((&columns * 135 + 105) / 211)
-exe '2resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 2resize ' . ((&columns * 75 + 105) / 211)
-exe '3resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 3resize ' . ((&columns * 75 + 105) / 211)
+exe '1resize ' . ((&lines * 15 + 24) / 49)
+exe 'vert 1resize ' . ((&columns * 106 + 106) / 212)
+exe '2resize ' . ((&lines * 15 + 24) / 49)
+exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
+exe '3resize ' . ((&lines * 30 + 24) / 49)
+exe 'vert 3resize ' . ((&columns * 106 + 106) / 212)
+exe '4resize ' . ((&lines * 30 + 24) / 49)
+exe 'vert 4resize ' . ((&columns * 52 + 106) / 212)
+exe '5resize ' . ((&lines * 30 + 24) / 49)
+exe 'vert 5resize ' . ((&columns * 52 + 106) / 212)
 argglobal
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=13
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-62
-normal! zo
-63
-normal! zo
-178
-normal! zo
-204
-normal! zo
-208
-normal! zo
-209
-normal! zo
-213
-normal! zo
-233
-normal! zo
-239
-normal! zo
-249
-normal! zo
-258
-normal! zo
-292
-normal! zo
-301
-normal! zo
-let s:l = 235 - ((35 * winheight(0) + 27) / 55)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-235
-normal! 09|
-lcd ~/Projects/diffraction_net
-wincmd w
-argglobal
-if bufexists("term://.//4780:/bin/bash") | buffer term://.//4780:/bin/bash | else | edit term://.//4780:/bin/bash | endif
+if bufexists("term://.//45556:/bin/bash") | buffer term://.//45556:/bin/bash | else | edit term://.//45556:/bin/bash | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -180,16 +201,16 @@ setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-let s:l = 7 - ((6 * winheight(0) + 13) / 27)
+let s:l = 10015 - ((14 * winheight(0) + 7) / 15)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-7
-normal! 0
-lcd ~/Projects/diffraction_net
+10015
+normal! 053|
+lcd ~/diffraction_net
 wincmd w
 argglobal
-if bufexists("term://.//4842:/bin/bash") | buffer term://.//4842:/bin/bash | else | edit term://.//4842:/bin/bash | endif
+if bufexists("term://.//6602:/bin/bash") | buffer term://.//6602:/bin/bash | else | edit term://.//6602:/bin/bash | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -198,29 +219,62 @@ setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-let s:l = 32 - ((4 * winheight(0) + 13) / 27)
+let s:l = 2 - ((1 * winheight(0) + 7) / 15)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-32
-normal! 09|
-lcd ~/Projects/diffraction_net
+2
+normal! 013|
+lcd ~/diffraction_net
 wincmd w
-exe 'vert 1resize ' . ((&columns * 135 + 105) / 211)
-exe '2resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 2resize ' . ((&columns * 75 + 105) / 211)
-exe '3resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 3resize ' . ((&columns * 75 + 105) / 211)
-tabedit ~/Projects/diffraction_net/diffraction_net.py
-set splitbelow splitright
-set nosplitbelow
-set nosplitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
 argglobal
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+silent! normal! zE
+let s:l = 25 - ((13 * winheight(0) + 15) / 30)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+25
+normal! 09|
+lcd ~/diffraction_net
+wincmd w
+argglobal
+if bufexists("~/diffraction_net/zernike3/build/addnoise.py") | buffer ~/diffraction_net/zernike3/build/addnoise.py | else | edit ~/diffraction_net/zernike3/build/addnoise.py | endif
+setlocal fdm=indent
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+26
+normal! zo
+45
+normal! zo
+47
+normal! zo
+52
+normal! zo
+53
+normal! zo
+let s:l = 41 - ((35 * winheight(0) + 15) / 30)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+41
+normal! 017|
+lcd ~/diffraction_net
+wincmd w
+argglobal
+if bufexists("~/diffraction_net/diffraction_net.py") | buffer ~/diffraction_net/diffraction_net.py | else | edit ~/diffraction_net/diffraction_net.py | endif
 setlocal fdm=indent
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -229,44 +283,40 @@ setlocal fdl=13
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-62
+16
 normal! zo
 63
 normal! zo
-178
+64
 normal! zo
-204
-normal! zo
-208
-normal! zo
-209
-normal! zo
-213
-normal! zo
-233
-normal! zo
-239
-normal! zo
-249
-normal! zo
-258
-normal! zo
-292
-normal! zo
-301
-normal! zo
-let s:l = 218 - ((25 * winheight(0) + 27) / 55)
+let s:l = 864 - ((10 * winheight(0) + 15) / 30)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-218
-normal! 021|
-lcd ~/Projects/diffraction_net
-tabedit ~/Projects/diffraction_net/.git/index
+864
+normal! 023|
+lcd ~/diffraction_net
+wincmd w
+3wincmd w
+exe '1resize ' . ((&lines * 15 + 24) / 49)
+exe 'vert 1resize ' . ((&columns * 106 + 106) / 212)
+exe '2resize ' . ((&lines * 15 + 24) / 49)
+exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
+exe '3resize ' . ((&lines * 30 + 24) / 49)
+exe 'vert 3resize ' . ((&columns * 106 + 106) / 212)
+exe '4resize ' . ((&lines * 30 + 24) / 49)
+exe 'vert 4resize ' . ((&columns * 52 + 106) / 212)
+exe '5resize ' . ((&lines * 30 + 24) / 49)
+exe 'vert 5resize ' . ((&columns * 52 + 106) / 212)
+tabedit ~/diffraction_net/.git/index
 set splitbelow splitright
 wincmd _ | wincmd |
 split
 1wincmd k
+wincmd w
+wincmd _ | wincmd |
+vsplit
+1wincmd h
 wincmd w
 set nosplitbelow
 set nosplitright
@@ -275,8 +325,11 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe '1resize ' . ((&lines * 27 + 29) / 58)
-exe '2resize ' . ((&lines * 27 + 29) / 58)
+exe '1resize ' . ((&lines * 15 + 24) / 49)
+exe '2resize ' . ((&lines * 30 + 24) / 49)
+exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
+exe '3resize ' . ((&lines * 30 + 24) / 49)
+exe 'vert 3resize ' . ((&columns * 105 + 106) / 212)
 argglobal
 setlocal fdm=syntax
 setlocal fde=0
@@ -286,30 +339,65 @@ setlocal fdl=1
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-let s:l = 11 - ((10 * winheight(0) + 13) / 27)
+let s:l = 11 - ((8 * winheight(0) + 7) / 15)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 11
-normal! 03|
-lcd ~/Projects/diffraction_net
+normal! 0
+lcd ~/diffraction_net
 wincmd w
 argglobal
-enew
-setlocal fdm=manual
+if bufexists("fugitive:///home/jonathon/diffraction_net/.git//0/zernike3/build/addnoise.py") | buffer fugitive:///home/jonathon/diffraction_net/.git//0/zernike3/build/addnoise.py | else | edit fugitive:///home/jonathon/diffraction_net/.git//0/zernike3/build/addnoise.py | endif
+setlocal fdm=diff
 setlocal fde=0
 setlocal fmr={{{,}}}
-setlocal fdi=#
+setlocal fdi=
 setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-lcd ~/Projects/diffraction_net
+let s:l = 52 - ((51 * winheight(0) + 15) / 30)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+52
+normal! 0
+lcd ~/diffraction_net
 wincmd w
-exe '1resize ' . ((&lines * 27 + 29) / 58)
-exe '2resize ' . ((&lines * 27 + 29) / 58)
-tabedit ~/Projects/diffraction_net/todo.txt
+argglobal
+if bufexists("~/diffraction_net/zernike3/build/addnoise.py") | buffer ~/diffraction_net/zernike3/build/addnoise.py | else | edit ~/diffraction_net/zernike3/build/addnoise.py | endif
+setlocal fdm=diff
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+let s:l = 52 - ((51 * winheight(0) + 15) / 30)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+52
+normal! 0
+lcd ~/diffraction_net
+wincmd w
+exe '1resize ' . ((&lines * 15 + 24) / 49)
+exe '2resize ' . ((&lines * 30 + 24) / 49)
+exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
+exe '3resize ' . ((&lines * 30 + 24) / 49)
+exe 'vert 3resize ' . ((&columns * 105 + 106) / 212)
+tabedit ~/diffraction_net/zernike3/src/zernikedatagen.h
 set splitbelow splitright
+wincmd _ | wincmd |
+vsplit
+1wincmd h
+wincmd w
+wincmd _ | wincmd |
+split
+1wincmd k
+wincmd w
 set nosplitbelow
 set nosplitright
 wincmd t
@@ -317,6 +405,265 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
+exe 'vert 1resize ' . ((&columns * 86 + 106) / 212)
+exe '2resize ' . ((&lines * 23 + 24) / 49)
+exe 'vert 2resize ' . ((&columns * 125 + 106) / 212)
+exe '3resize ' . ((&lines * 22 + 24) / 49)
+exe 'vert 3resize ' . ((&columns * 125 + 106) / 212)
+argglobal
+setlocal fdm=indent
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+501
+normal! zo
+526
+normal! zo
+526
+normal! zo
+531
+normal! zo
+541
+normal! zo
+573
+normal! zo
+574
+normal! zo
+582
+normal! zo
+588
+normal! zo
+589
+normal! zo
+601
+normal! zo
+629
+normal! zo
+638
+normal! zo
+641
+normal! zo
+645
+normal! zo
+649
+normal! zo
+655
+normal! zo
+656
+normal! zo
+664
+normal! zo
+664
+normal! zo
+678
+normal! zo
+683
+normal! zo
+684
+normal! zo
+688
+normal! zo
+691
+normal! zo
+695
+normal! zo
+702
+normal! zo
+704
+normal! zo
+711
+normal! zo
+let s:l = 580 - ((21 * winheight(0) + 23) / 46)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+580
+normal! 03|
+lcd ~/diffraction_net
+wincmd w
+argglobal
+if bufexists("~/diffraction_net/zernike3/src/zernikedatagen.h") | buffer ~/diffraction_net/zernike3/src/zernikedatagen.h | else | edit ~/diffraction_net/zernike3/src/zernikedatagen.h | endif
+setlocal fdm=indent
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+501
+normal! zo
+526
+normal! zo
+526
+normal! zo
+531
+normal! zo
+541
+normal! zo
+573
+normal! zo
+574
+normal! zo
+582
+normal! zo
+588
+normal! zo
+589
+normal! zo
+601
+normal! zo
+629
+normal! zo
+638
+normal! zo
+641
+normal! zo
+645
+normal! zo
+649
+normal! zo
+655
+normal! zo
+656
+normal! zo
+664
+normal! zo
+664
+normal! zo
+678
+normal! zo
+683
+normal! zo
+684
+normal! zo
+688
+normal! zo
+691
+normal! zo
+695
+normal! zo
+702
+normal! zo
+704
+normal! zo
+711
+normal! zo
+let s:l = 647 - ((10 * winheight(0) + 11) / 23)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+647
+normal! 013|
+lcd ~/diffraction_net
+wincmd w
+argglobal
+if bufexists("~/diffraction_net/zernike3/src/zernikedatagen.h") | buffer ~/diffraction_net/zernike3/src/zernikedatagen.h | else | edit ~/diffraction_net/zernike3/src/zernikedatagen.h | endif
+setlocal fdm=indent
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+501
+normal! zo
+526
+normal! zo
+526
+normal! zo
+531
+normal! zo
+541
+normal! zo
+573
+normal! zo
+574
+normal! zo
+582
+normal! zo
+588
+normal! zo
+589
+normal! zo
+601
+normal! zo
+629
+normal! zo
+638
+normal! zo
+641
+normal! zo
+645
+normal! zo
+649
+normal! zo
+655
+normal! zo
+656
+normal! zo
+664
+normal! zo
+664
+normal! zo
+678
+normal! zo
+683
+normal! zo
+684
+normal! zo
+688
+normal! zo
+691
+normal! zo
+695
+normal! zo
+702
+normal! zo
+704
+normal! zo
+711
+normal! zo
+let s:l = 665 - ((8 * winheight(0) + 11) / 22)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+665
+normal! 011|
+lcd ~/diffraction_net
+wincmd w
+exe 'vert 1resize ' . ((&columns * 86 + 106) / 212)
+exe '2resize ' . ((&lines * 23 + 24) / 49)
+exe 'vert 2resize ' . ((&columns * 125 + 106) / 212)
+exe '3resize ' . ((&lines * 22 + 24) / 49)
+exe 'vert 3resize ' . ((&columns * 125 + 106) / 212)
+tabedit ~/diffraction_net/todo.txt
+set splitbelow splitright
+wincmd _ | wincmd |
+split
+1wincmd k
+wincmd _ | wincmd |
+vsplit
+1wincmd h
+wincmd w
+wincmd w
+set nosplitbelow
+set nosplitright
+wincmd t
+set winminheight=0
+set winheight=1
+set winminwidth=0
+set winwidth=1
+exe '1resize ' . ((&lines * 30 + 24) / 49)
+exe 'vert 1resize ' . ((&columns * 106 + 106) / 212)
+exe '2resize ' . ((&lines * 30 + 24) / 49)
+exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
+exe '3resize ' . ((&lines * 15 + 24) / 49)
 argglobal
 setlocal fdm=manual
 setlocal fde=0
@@ -327,24 +674,16 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 4 - ((3 * winheight(0) + 27) / 55)
+let s:l = 12 - ((9 * winheight(0) + 15) / 30)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-4
-normal! 09|
-lcd ~/Projects/diffraction_net
-tabnew
-set splitbelow splitright
-set nosplitbelow
-set nosplitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
+12
+normal! 02|
+lcd ~/diffraction_net
+wincmd w
 argglobal
-if bufexists("term://.//2919:/bin/bash") | buffer term://.//2919:/bin/bash | else | edit term://.//2919:/bin/bash | endif
+if bufexists("~/diffraction_net/todo_old.txt") | buffer ~/diffraction_net/todo_old.txt | else | edit ~/diffraction_net/todo_old.txt | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -353,464 +692,39 @@ setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-let s:l = 4 - ((3 * winheight(0) + 27) / 55)
+silent! normal! zE
+let s:l = 5 - ((2 * winheight(0) + 15) / 30)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-4
-normal! 026|
-lcd ~/Projects/diffraction_net
-tabedit ~/Projects/diffraction_net/zernike3/src/main.cpp
-set splitbelow splitright
-wincmd _ | wincmd |
-vsplit
-1wincmd h
+5
+normal! 09|
+lcd ~/diffraction_net
 wincmd w
-wincmd _ | wincmd |
-split
-1wincmd k
-wincmd w
-set nosplitbelow
-set nosplitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
-exe 'vert 1resize ' . ((&columns * 105 + 105) / 211)
-exe '2resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 2resize ' . ((&columns * 105 + 105) / 211)
-exe '3resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 3resize ' . ((&columns * 105 + 105) / 211)
 argglobal
-setlocal fdm=indent
+if bufexists("term://.//20791:/bin/bash") | buffer term://.//20791:/bin/bash | else | edit term://.//20791:/bin/bash | endif
+setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
 setlocal fdi=#
-setlocal fdl=5
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-32
-normal! zo
-95
-normal! zo
-let s:l = 96 - ((46 * winheight(0) + 27) / 55)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-96
-normal! 07|
-lcd ~/Projects/diffraction_net
-wincmd w
-argglobal
-if bufexists("~/Projects/diffraction_net/zernike3/src/zernikedatagen.h") | buffer ~/Projects/diffraction_net/zernike3/src/zernikedatagen.h | else | edit ~/Projects/diffraction_net/zernike3/src/zernikedatagen.h | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=6
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-501
-normal! zo
-597
-normal! zo
-604
-normal! zo
-let s:l = 605 - ((9 * winheight(0) + 13) / 27)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-605
-normal! 013|
-lcd ~/Projects/diffraction_net
-wincmd w
-argglobal
-if bufexists("~/Projects/diffraction_net/zernike3/src/zernikedatagen.h") | buffer ~/Projects/diffraction_net/zernike3/src/zernikedatagen.h | else | edit ~/Projects/diffraction_net/zernike3/src/zernikedatagen.h | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=6
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-501
-normal! zo
-597
-normal! zo
-604
-normal! zo
-623
-normal! zo
-let s:l = 622 - ((6 * winheight(0) + 13) / 27)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-622
-normal! 05|
-lcd ~/Projects/diffraction_net
-wincmd w
-exe 'vert 1resize ' . ((&columns * 105 + 105) / 211)
-exe '2resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 2resize ' . ((&columns * 105 + 105) / 211)
-exe '3resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 3resize ' . ((&columns * 105 + 105) / 211)
-tabedit ~/Projects/diffraction_net/diffraction_net.py
-set splitbelow splitright
-wincmd _ | wincmd |
-vsplit
-1wincmd h
-wincmd w
-wincmd _ | wincmd |
-split
-1wincmd k
-wincmd w
-set nosplitbelow
-set nosplitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
-exe 'vert 1resize ' . ((&columns * 75 + 105) / 211)
-exe '2resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 2resize ' . ((&columns * 135 + 105) / 211)
-exe '3resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 3resize ' . ((&columns * 135 + 105) / 211)
-argglobal
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
 setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-62
-normal! zo
-448
-normal! zo
-450
-normal! zo
-511
-normal! zo
-704
-normal! zo
-706
-normal! zo
-714
-normal! zo
-714
-normal! zo
-716
-normal! zo
-716
-normal! zo
-718
-normal! zo
-718
-normal! zo
-721
-normal! zo
-721
-normal! zo
-let s:l = 718 - ((97 * winheight(0) + 27) / 55)
+let s:l = 96 - ((14 * winheight(0) + 7) / 15)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-718
-normal! 035|
-lcd ~/Projects/diffraction_net
+96
+normal! 039|
+lcd ~/diffraction_net
 wincmd w
-argglobal
-if bufexists("~/Projects/diffraction_net/diffraction_net.py") | buffer ~/Projects/diffraction_net/diffraction_net.py | else | edit ~/Projects/diffraction_net/diffraction_net.py | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=13
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-62
-normal! zo
-63
-normal! zo
-178
-normal! zo
-204
-normal! zo
-208
-normal! zo
-209
-normal! zo
-209
-normal! zo
-213
-normal! zo
-213
-normal! zo
-213
-normal! zo
-213
-normal! zo
-633
-normal! zo
-704
-normal! zo
-706
-normal! zo
-716
-normal! zo
-718
-normal! zo
-let s:l = 433 - ((13 * winheight(0) + 13) / 27)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-433
-normal! 09|
-lcd ~/Projects/diffraction_net
-wincmd w
-argglobal
-if bufexists("~/Projects/diffraction_net/diffraction_net.py") | buffer ~/Projects/diffraction_net/diffraction_net.py | else | edit ~/Projects/diffraction_net/diffraction_net.py | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=13
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-62
-normal! zo
-448
-normal! zo
-450
-normal! zo
-let s:l = 525 - ((19 * winheight(0) + 13) / 27)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-525
-normal! 017|
-lcd ~/Projects/diffraction_net
-wincmd w
-exe 'vert 1resize ' . ((&columns * 75 + 105) / 211)
-exe '2resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 2resize ' . ((&columns * 135 + 105) / 211)
-exe '3resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 3resize ' . ((&columns * 135 + 105) / 211)
-tabedit ~/Projects/diffraction_net/diffraction_net.py
-set splitbelow splitright
-wincmd _ | wincmd |
-split
-1wincmd k
-wincmd _ | wincmd |
-vsplit
-1wincmd h
-wincmd w
-wincmd w
-set nosplitbelow
-set nosplitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
-exe '1resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 1resize ' . ((&columns * 105 + 105) / 211)
-exe '2resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 2resize ' . ((&columns * 105 + 105) / 211)
-exe '3resize ' . ((&lines * 27 + 29) / 58)
-argglobal
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=13
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-62
-normal! zo
-63
-normal! zo
-178
-normal! zo
-204
-normal! zo
-208
-normal! zo
-209
-normal! zo
-209
-normal! zo
-213
-normal! zo
-213
-normal! zo
-213
-normal! zo
-213
-normal! zo
-633
-normal! zo
-704
-normal! zo
-706
-normal! zo
-716
-normal! zo
-718
-normal! zo
-let s:l = 109 - ((11 * winheight(0) + 13) / 27)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-109
-normal! 076|
-lcd ~/Projects/diffraction_net
-wincmd w
-argglobal
-if bufexists("~/Projects/diffraction_net/diffraction_functions.py") | buffer ~/Projects/diffraction_net/diffraction_functions.py | else | edit ~/Projects/diffraction_net/diffraction_functions.py | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=3
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-let s:l = 374 - ((5 * winheight(0) + 13) / 27)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-374
-normal! 0
-lcd ~/Projects/diffraction_net
-wincmd w
-argglobal
-if bufexists("~/Projects/diffraction_net/diffraction_net.py") | buffer ~/Projects/diffraction_net/diffraction_net.py | else | edit ~/Projects/diffraction_net/diffraction_net.py | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=13
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-62
-normal! zo
-63
-normal! zo
-178
-normal! zo
-204
-normal! zo
-208
-normal! zo
-209
-normal! zo
-209
-normal! zo
-213
-normal! zo
-213
-normal! zo
-213
-normal! zo
-213
-normal! zo
-633
-normal! zo
-704
-normal! zo
-706
-normal! zo
-716
-normal! zo
-718
-normal! zo
-let s:l = 434 - ((14 * winheight(0) + 13) / 27)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-434
-normal! 09|
-lcd ~/Projects/diffraction_net
-wincmd w
-exe '1resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 1resize ' . ((&columns * 105 + 105) / 211)
-exe '2resize ' . ((&lines * 27 + 29) / 58)
-exe 'vert 2resize ' . ((&columns * 105 + 105) / 211)
-exe '3resize ' . ((&lines * 27 + 29) / 58)
-tabedit ~/Projects/diffraction_net/zernike3/src/main.cpp
-set splitbelow splitright
-wincmd _ | wincmd |
-vsplit
-1wincmd h
-wincmd w
-set nosplitbelow
-set nosplitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
-exe 'vert 1resize ' . ((&columns * 105 + 105) / 211)
-exe 'vert 2resize ' . ((&columns * 105 + 105) / 211)
-argglobal
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=5
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-32
-normal! zo
-95
-normal! zo
-let s:l = 97 - ((27 * winheight(0) + 27) / 55)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-97
-normal! 019|
-lcd ~/Projects/diffraction_net
-wincmd w
-argglobal
-if bufexists("~/Projects/diffraction_net/zernike3/src/zernikedatagen.h") | buffer ~/Projects/diffraction_net/zernike3/src/zernikedatagen.h | else | edit ~/Projects/diffraction_net/zernike3/src/zernikedatagen.h | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=6
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-501
-normal! zo
-597
-normal! zo
-604
-normal! zo
-let s:l = 639 - ((35 * winheight(0) + 27) / 55)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-639
-normal! 05|
-lcd ~/Projects/diffraction_net
-wincmd w
-exe 'vert 1resize ' . ((&columns * 105 + 105) / 211)
-exe 'vert 2resize ' . ((&columns * 105 + 105) / 211)
-tabnext 4
+exe '1resize ' . ((&lines * 30 + 24) / 49)
+exe 'vert 1resize ' . ((&columns * 106 + 106) / 212)
+exe '2resize ' . ((&lines * 30 + 24) / 49)
+exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
+exe '3resize ' . ((&lines * 15 + 24) / 49)
+tabnext 2
 set stal=1
 if exists('s:wipebuf') && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf
