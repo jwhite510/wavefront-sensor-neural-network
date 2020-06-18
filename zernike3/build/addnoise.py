@@ -6,6 +6,7 @@ import os
 os.sys.path.append("../..")
 import diffraction_functions
 import argparse
+import utility
 
 class CameraNoise():
     def __init__(self,imagefile):
@@ -34,48 +35,50 @@ if __name__ == "__main__":
     print("args.peakcount =>", args.peakcount)
     print("args.cameraimage =>", args.cameraimage)
 
-    with tables.open_file(args.infile,mode="r") as hd5file:
-        N = hd5file.root.N[0,0]
-        samples = hd5file.root.object_real.shape[0]
-        print("samples =>", samples)
+    # create new hdf5 file
+    utility.create_dataset(args.outfile)
 
-        object_real=hd5file.root.object_real[0, :].reshape(N,N)
-        object_imag=hd5file.root.object_imag[0, :].reshape(N,N)
-        diffraction=hd5file.root.diffraction[0, :].reshape(N,N)
+    with tables.open_file(args.outfile,mode="a") as newhd5file:
+        with tables.open_file(args.infile,mode="r") as hd5file:
 
-        # apply poisson noise
-        peak_signal_counts=50
-        scalar=peak_signal_counts/np.max(diffraction)
-        diffraction_pattern_with_noise_poisson=diffraction*scalar
-        diffraction_pattern_with_noise_poisson=np.random.poisson(diffraction_pattern_with_noise_poisson)
+            N = hd5file.root.N[0,0]
+            samples = hd5file.root.object_real.shape[0]
+            print("samples =>", samples)
+            for _i in range(samples):
 
-        # draw from random sample
-        # apply camera noise
-        total_sim_size=diffraction.shape[0]*diffraction.shape[1]
-        camera_noise=np.random.choice(ocameraNoise.distribution,size=total_sim_size)
-        camera_noise=camera_noise.reshape(diffraction.shape)
+                object_real=hd5file.root.object_real[_i, :].reshape(N,N)
+                object_imag=hd5file.root.object_imag[_i, :].reshape(N,N)
+                diffraction=hd5file.root.diffraction[_i, :].reshape(N,N)
 
-        diffraction_pattern_with_noise_poisson_and_camera=diffraction_pattern_with_noise_poisson+camera_noise
+                # apply poisson noise
+                peak_signal_counts=args.peakcount
+                scalar=peak_signal_counts/np.max(diffraction)
+                diffraction_pattern_with_noise_poisson=diffraction*scalar
+                diffraction_pattern_with_noise_poisson=np.random.poisson(diffraction_pattern_with_noise_poisson)
 
-        # diffraction=diffraction_pattern_with_noise_poisson_and_camera
+                # draw from random sample
+                # apply camera noise
+                total_sim_size=diffraction.shape[0]*diffraction.shape[1]
+                camera_noise=np.random.choice(ocameraNoise.distribution,size=total_sim_size)
+                camera_noise=camera_noise.reshape(diffraction.shape)
 
-        plt.figure()
-        plt.pcolormesh(diffraction_pattern_with_noise_poisson_and_camera)
-        plt.title("diffraction_pattern_with_noise_poisson_and_camera")
+                diffraction_pattern_with_noise_poisson_and_camera=diffraction_pattern_with_noise_poisson+camera_noise
 
-        plt.figure()
-        plt.pcolormesh(object_real)
-        plt.title("object_real")
+                newhd5file.root.object_real.append(object_real.reshape(1,-1))
+                newhd5file.root.object_imag.append(object_imag.reshape(1,-1))
+                newhd5file.root.diffraction.append(diffraction_pattern_with_noise_poisson_and_camera.reshape(1,-1))
 
-        plt.figure()
-        plt.pcolormesh(object_imag)
-        plt.title("object_imag")
+                # diffraction=diffraction_pattern_with_noise_poisson_and_camera
 
-        plt.figure()
-        plt.pcolormesh(diffraction)
-        plt.title("diffraction")
+                # plt.figure()
+                # plt.pcolormesh(diffraction_pattern_with_noise_poisson_and_camera)
+                # plt.title("diffraction_pattern_with_noise_poisson_and_camera")
 
-        plt.show()
-        exit()
+                # plt.figure()
+                # plt.pcolormesh(diffraction)
+                # plt.title("diffraction")
+
+                # plt.show()
+                # # exit()
 
 
