@@ -261,4 +261,23 @@ class PythonInterp
       cout << "NULL value in " << pFunc << " python call!" << endl;
     return pValue;
   }
+  PyObject* call2(const char* functionname, const char* stringarg)
+  {
+    PyObject* pValue;
+    PyObject* pArgs;
+    PyObject* pFunc;
+
+    pFunc = PyObject_GetAttrString(pModule, functionname);
+    if(!pFunc || !PyCallable_Check(pFunc))
+      cout << "function: " << functionname << " not found!" << endl;
+
+    pArgs = PyTuple_New(1);
+    PyObject* _string_arg = PyUnicode_DecodeFSDefault(stringarg);
+    PyTuple_SetItem(pArgs, 0, _string_arg);
+    pValue = PyObject_CallObject(pFunc, pArgs);
+
+    if(pValue == NULL)
+      cout << "NULL value in " << pFunc << " python call!" << endl;
+    return pValue;
+  }
 };

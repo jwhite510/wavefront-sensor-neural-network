@@ -1,0 +1,81 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image, ImageDraw
+import tables
+import os
+os.sys.path.append("../..")
+import diffraction_functions
+import argparse
+
+class CameraNoise():
+    def __init__(self,imagefile):
+        print("init camera noise")
+        self.imagefile=imagefile
+        self.im = Image.open(self.imagefile)
+        self.im=self.im.convert("L")
+        self.im=np.array(self.im)
+
+        # flatten the array
+        self.distribution=self.im.reshape(-1)
+
+if __name__ == "__main__":
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--infile',type=str)
+    parser.add_argument('--outfile',type=str)
+    parser.add_argument('--peakcount',type=int)
+    parser.add_argument('--cameraimage',type=str)
+    args=parser.parse_args()
+
+    ocameraNoise=CameraNoise(args.cameraimage)
+
+    # print("parser.INFILE =>", args.infile)
+    print("args.infile =>", args.infile)
+    print("args.outfile =>", args.outfile)
+    print("args.peakcount =>", args.peakcount)
+    print("args.cameraimage =>", args.cameraimage)
+
+    with tables.open_file(args.infile,mode="r") as hd5file:
+        N = hd5file.root.N[0,0]
+        samples = hd5file.root.object_real.shape[0]
+        print("samples =>", samples)
+
+        object_real=hd5file.root.object_real[0, :].reshape(N,N)
+        object_imag=hd5file.root.object_imag[0, :].reshape(N,N)
+        diffraction=hd5file.root.diffraction[0, :].reshape(N,N)
+
+        # apply poisson noise
+        peak_signal_counts=50
+        scalar=peak_signal_counts/np.max(diffraction)
+        diffraction_pattern_with_noise_poisson=diffraction*scalar
+        diffraction_pattern_with_noise_poisson=np.random.poisson(diffraction_pattern_with_noise_poisson)
+
+        # draw from random sample
+        # apply camera noise
+        total_sim_size=diffraction.shape[0]*diffraction.shape[1]
+        camera_noise=np.random.choice(ocameraNoise.distribution,size=total_sim_size)
+        camera_noise=camera_noise.reshape(diffraction.shape)
+
+        diffraction_pattern_with_noise_poisson_and_camera=diffraction_pattern_with_noise_poisson+camera_noise
+
+        # diffraction=diffraction_pattern_with_noise_poisson_and_camera
+
+        plt.figure()
+        plt.pcolormesh(diffraction_pattern_with_noise_poisson_and_camera)
+        plt.title("diffraction_pattern_with_noise_poisson_and_camera")
+
+        plt.figure()
+        plt.pcolormesh(object_real)
+        plt.title("object_real")
+
+        plt.figure()
+        plt.pcolormesh(object_imag)
+        plt.title("object_imag")
+
+        plt.figure()
+        plt.pcolormesh(diffraction)
+        plt.title("diffraction")
+
+        plt.show()
+        exit()
+
+
