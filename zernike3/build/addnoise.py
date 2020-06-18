@@ -11,6 +11,7 @@ import utility
 class CameraNoise():
     def __init__(self,imagefile):
         print("init camera noise")
+        print("imagefile =>", imagefile)
         self.imagefile=imagefile
         self.im = Image.open(self.imagefile)
         self.im=self.im.convert("L")
@@ -18,6 +19,8 @@ class CameraNoise():
 
         # flatten the array
         self.distribution=self.im.reshape(-1)
+        avg=np.average(self.distribution)
+        print("distribution avergae:"+str(avg))
 
 if __name__ == "__main__":
     parser=argparse.ArgumentParser()
