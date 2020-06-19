@@ -78,11 +78,10 @@ if __name__ == "__main__":
 
     # retrieve the object from matlab CDI code
     matlabcdi_retrieved=diffraction_functions.matlab_cdi_retrieval(np.squeeze(nn_retrieved['measured_pattern']),amplitude_mask)
-    with open("matlabcdi_retrieved.p","wb") as file:
-        pickle.dump(matlabcdi_retrieved,file)
-    with open("matlabcdi_retrieved.p","rb") as file:
-        matlabcdi_retrieved=pickle.load(file)
     diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved,"matlabcdi_retrieved")
+
+    plt.show()
+    exit()
 
     # check if t
     matlab_complex_object=matlabcdi_retrieved["real_output"]+1j*matlabcdi_retrieved["imag_output"]

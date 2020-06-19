@@ -33,7 +33,10 @@ end
 reduce_supp = zeros(length(diff_int));
 % iteration starts
 for i=1:iter_total
-    i
+    % i
+    if mod(i,100) == 0
+        i
+    end
     S = ifftshift(ifft2(ifftshift(P_filtered)));    % to real space 
     
     sum_total = sum(sum(abs(S).^2));

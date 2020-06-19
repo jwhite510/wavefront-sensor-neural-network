@@ -30,7 +30,205 @@ use_RAAR = 1;           % 1 for RAAR and 0 for HIO
 conditionals = [BS_used update_me use_RAAR];
 
 % run this for the same diffraction patterns used in the neural network retrieval
+% tic
 [rec_object, ref_support, err_fourier_space, err_obj_space, recon_diffracted] = seeded_reconst_func(meas_diff, parameters, conditionals, in_BS, seed_obj);
+% toc
+reconst_plot=1;
+reconst_interp=1;
+num_pxls_dp = 512;            % number of pixels of the detector
+cam_pxl_size = 13.5;
+samp_cam_dist=32000;
+lam = 0.0135;       % in microns
+on_chip_binning=2;
+%% ploting the results
+% -------------------------------------------------------------------
+if reconst_plot == 1
+    % Generate grid of spatial frequencies
+    theta_max_edge = atand((0.5*num_pxls_dp*cam_pxl_size)/samp_cam_dist); 
+    q_max_measured = 2*sind(theta_max_edge/2)/lam;
+    
+    q_x_cam_plus = linspace(0,q_max_measured,0.5*size(meas_diff,1));
+    q_x_cam_minus = -fliplr(q_x_cam_plus(2:end));
+    q_x_cam_minus = [2*q_x_cam_minus(1)-q_x_cam_minus(2) q_x_cam_minus];
+
+    q_x_cam = [q_x_cam_minus q_x_cam_plus];
+    
+    q_x_cam_cr = q_x_cam;
+    
+    num_pxls = (num_pxls_dp)/on_chip_binning;
+    
+    q_x_cam_arr = downsample(q_x_cam_cr, 1);
+    q_y_cam_arr = q_x_cam_arr;
+    
+    [q_x_cam,q_y_cam] = meshgrid(q_x_cam_arr ,q_y_cam_arr);
+    [AC, x_sam, y_sam] = fourier2Dplus(meas_diff, q_x_cam, q_y_cam);    % just to get the axes 
+    
+    fig1 = classFig('PPT');
+    fig = imagesc(x_sam(1,:), y_sam(:,1),(abs(rec_object))); 
+    title('Reconstructed amplitude')
+    title_val2 = ['Reconstructed amp, beta = ',num2str(beta)];
+    title(title_val2)
+    colormap hot
+    colorbar
+    saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Reconst_Amp.png'), 'png')
+
+
+    rec_object3 = rec_object;
+    [m, ind] = max(abs(rec_object3(:)));
+    [x, y] = ind2sub(size(rec_object3), ind);
+    abs(rec_object3(x, y))
+    rec_object3(abs(rec_object3)<0.05 * max(max(abs(rec_object3)))) = NaN;
+    rec_phs = angle(rec_object3 * exp(-1j*angle(rec_object3(x,y))));
+    
+    norm_phase = angle(rec_object3);
+    norm_phase(isnan(norm_phase)) = 0;
+    range = max(max(norm_phase)) - min(min(norm_phase));
+
+    fig2 = classFig('PPT');
+    fig = imagesc(x_sam(1,:), y_sam(:,1), rec_phs); 
+    colormap hot
+    colorbar
+    title_val = ['Reconstructed phase, beta = ',num2str(beta)];
+    title(title_val)
+    saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Reconst_Phase.png'))
+
+    % 
+    fig3 = classFig('PPT');
+    fig = imagesc(log10(meas_diff));
+    caxis([0 5])
+    colorbar
+    title('Measured diffraction pattern')
+    saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Measure_Diff.png'))
+
+    % 
+    fig4 = classFig('PPT');
+    fig = imagesc(log10(abs(recon_diffracted)));
+    caxis([0 5])
+    colorbar
+    title('Reconstructed diffraction pattern')
+    saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Reconst_Diff.png'))
+    
+    figure
+    fig = imagesc(ref_support);
+    title('Final support')
+    saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_final support.png'))
+    
+    % 
+    fig7 = classFig('PPT');
+    fig = plot(err_obj_space);
+    hold on
+    plot(err_fourier_space, 'Color','r')
+    legend('Error obj space', 'Error Fourier space')
+    title('Error metrics - real and Fourier space')
+    saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Error_metrics.png'))
+
+    fig8 = classFig('PPT');
+    fig = imagesc(x_sam(1,:), y_sam(:,1),(imag(rec_object))); 
+    title('Imagenary part')
+    title_val2 = ['Imaginary part obj., beta = ',num2str(beta)];
+    title(title_val2)
+    colormap hot
+    colorbar
+    saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Imag_part_recon.png'))
+    
+
+
+end
+
+%% interpolation
+seed_obj = ref_support;
+if reconst_interp == 1
+    
+    rec_object(isnan(rec_object)) = 0;
+    rec_phs(isnan(rec_phs)) = 0;
+    rec_object(seed_obj==0) = 0;
+    
+    CC = bwconncomp(abs(rec_object)); 
+    
+    regions = CC.PixelIdxList;
+    obj_ave_amp = NaN(size(meas_diff, 2));
+    obj_ave_ph = NaN(size(meas_diff, 2));
+
+    obj_amp = abs(rec_object3);
+    obj_amp = obj_amp/max(max(obj_amp));
+    obj_amp(isnan(obj_amp)) = 0;
+    obj_amp = imgaussfilt(obj_amp, 5);
+    obj_amp(seed_obj==0) = 0;
+    
+    figure
+    imagesc(obj_amp)
+    
+    norm_phase(obj_amp < phase_threshold) = 0;
+    norm_phase = rec_phs;
+    
+        for i=1:length(regions)
+            IND = cell2mat(regions(i));
+            s = [size(meas_diff,1),size(meas_diff,2)];
+            [Ind_row,Ind_col] = ind2sub(s,IND);
+            amp_ave = 0;
+            ph_ave = 0;
+            
+            temp_amps = zeros(size(IND));
+            amps = zeros(size(IND));
+            phs = zeros(size(IND));
+            
+            for j=1:length(IND)
+                temp_amps(j) = abs(rec_object(Ind_row(j),Ind_col(j)));
+%                     amp_ave = amp_ave + abs(rec_object(Ind_row(j),Ind_col(j)));
+%                     ph_ave = ph_ave + norm_phase(Ind_row(j),Ind_col(j));
+            end
+            
+            maximum = max(temp_amps);
+            for j=1:length(IND)
+                if temp_amps(j) > 0.5*maximum
+                    phs(j) = norm_phase(Ind_row(j),Ind_col(j));
+                end
+                if temp_amps(j) > 0.3*maximum
+%                         amps(j) = abs(rec_object(Ind_row(j),Ind_col(j)));
+                     amps(j) = obj_amp(Ind_row(j),Ind_col(j));
+                end
+            end
+            
+            phs = phs(phs~=0);
+            amps = amps(amps~=0);
+            
+            Ind_row_ave = ceil(sum(Ind_row)/length(Ind_row));
+            Ind_col_ave = ceil(sum(Ind_col)/length(Ind_col));
+            
+%                 obj_ave_amp(Ind_row_ave,Ind_col_ave) = amp_ave/length(IND);
+%                 obj_ave_ph(Ind_row_ave,Ind_col_ave) = ph_ave/length(IND);
+
+            obj_ave_amp(Ind_row_ave,Ind_col_ave) = mean(amps);
+            obj_ave_ph(Ind_row_ave,Ind_col_ave) = mean(phs);
+
+        end
+
+% 
+%             fig8 =classFig('PPT2');
+%             imagesc(x_sam(1,:), y_sam(:,1),obj_ave_amp); 
+%             colormap hot 
+%             fig4 =classFig('PPT2');
+%             imagesc(x_sam(1,:), y_sam(:,1),obj_ave_ph); 
+
+        valid = ~isnan(obj_ave_amp);
+        obj_amp_interp1 = griddata(x_sam(valid),y_sam(valid),obj_ave_amp(valid),x_sam,y_sam,'cubic');
+        
+        fig9 =classFig('PPT');
+        fig = imagesc(x_sam(1,:), y_sam(:,1),obj_amp_interp1); 
+        title('amp interpolation')
+        colormap hot
+        colorbar
+        saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_amp_interpol.png'))
+
+        valid = ~isnan(obj_ave_ph);
+        obj_ph_interp1 = griddata(x_sam(valid),y_sam(valid),obj_ave_ph(valid),x_sam,y_sam,'cubic');
+        
+        fig5 = classFig('PPT');
+        fig = imagesc(x_sam(1,:), y_sam(:,1),obj_ph_interp1);
+        title('phs interpolation')
+        colorbar
+        saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_phs_interpol.png'))
+end
 
 % figure
 % imagesc(abs(rec_object))
