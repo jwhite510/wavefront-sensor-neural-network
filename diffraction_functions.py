@@ -320,7 +320,7 @@ def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
         # image_dimmension must be divisible by 4
         assert image_dimmension/4 == int(image_dimmension/4)
         # get the png image for amplitude
-        im = Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")
+        # im = Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")
 
         # for the 6x6 image in same format as the 600nm
         im2 = Image.open("6x6.png")
