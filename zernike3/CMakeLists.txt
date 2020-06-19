@@ -10,7 +10,12 @@ set(PYTHON_INCLUDE_DIRS "/usr/include/python3.6m")
 find_package( GSL REQUIRED )
 find_package(MPI REQUIRED)
 
-include_directories(${PYTHON_INCLUDE_DIRS} ${numpydir})
+set(CUDA_HOST_COMPILER "g++-6")
+find_package(CUDA REQUIRED)
+message(${CUDA_LIBRARIES})
+message(${CUDA_INCLUDE_DIRS})
+
+include_directories(${PYTHON_INCLUDE_DIRS} ${numpydir} ${CUDA_INCLUDE_DIRS})
 
 # set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -27,3 +32,8 @@ target_link_libraries(a.out fftw3 ${PYTHON_LIBRARIES} GSL::gsl ${MPI_LIBRARIES} 
 target_link_libraries(b.out fftw3 ${PYTHON_LIBRARIES} GSL::gsl ${MPI_LIBRARIES} MPI::MPI_CXX)
 
 # PYTHON_CONFIGURE_OPTS="--enable-shared"
+# CUDA
+# set(CUDA_SEPERABLE_COMPILATION ON) ??
+cuda_add_library(zernikecuda SHARED src/zernikecudawrapper.cu)
+message(${CUDA_LIBRARIES})
+target_link_libraries(zernikecuda ${CUDA_LIBRARIES})
