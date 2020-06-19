@@ -69,6 +69,8 @@ if __name__ == "__main__":
                 camera_noise=camera_noise.reshape(diffraction.shape)
 
                 diffraction_pattern_with_noise_poisson_and_camera=diffraction_pattern_with_noise_poisson+camera_noise
+                # normalize
+                diffraction_pattern_with_noise_poisson_and_camera *= (1/np.max(diffraction_pattern_with_noise_poisson_and_camera))
 
                 newhd5file.root.object_real.append(object_real.reshape(1,-1))
                 newhd5file.root.object_imag.append(object_imag.reshape(1,-1))
