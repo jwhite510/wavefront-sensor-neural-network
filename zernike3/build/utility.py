@@ -448,29 +448,6 @@ def testcall2(filename, array1, array2):
 
 if __name__ == "__main__":
     print("running main!!!")
-    # create_dataset("train.hdf5")
-    # test open the data set
-    # index = 19
-    for index in range(30000, 30005):
-        print("opening index:" + str(index))
-        with tables.open_file("train.hdf5", mode="r") as hdf5file:
-
-            # print("hdf5file.root.N =>", hdf5file.root.N[0,0])
-            N = hdf5file.root.N[0,0]
-
-            object_real = hdf5file.root.object_real[index,:].reshape(N,N)
-            object_imag = hdf5file.root.object_imag[index,:].reshape(N,N)
-            diffraction = hdf5file.root.diffraction[index,:].reshape(N,N)
-
-        print("np.shape(diffraction) => ",np.shape(diffraction))
-
-        # plt.figure(2)
-        # plt.pcolormesh(object_real)
-
-        # plt.figure(3)
-        # plt.pcolormesh(object_imag)
-
-        # plt.figure(4)
-        # plt.pcolormesh(diffraction)
-        # plt.show()
+    N = 128
+    measured_axes, b = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
 
