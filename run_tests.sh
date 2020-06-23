@@ -5,7 +5,7 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"noise_test_1"
+"noise_test_B_fixednorm_SQUAREWF"
 "36000"
 )
 i=0
@@ -21,11 +21,11 @@ do
 	cd zernike3/build/
 	rm ./*.hdf5
 	# create samples
-	mpirun -np 2 a.out --count 200 --name test.hdf5 --buffersize 100
-	mpirun -np 20 a.out --count $training_samples --name train.hdf5 --buffersize 100
+	mpirun -np 2 a.out --count 200 --name test.hdf5 --buffersize 100 --seed 345678
+	mpirun -np 20 a.out --count $training_samples --name train.hdf5 --buffersize 100 --seed 8977
 	cd ../..
 
-	peakcounts_arr=(10 20 30)
+	peakcounts_arr=(300 50 10 5 2)
 	camera_noise="../../SquareWFtest/CameraNoise/1_1000/Bild_1.png"
 	for pc in "${peakcounts_arr[@]}"
 	do
