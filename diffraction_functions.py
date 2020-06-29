@@ -922,7 +922,8 @@ def matlab_cdi_retrieval(diffraction_pattern, support):
         file.write("retrieved_obj_file = '{}';\n".format(retrieved_obj_file))
         file.write("reconstructed_file = '{}';\n".format(reconstructed_file))
         file.flush()
-    os.system('matlab -nodesktop -r seeded_run_CDI_noprocessing')
+    os.system('/usr/local/R2020a/bin/matlab -nodesktop -r seeded_run_CDI_noprocessing')
+    print("matlab ran")
 
     # load the results from matlab run
     rec_object = scipy.io.loadmat(retrieved_obj_file)['rec_object']

@@ -40,6 +40,7 @@ cam_pxl_size = 13.5;
 samp_cam_dist=32000;
 lam = 0.0135;       % in microns
 on_chip_binning=2;
+phase_threshold = 0.1;
 %% ploting the results
 % -------------------------------------------------------------------
 if reconst_plot == 1
@@ -59,18 +60,33 @@ if reconst_plot == 1
     
     q_x_cam_arr = downsample(q_x_cam_cr, 1);
     q_y_cam_arr = q_x_cam_arr;
-    
     [q_x_cam,q_y_cam] = meshgrid(q_x_cam_arr ,q_y_cam_arr);
-    [AC, x_sam, y_sam] = fourier2Dplus(meas_diff, q_x_cam, q_y_cam);    % just to get the axes 
-    
-    fig1 = classFig('PPT');
-    fig = imagesc(x_sam(1,:), y_sam(:,1),(abs(rec_object))); 
+
+    % df = (1 / N * dx)
+    % dx = (1 / N * df)
+    % calcute frequency axes from position axes
+    dfgh=size(q_x_cam);
+    N=dfgh(1);
+    d_alpha=q_x_cam_arr(2)-q_x_cam_arr(1);
+    d_x = (1 / N * d_alpha);
+    % make linspace
+    x_sam1=-N/2:1:N/2-1;
+    x_sam1=x_sam1*d_x;
+    [x_sam,y_sam] = meshgrid(x_sam1,x_sam1);
+    % [AC, x_sam, y_sam] = fourier2Dplus(meas_diff, q_x_cam, q_y_cam);    % just to get the axes 
+
+
+
+    % x_sam=()
+
+    % fig1 = classFig('PPT');
+    % fig = imagesc(x_sam(1,:), y_sam(:,1),(abs(rec_object))); 
     title('Reconstructed amplitude')
     title_val2 = ['Reconstructed amp, beta = ',num2str(beta)];
     title(title_val2)
     colormap hot
     colorbar
-    saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Reconst_Amp.png'), 'png')
+    % saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Reconst_Amp.png'), 'png')
 
 
     rec_object3 = rec_object;
@@ -84,52 +100,52 @@ if reconst_plot == 1
     norm_phase(isnan(norm_phase)) = 0;
     range = max(max(norm_phase)) - min(min(norm_phase));
 
-    fig2 = classFig('PPT');
-    fig = imagesc(x_sam(1,:), y_sam(:,1), rec_phs); 
+    % fig2 = classFig('PPT');
+    % fig = imagesc(x_sam(1,:), y_sam(:,1), rec_phs); 
     colormap hot
     colorbar
     title_val = ['Reconstructed phase, beta = ',num2str(beta)];
     title(title_val)
-    saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Reconst_Phase.png'))
+    % saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Reconst_Phase.png'))
 
     % 
-    fig3 = classFig('PPT');
-    fig = imagesc(log10(meas_diff));
+    % fig3 = classFig('PPT');
+    % fig = imagesc(log10(meas_diff));
     caxis([0 5])
     colorbar
     title('Measured diffraction pattern')
-    saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Measure_Diff.png'))
+    % saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Measure_Diff.png'))
 
     % 
-    fig4 = classFig('PPT');
-    fig = imagesc(log10(abs(recon_diffracted)));
+    % % fig4 = classFig('PPT');
+    % fig = imagesc(log10(abs(recon_diffracted)));
     caxis([0 5])
     colorbar
     title('Reconstructed diffraction pattern')
-    saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Reconst_Diff.png'))
+    % saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Reconst_Diff.png'))
     
     figure
     fig = imagesc(ref_support);
     title('Final support')
-    saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_final support.png'))
+    % saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_final support.png'))
     
     % 
-    fig7 = classFig('PPT');
+    % fig7 = classFig('PPT');
     fig = plot(err_obj_space);
     hold on
     plot(err_fourier_space, 'Color','r')
     legend('Error obj space', 'Error Fourier space')
     title('Error metrics - real and Fourier space')
-    saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Error_metrics.png'))
+    % saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Error_metrics.png'))
 
-    fig8 = classFig('PPT');
-    fig = imagesc(x_sam(1,:), y_sam(:,1),(imag(rec_object))); 
+    % fig8 = classFig('PPT');
+    % fig = imagesc(x_sam(1,:), y_sam(:,1),(imag(rec_object))); 
     title('Imagenary part')
     title_val2 = ['Imaginary part obj., beta = ',num2str(beta)];
     title(title_val2)
     colormap hot
     colorbar
-    saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Imag_part_recon.png'))
+    % saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_Imag_part_recon.png'))
     
 
 
@@ -213,22 +229,25 @@ if reconst_interp == 1
         valid = ~isnan(obj_ave_amp);
         obj_amp_interp1 = griddata(x_sam(valid),y_sam(valid),obj_ave_amp(valid),x_sam,y_sam,'cubic');
         
-        fig9 =classFig('PPT');
+        % fig9 =classFig('PPT');
+        figure();
         fig = imagesc(x_sam(1,:), y_sam(:,1),obj_amp_interp1); 
         title('amp interpolation')
         colormap hot
         colorbar
-        saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_amp_interpol.png'))
+        % saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_amp_interpol.png'))
 
         valid = ~isnan(obj_ave_ph);
         obj_ph_interp1 = griddata(x_sam(valid),y_sam(valid),obj_ave_ph(valid),x_sam,y_sam,'cubic');
         
-        fig5 = classFig('PPT');
+        % fig5 = classFig('PPT');
+        figure();
         fig = imagesc(x_sam(1,:), y_sam(:,1),obj_ph_interp1);
         title('phs interpolation')
         colorbar
-        saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_phs_interpol.png'))
+        % saveas(fig, strcat(dump_folder, '\\', int2str(samp_cam_dist), '_phs_interpol.png'))
 end
+thisisheretostopitrunning
 
 % figure
 % imagesc(abs(rec_object))
