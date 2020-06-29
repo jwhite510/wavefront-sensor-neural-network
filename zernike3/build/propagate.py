@@ -20,7 +20,7 @@ if __name__ == "__main__":
         slice_Si = pickle.load(file)
 
     dz = 1e-9
-    lam = 13.5e-9
+    lam = 633e-9
     fx_grid = f.reshape(1,-1)
     fy_grid = f.reshape(-1,1)
 

@@ -91,8 +91,8 @@ if __name__ == "__main__":
 
     experimental_params = {}
     experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
-    experimental_params['z_distance'] = 33e-3 # [meters] distance from camera
-    experimental_params['wavelength'] = 13.5e-9 #[meters] wavelength
+    experimental_params['z_distance'] = 16e-3 # [meters] distance from camera
+    experimental_params['wavelength'] = 633e-9 #[meters] wavelength
 
     getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128, N_meas=N_meas, experimental_params=experimental_params)
 

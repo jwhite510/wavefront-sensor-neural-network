@@ -98,7 +98,7 @@ struct Parameters
   float beta_Ta;
   float delta_Ta;
   const float dz = 10e-9;
-  const float lam = 18.1e-9;
+  const float lam = 633e-9;
   const float k = 2 * M_PI / lam;
 };
 
@@ -557,7 +557,6 @@ struct DataGenerator
     create_slice(slice_Si, *wavefonts.wavefrontsensor, params_Si);
 
     // initialize FFT
-    // lambda: 13.5 nm
     // forward propagate thorugh 50 nm Si3N4 -> delta:0.02661 , beta:0.00926
     // forward_propagate through 150 nm Cu -> delta:0.03748 , beta:0.0612
     Si_distance = 50e-9;

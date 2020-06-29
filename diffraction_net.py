@@ -168,30 +168,30 @@ class DiffractionNet():
         print("self.get_data.N =>", self.get_data.N)
         experimental_params = {}
         experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
-        experimental_params['z_distance'] = 33e-3 # [meters] distance from camera
-        experimental_params['wavelength'] = 13.5e-9 #[meters] wavelength
+        experimental_params['z_distance'] = 16e-3 # [meters] distance from camera
+        experimental_params['wavelength'] = 633e-9 #[meters] wavelength
 
         filenames = [
-                "m3_scan_0000.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0000.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0001.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0002.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0003.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0004.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0005.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0006.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0007.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0008.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0009.fits",
-                "Data_for_Jonathon/z0/1.fits",
-                "Data_for_Jonathon/z0/2.fits",
-                "Data_for_Jonathon/z0/3.fits",
-                "Data_for_Jonathon/z-500/1.fits",
-                "Data_for_Jonathon/z-500/2.fits",
-                "Data_for_Jonathon/z-500/3.fits",
-                "Data_for_Jonathon/z-1000/1.fits",
-                "Data_for_Jonathon/z-1000/2.fits",
-                "Data_for_Jonathon/z-1000/3.fits"
+                # "m3_scan_0000.fits",
+                # "Data_for_Jonathon/multiple_measurements/m3_scan_0000.fits",
+                # "Data_for_Jonathon/multiple_measurements/m3_scan_0001.fits",
+                # "Data_for_Jonathon/multiple_measurements/m3_scan_0002.fits",
+                # "Data_for_Jonathon/multiple_measurements/m3_scan_0003.fits",
+                # "Data_for_Jonathon/multiple_measurements/m3_scan_0004.fits",
+                # "Data_for_Jonathon/multiple_measurements/m3_scan_0005.fits",
+                # "Data_for_Jonathon/multiple_measurements/m3_scan_0006.fits",
+                # "Data_for_Jonathon/multiple_measurements/m3_scan_0007.fits",
+                # "Data_for_Jonathon/multiple_measurements/m3_scan_0008.fits",
+                # "Data_for_Jonathon/multiple_measurements/m3_scan_0009.fits",
+                # "Data_for_Jonathon/z0/1.fits",
+                # "Data_for_Jonathon/z0/2.fits",
+                # "Data_for_Jonathon/z0/3.fits",
+                # "Data_for_Jonathon/z-500/1.fits",
+                # "Data_for_Jonathon/z-500/2.fits",
+                # "Data_for_Jonathon/z-500/3.fits",
+                # "Data_for_Jonathon/z-1000/1.fits",
+                # "Data_for_Jonathon/z-1000/2.fits",
+                # "Data_for_Jonathon/z-1000/3.fits"
                 ]
 
         getMeasuredDiffractionPattern=None

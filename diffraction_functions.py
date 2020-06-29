@@ -226,8 +226,8 @@ def get_measured_diffraction_pattern_grid():
 
     experimental_params = {}
     experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
-    experimental_params['z_distance'] = 33e-3 # [meters] distance from camera
-    experimental_params['wavelength'] = 13.5e-9 #[meters] wavelength
+    experimental_params['z_distance'] = 16e-3 # [meters] distance from camera
+    experimental_params['wavelength'] = 633e-9 #[meters] wavelength
 
 
     assert np.shape(measured_pattern)[0] == np.shape(measured_pattern)[1]
@@ -323,6 +323,7 @@ def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
         # im = Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")
 
         # for the 6x6 image in same format as the 600nm
+        # im2 = Image.open("10x10.png")
         im2 = Image.open("6x6.png")
         im2=im2.resize((1200,1200))
         im3=np.zeros((1200,1200,3),dtype=np.array(im2).dtype)
@@ -333,12 +334,10 @@ def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
         im3=PIL.ImageOps.invert(im3)
         im=im3
 
-
         im = PIL.ImageOps.invert(im)
-
         size1 = im.size[0]
-        im_size_nm = 5*im.size[0] * 1e-9 # meters
-        # print("im_size_nm =>", im_size_nm)
+        # im_size_nm = 5*im.size[0] * 1e-9 # meters -> old settings for xuv
+        im_size_nm = 60e-6 # 60 micrometer side length -> visible light
 
         # scale down the image
         im = im.resize((desired_mask_width,desired_mask_width)).convert("L")
@@ -960,6 +959,10 @@ object_plane_x = object_plane_dx * np.arange(-N/2, N/2, 1)
 
 
 if __name__ == "__main__":
+
+    get_amplitude_mask_and_imagesize(128,int(128/2))
+
+    exit()
 
     # construct object in the object plane
     object, object_phase = make_object(N, min_indexes=4, max_indexes=8)
