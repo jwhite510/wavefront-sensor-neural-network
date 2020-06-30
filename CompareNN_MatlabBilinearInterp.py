@@ -58,7 +58,7 @@ if __name__ == "__main__":
         nn_retrieved=pickle.load(file)
     # complex_beam=np.squeeze(nn_retrieved["real_output"]+1j*nn_retrieved["imag_output"])
 
-    # diffraction_functions.plot_amplitude_phase_meas_retreival(nn_retrieved,"nn_retrieved")
+    diffraction_functions.plot_amplitude_phase_meas_retreival(nn_retrieved,"nn_retrieved")
 
     # run retreival on this with matlab
     print(nn_retrieved.keys())
@@ -77,8 +77,11 @@ if __name__ == "__main__":
     plt.title("amplitude_mask")
 
     # retrieve the object from matlab CDI code
-    matlabcdi_retrieved=diffraction_functions.matlab_cdi_retrieval(np.squeeze(nn_retrieved['measured_pattern']),amplitude_mask)
-    diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved,"matlabcdi_retrieved")
+    matlabcdi_retrieved_interp=diffraction_functions.matlab_cdi_retrieval(np.squeeze(nn_retrieved['measured_pattern']),amplitude_mask,interpolate=True)
+    matlabcdi_retrieved_NOinterp=diffraction_functions.matlab_cdi_retrieval(np.squeeze(nn_retrieved['measured_pattern']),amplitude_mask,interpolate=False)
+
+    diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved_interp,"matlabcdi_retrieved_interp")
+    diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved_NOinterp,"matlabcdi_retrieved_NOinterp")
 
     plt.show()
     exit()
