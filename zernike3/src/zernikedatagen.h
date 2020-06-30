@@ -547,10 +547,26 @@ struct DataGenerator
     // crop the image size:
 
     // define materials
-    params_cu.beta_Ta = 0.0612;
-    params_cu.delta_Ta = 0.03748;
-    params_Si.beta_Ta = 0.00926;
-    params_Si.delta_Ta = 0.02661;
+    // this would be the correct use of the previous beta and delta values
+    // params_cu.delta_Ta = 0.0612; // 13.5 nm
+    // params_cu.beta_Ta = 0.03748; // 13.5 nm
+    // params_Si.delta_Ta = 0.00926; // 13.5 nm
+    // params_Si.beta_Ta = 0.02661; // 13.5 nm
+
+    // previously used (beta and delta switched)
+    // params_cu.beta_Ta = 0.0612;
+    // params_cu.delta_Ta = 0.03748;
+    // params_Si.beta_Ta = 0.00926;
+    // params_Si.delta_Ta = 0.02661;
+
+    // define materials
+    // https://refractiveindex.info/?shelf=main&book=Cu&page=Johnson
+    // https://refractiveindex.info/?shelf=main&book=Si3N4&page=Luke
+    params_cu.delta_Ta = 0.26965-1; // 633 nm
+    params_cu.beta_Ta = 3.4106; // 633 nm
+    params_Si.delta_Ta = 2.0394-1; // 633 nm
+    params_Si.beta_Ta = 0; // 633 nm
+    // subtract 1 to make the real part relative to vacuum
 
     // single slice of the material
     create_slice(slice_cu, *wavefonts.wavefrontsensor, params_cu);
