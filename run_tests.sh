@@ -21,8 +21,8 @@ do
 	cd zernike3/build/
 	rm ./*.hdf5
 	# create samples
-	mpirun -np 2 a.out --count 200 --name test.hdf5 --buffersize 100
-	mpirun -np 20 a.out --count $training_samples --name train.hdf5 --buffersize 100
+	mpirun -np 2 a.out --count 200 --name test.hdf5 --buffersize 100 --seed 345678
+	mpirun -np 20 a.out --count $training_samples --name train.hdf5 --buffersize 100 --seed 8977
 	cd ../..
 
 	peakcounts_arr=(10 20 30)

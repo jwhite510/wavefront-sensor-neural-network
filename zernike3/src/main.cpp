@@ -5,6 +5,7 @@ struct RunParameters
   string RunName;
   int Samples;
   int BufferSize;
+  int Seed;
 };
 RunParameters parseargs(int argc, char *argv[])
 {
@@ -12,6 +13,7 @@ RunParameters parseargs(int argc, char *argv[])
   runParameters.Samples = 0;
   runParameters.RunName = "NONE";
   runParameters.BufferSize =0;
+  runParameters.Seed =0;
   for(int i=0; i < argc; i++)
     if(string(argv[i]) == "--count")
       runParameters.Samples = atoi(argv[i+1]);
@@ -23,6 +25,10 @@ RunParameters parseargs(int argc, char *argv[])
   for(int i=0; i < argc; i++)
     if(string(argv[i]) == "--buffersize")
       runParameters.BufferSize = atoi(argv[i+1]);
+
+  for(int i=0; i < argc; i++)
+    if(string(argv[i]) == "--seed")
+      runParameters.Seed = atoi(argv[i+1]);
 
   return runParameters;
 }
@@ -39,7 +45,7 @@ int main(int argc, char *argv[])
 
   RunParameters runParameters = parseargs(argc, argv);
 
-  if(runParameters.RunName == "NONE" || runParameters.Samples == 0 || runParameters.BufferSize == 0) {
+  if(runParameters.RunName == "NONE" || runParameters.Samples == 0 || runParameters.BufferSize == 0 || runParameters.Seed==0) {
     if(process_Rank==0)
       cout << "--count --buffersize or --name not set" << endl;
     MPI_Finalize();
@@ -69,7 +75,7 @@ int main(int argc, char *argv[])
   }
 
   // seed random number generators for all the processes
-  uint randomseed = time(0) + process_Rank;
+  uint randomseed = runParameters.Seed + process_Rank;
   // uint randomseed = time(0);
   srand(randomseed);
   cout << "process:" << process_Rank << " random seed:" << randomseed << endl;
