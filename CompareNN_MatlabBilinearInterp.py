@@ -60,9 +60,10 @@ if __name__ == "__main__":
         # nn_retrieved=pickle.load(file)
 
     # load diffraction pattern
-    index=0
+    index=6
     N=None
-    with tables.open_file("zernike3/build/test_noise.hdf5",mode="r") as file:
+    # with tables.open_file("zernike3/build/test_noise.hdf5",mode="r") as file:
+    with tables.open_file("zernike3/build/test.hdf5",mode="r") as file: # use the noise free sample, and matlab result looks good
         N = file.root.N[0,0]
         object_real = file.root.object_real[index, :].reshape(N,N)
         object_imag = file.root.object_imag[index, :].reshape(N,N)
@@ -80,7 +81,7 @@ if __name__ == "__main__":
     diffraction_functions.plot_amplitude_phase_meas_retreival(actual_object,"actual_object",ACTUAL=True)
 
     # retrieve image with neural network
-    network=diffraction_net.DiffractionNet("noise_test_E_fixednorm_SQUARE6x6_VISIBLESETUP_peak-2") # load a pre trained network
+    network=diffraction_net.DiffractionNet("noise_test_E_fixednorm_SQUARE6x6_VISIBLESETUP_peak-50") # load a pre trained network
 
     # get the reconstructed diffraction pattern and the real / imaginary object
     nn_retrieved = {}
