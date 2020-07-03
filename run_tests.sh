@@ -5,7 +5,7 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"noise_test_E_fixednorm_SQUARE6x6_VISIBLESETUP"
+"noise_test_D_fixednorm_SQUARE6x6_VISIBLESETUP_NOCENTER"
 "36000"
 )
 i=0

@@ -427,7 +427,7 @@ def save_to_hdf5(filename, wavefront_sensor, wavefront):
 
                 # normalize
                 diffraction_pattern_with_noise = diffraction_pattern_with_noise / np.max(diffraction_pattern_with_noise)
-                diffraction_pattern_with_noise = diffraction_functions.center_image_at_centroid(diffraction_pattern_with_noise)
+                # diffraction_pattern_with_noise = diffraction_functions.center_image_at_centroid(diffraction_pattern_with_noise)
                 hd5file.root.object_real.append(object_real.reshape(1,-1))
                 hd5file.root.object_imag.append(object_imag.reshape(1,-1))
                 hd5file.root.diffraction.append(diffraction_pattern_with_noise.reshape(1,-1))
