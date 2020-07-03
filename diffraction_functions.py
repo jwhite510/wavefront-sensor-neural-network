@@ -24,7 +24,15 @@ def fits_to_numpy(fits_file_name):
     return nparr
 
 
-def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_aperture=False):
+def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_aperture=False,ACTUAL=False):
+
+    if ACTUAL:
+        RETRIEVED="ACTUAL"
+        RECONSTRUCTED="ACTUAL"
+    else:
+        RETRIEVED="retrieved"
+        RECONSTRUCTED="reconstructed"
+
 
     # get axes for retrieved object and diffraction pattern
     N=np.shape(np.squeeze(retrieved_obj['measured_pattern']))[0]
@@ -80,7 +88,7 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     # obj_phase[:, -30:-20] = np.max(obj_phase)
 
     im = axes["phase"].pcolormesh(x,x,obj_phase)
-    axes["phase"].text(0.2, 0.9,"phase(retrieved)", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor="cyan")
+    axes["phase"].text(0.2, 0.9,"phase("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["phase"])
     axes["phase"].axvline(x=x[m_index[1]], color="red", alpha=0.8)
     axes["phase"].axhline(y=x[m_index[0]], color="blue", alpha=0.8)
@@ -101,7 +109,7 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
         axes["intensity"].add_artist(circle)
         axes["intensity"].text(0.8, 0.7,"Spherical\nAperture\n2.7 um", fontsize=10, ha='center', transform=axes["intensity"].transAxes,color="red")
 
-    axes["intensity"].text(0.2, 0.9,"intensity(retrieved)", fontsize=10, ha='center', transform=axes["intensity"].transAxes, backgroundcolor="cyan")
+    axes["intensity"].text(0.2, 0.9,"intensity("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["intensity"].transAxes, backgroundcolor="cyan")
     axes["intensity"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["intensity"])
 
@@ -111,24 +119,24 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     fig.colorbar(im, ax=axes["measured"])
 
     im = axes["reconstructed"].pcolormesh(f,f,np.squeeze(retrieved_obj["tf_reconstructed_diff"]))
-    axes["reconstructed"].text(0.2, 0.9,"reconstructed", fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
+    axes["reconstructed"].text(0.2, 0.9,RECONSTRUCTED, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
 
     # calc mse
     A = retrieved_obj["measured_pattern"].reshape(-1)
     B = retrieved_obj["tf_reconstructed_diff"].reshape(-1)
     mse = (np.square(A-B)).mean()
     mse = str(mse)
-    axes["reconstructed"].text(0.2, 1.1,"mse(reconstructed, measured): "+mse, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
+    axes["reconstructed"].text(0.2, 1.1,"mse("+RECONSTRUCTED+", measured): "+mse, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
 
     fig.colorbar(im, ax=axes["reconstructed"])
 
     im = axes["real"].pcolormesh(x,x,np.squeeze(retrieved_obj["real_output"]))
-    axes["real"].text(0.2, 0.9,"real(retrieved)", fontsize=10, ha='center', transform=axes["real"].transAxes, backgroundcolor="cyan")
+    axes["real"].text(0.2, 0.9,"real("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["real"].transAxes, backgroundcolor="cyan")
     axes["real"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["real"])
 
     im = axes["imag"].pcolormesh(x,x,np.squeeze(retrieved_obj["imag_output"]))
-    axes["imag"].text(0.2, 0.9,"imag(retrieved)", fontsize=10, ha='center', transform=axes["imag"].transAxes, backgroundcolor="cyan")
+    axes["imag"].text(0.2, 0.9,"imag("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["imag"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["imag"])
 
     return fig

@@ -60,29 +60,27 @@ if __name__ == "__main__":
         # nn_retrieved=pickle.load(file)
 
     # load diffraction pattern
-    index=10
+    index=0
     N=None
     with tables.open_file("zernike3/build/test_noise.hdf5",mode="r") as file:
         N = file.root.N[0,0]
         object_real = file.root.object_real[index, :].reshape(N,N)
         object_imag = file.root.object_imag[index, :].reshape(N,N)
         diffraction = file.root.diffraction[index, :].reshape(N,N)
+    # no noise diffraction pattern
+    with tables.open_file("zernike3/build/test.hdf5",mode="r") as file:
+        N = file.root.N[0,0]
+        diffraction_noisefree = file.root.diffraction[index, :].reshape(N,N)
 
-    plt.figure()
-    plt.title("object_real actual")
-    plt.imshow(object_real)
-
-    plt.figure()
-    plt.title("object_imag actual")
-    plt.imshow(object_imag)
-
-    plt.figure()
-    plt.title("diffraction")
-    plt.imshow(diffraction)
-
+    actual_object = {}
+    actual_object["measured_pattern"] = diffraction
+    actual_object["tf_reconstructed_diff"] = diffraction_noisefree
+    actual_object["real_output"] = object_real
+    actual_object["imag_output"] = object_imag
+    diffraction_functions.plot_amplitude_phase_meas_retreival(actual_object,"actual_object",ACTUAL=True)
 
     # retrieve image with neural network
-    network=DiffractionNet("networkname") # load a pre trained network
+    network=diffraction_net.DiffractionNet("noise_test_E_fixednorm_SQUARE6x6_VISIBLESETUP_peak-2") # load a pre trained network
 
     # get the reconstructed diffraction pattern and the real / imaginary object
     nn_retrieved = {}
@@ -90,16 +88,13 @@ if __name__ == "__main__":
     nn_retrieved["measured_pattern"] = diffraction
 
     nn_retrieved["tf_reconstructed_diff"] = network.sess.run(
-            network.nn_nodes["recons_diffraction_pattern"], feed_dict={network.x:diffraction})
+            network.nn_nodes["recons_diffraction_pattern"], feed_dict={network.x:diffraction.reshape(1,N,N,1)})
 
     nn_retrieved["real_output"] = network.sess.run(
-            network.nn_nodes["real_out"], feed_dict={network.x:diffraction})
+            network.nn_nodes["real_out"], feed_dict={network.x:diffraction.reshape(1,N,N,1)})
 
     nn_retrieved["imag_output"] = network.sess.run(
-            network.nn_nodes["imag_out"], feed_dict={network.x:diffraction})
-
-    plt.show()
-    exit()
+            network.nn_nodes["imag_out"], feed_dict={network.x:diffraction.reshape(1,N,N,1)})
 
     # plot retrieval with neural network
     diffraction_functions.plot_amplitude_phase_meas_retreival(nn_retrieved,"nn_retrieved")
