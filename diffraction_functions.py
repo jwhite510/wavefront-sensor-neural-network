@@ -901,7 +901,11 @@ def get_and_format_experimental_trace(N, transform):
 
     return measured_pattern
 
-def matlab_cdi_retrieval(diffraction_pattern, support, interpolate=True):
+def matlab_cdi_retrieval(diffraction_pattern, support, interpolate=True,noise_reduction=False):
+
+    diffraction_pattern=np.array(diffraction_pattern) # because i dont know if this is passed by reference
+    if noise_reduction:
+        diffraction_pattern[diffraction_pattern<0.05*np.max(diffraction_pattern)]=0
 
     # move to matlab cdi folder
     start_dir = os.getcwd()
