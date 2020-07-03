@@ -893,7 +893,7 @@ def get_and_format_experimental_trace(N, transform):
 
     return measured_pattern
 
-def matlab_cdi_retrieval(diffraction_pattern, support):
+def matlab_cdi_retrieval(diffraction_pattern, support, interpolate=True):
 
     # move to matlab cdi folder
     start_dir = os.getcwd()
@@ -909,23 +909,51 @@ def matlab_cdi_retrieval(diffraction_pattern, support):
 
     retrieved_obj_file = randomid + "_retrieved_obj.mat"
     reconstructed_file = randomid + "_reconstructed.mat"
+    real_interp_file = randomid + "_real_interp.mat"
+    imag_interp_file = randomid + "_imag_interp.mat"
 
     scipy.io.savemat(support_file, {'support':support})
     scipy.io.savemat(diffraction_pattern_file, {'diffraction':diffraction_pattern})
 
     # matlab load file
     with open("loaddata.m", "w") as file:
-        file.write("function [diffraction_pattern_file, support_file, retrieved_obj_file, reconstructed_file] = loaddata()\n")
+        file.write("function [diffraction_pattern_file, support_file, retrieved_obj_file, reconstructed_file, real_interp_file, imag_interp_file] = loaddata()\n")
         file.write("diffraction_pattern_file = '{}';\n".format(diffraction_pattern_file))
         file.write("support_file = '{}';\n".format(support_file))
         file.write("retrieved_obj_file = '{}';\n".format(retrieved_obj_file))
         file.write("reconstructed_file = '{}';\n".format(reconstructed_file))
+        file.write("real_interp_file = '{}';\n".format(real_interp_file))
+        file.write("imag_interp_file = '{}';\n".format(imag_interp_file))
         file.flush()
-    os.system('matlab -nodesktop -r seeded_run_CDI_noprocessing')
+    os.system('/usr/local/R2020a/bin/matlab -nodesktop -r seeded_run_CDI_noprocessing')
+    print("matlab ran")
 
     # load the results from matlab run
     rec_object = scipy.io.loadmat(retrieved_obj_file)['rec_object']
     recon_diffracted = scipy.io.loadmat(reconstructed_file)['recon_diffracted']
+    obj_real_interp1 = scipy.io.loadmat(real_interp_file)['obj_real_interp1']
+    obj_imag_interp1 = scipy.io.loadmat(imag_interp_file)['obj_imag_interp1']
+
+    obj_imag_interp1[np.isnan(obj_imag_interp1)]=0.0
+    obj_real_interp1[np.isnan(obj_real_interp1)]=0.0
+
+    # plt.figure()
+    # plt.pcolormesh(obj_real_interp1)
+    # plt.title("obj_real_interp1")
+
+    # plt.figure()
+    # plt.pcolormesh(obj_imag_interp1)
+    # plt.title("obj_imag_interp1")
+
+    # plt.figure()
+    # plt.pcolormesh(np.real(rec_object))
+    # plt.title("np.real(rec_object)")
+
+    # plt.figure()
+    # plt.pcolormesh(np.imag(rec_object))
+    # plt.title("np.imag(rec_object)")
+
+    # plt.show()
 
     # go back to starting dir
     os.chdir(start_dir)
@@ -933,8 +961,15 @@ def matlab_cdi_retrieval(diffraction_pattern, support):
     retrieved_obj = {}
     retrieved_obj["measured_pattern"] = diffraction_pattern
     retrieved_obj["tf_reconstructed_diff"] = recon_diffracted
-    retrieved_obj["real_output"] = np.real(rec_object)
-    retrieved_obj["imag_output"] = np.imag(rec_object)
+
+    # without the interpolation
+    if interpolate:
+        retrieved_obj["real_output"] = obj_real_interp1
+        retrieved_obj["imag_output"] = obj_imag_interp1
+    else:
+        retrieved_obj["real_output"] = np.real(rec_object)
+        retrieved_obj["imag_output"] = np.imag(rec_object)
+
     return retrieved_obj
 
 
@@ -959,10 +994,6 @@ object_plane_x = object_plane_dx * np.arange(-N/2, N/2, 1)
 
 
 if __name__ == "__main__":
-
-    get_amplitude_mask_and_imagesize(128,int(128/2))
-
-    exit()
 
     # construct object in the object plane
     object, object_phase = make_object(N, min_indexes=4, max_indexes=8)
