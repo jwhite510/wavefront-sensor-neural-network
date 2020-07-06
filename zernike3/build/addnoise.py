@@ -56,25 +56,32 @@ if __name__ == "__main__":
                 object_imag=hd5file.root.object_imag[_i, :].reshape(N,N)
                 diffraction=hd5file.root.diffraction[_i, :].reshape(N,N)
 
-                # apply poisson noise
-                peak_signal_counts=args.peakcount
-                scalar=peak_signal_counts/np.max(diffraction)
-                diffraction_pattern_with_noise_poisson=diffraction*scalar
-                diffraction_pattern_with_noise_poisson=np.random.poisson(diffraction_pattern_with_noise_poisson)
+                if args.peakcount>0:
+                    # apply poisson noise
+                    peak_signal_counts=args.peakcount
+                    scalar=peak_signal_counts/np.max(diffraction)
+                    diffraction_pattern_with_noise_poisson=diffraction*scalar
+                    diffraction_pattern_with_noise_poisson=np.random.poisson(diffraction_pattern_with_noise_poisson)
 
-                # draw from random sample
-                # apply camera noise
-                total_sim_size=diffraction.shape[0]*diffraction.shape[1]
-                camera_noise=np.random.choice(ocameraNoise.distribution,size=total_sim_size)
-                camera_noise=camera_noise.reshape(diffraction.shape)
+                    # draw from random sample
+                    # apply camera noise
+                    total_sim_size=diffraction.shape[0]*diffraction.shape[1]
+                    camera_noise=np.random.choice(ocameraNoise.distribution,size=total_sim_size)
+                    camera_noise=camera_noise.reshape(diffraction.shape)
 
-                diffraction_pattern_with_noise_poisson_and_camera=diffraction_pattern_with_noise_poisson+camera_noise
-                # normalize
-                diffraction_pattern_with_noise_poisson_and_camera=diffraction_pattern_with_noise_poisson_and_camera/np.max(diffraction_pattern_with_noise_poisson_and_camera)
+                    diffraction_pattern_with_noise_poisson_and_camera=diffraction_pattern_with_noise_poisson+camera_noise
+                    # normalize
+                    diffraction_pattern_with_noise_poisson_and_camera=diffraction_pattern_with_noise_poisson_and_camera/np.max(diffraction_pattern_with_noise_poisson_and_camera)
 
-                newhd5file.root.object_real.append(object_real.reshape(1,-1))
-                newhd5file.root.object_imag.append(object_imag.reshape(1,-1))
-                newhd5file.root.diffraction.append(diffraction_pattern_with_noise_poisson_and_camera.reshape(1,-1))
+                    newhd5file.root.object_real.append(object_real.reshape(1,-1))
+                    newhd5file.root.object_imag.append(object_imag.reshape(1,-1))
+                    newhd5file.root.diffraction.append(diffraction_pattern_with_noise_poisson_and_camera.reshape(1,-1))
+
+                else:
+                    newhd5file.root.object_real.append(object_real.reshape(1,-1))
+                    newhd5file.root.object_imag.append(object_imag.reshape(1,-1))
+                    newhd5file.root.diffraction.append(diffraction.reshape(1,-1))
+
 
                 # diffraction=diffraction_pattern_with_noise_poisson_and_camera
 

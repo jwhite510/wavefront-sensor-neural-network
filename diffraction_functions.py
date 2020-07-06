@@ -24,7 +24,7 @@ def fits_to_numpy(fits_file_name):
     return nparr
 
 
-def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_aperture=False,ACTUAL=False):
+def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_aperture=False,ACTUAL=False,m_index=None,mask=False):
 
     if ACTUAL:
         RETRIEVED="ACTUAL"
@@ -36,7 +36,7 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
 
     # get axes for retrieved object and diffraction pattern
     N=np.shape(np.squeeze(retrieved_obj['measured_pattern']))[0]
-    simulation_axes, _ = get_amplitude_mask_and_imagesize(N, int(N/2))
+    simulation_axes, amplitude_mask = get_amplitude_mask_and_imagesize(N, int(N/2))
 
     # object
     x=simulation_axes['object']['x'] # meters
@@ -68,7 +68,9 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
 
     # calculate the phase
     # subtract phase at intensity peak
-    m_index = unravel_index(I.argmax(), I.shape)
+    if not m_index:
+        m_index = unravel_index(I.argmax(), I.shape)
+
     phase_Imax = np.angle(complex_obj[m_index[0], m_index[1]])
     complex_obj *= np.exp(-1j * phase_Imax)
 
@@ -87,7 +89,11 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     # obj_phase[:, 10:20] = np.max(obj_phase)
     # obj_phase[:, -30:-20] = np.max(obj_phase)
 
-    im = axes["phase"].pcolormesh(x,x,obj_phase)
+    if mask:
+        im = axes["phase"].pcolormesh(x,x,amplitude_mask*obj_phase)
+    else:
+        im = axes["phase"].pcolormesh(x,x,obj_phase)
+
     axes["phase"].text(0.2, 0.9,"phase("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["phase"])
     axes["phase"].axvline(x=x[m_index[1]], color="red", alpha=0.8)
@@ -100,7 +106,10 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     axes["phase_vertical"].text(0.2, -0.25,"phase(vertical)", fontsize=10, ha='center', transform=axes["phase_vertical"].transAxes, backgroundcolor="red")
 
 
-    im = axes["intensity"].pcolormesh(x,x,I)
+    if mask:
+        im = axes["intensity"].pcolormesh(x,x,amplitude_mask*I)
+    else:
+        im = axes["intensity"].pcolormesh(x,x,I)
 
     # plot the spherical aperture
     if plot_spherical_aperture:
@@ -130,12 +139,18 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
 
     fig.colorbar(im, ax=axes["reconstructed"])
 
-    im = axes["real"].pcolormesh(x,x,np.squeeze(retrieved_obj["real_output"]))
+    if mask:
+        im = axes["real"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["real_output"]))
+    else:
+        im = axes["real"].pcolormesh(x,x,np.squeeze(retrieved_obj["real_output"]))
     axes["real"].text(0.2, 0.9,"real("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["real"].transAxes, backgroundcolor="cyan")
     axes["real"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["real"])
 
-    im = axes["imag"].pcolormesh(x,x,np.squeeze(retrieved_obj["imag_output"]))
+    if mask:
+        im = axes["imag"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["imag_output"]))
+    else:
+        im = axes["imag"].pcolormesh(x,x,np.squeeze(retrieved_obj["imag_output"]))
     axes["imag"].text(0.2, 0.9,"imag("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["imag"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["imag"])
 
