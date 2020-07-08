@@ -8,6 +8,7 @@ import tables
 import diffraction_functions
 import pickle
 import sys
+import multires_network
 from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
 from zernike3.build.PropagateTF import *
 
@@ -78,7 +79,11 @@ class DiffractionNet():
 
         # real retrieval network
         self.nn_nodes = {}
-        self.setup_network_2(self.nn_nodes)
+        # multires network
+        self.setup_multires_network(self.nn_nodes)
+
+        # normal convolutional network
+        # self.setup_network_2(self.nn_nodes)
 
         # learning rate
         self.s_LR = tf.placeholder(tf.float32, shape=[])
@@ -309,82 +314,38 @@ class DiffractionNet():
                 file.write(datastring)
 
 
+    def setup_multires_network(self, _nodes):
+        assert int(self.x.shape[2]) == 128
+        assert int(self.x.shape[1]) == 128
 
+        # six convolutional layers
+        multires_filters = [11, 7, 5, 3]
+        multires_layer_1 = multires_network.multires_layer(input=self.x, input_channels=1, filter_sizes=multires_filters, stride=2)
+        multires_layer_2 = multires_network.multires_layer(input=multires_layer_1, input_channels=4, filter_sizes=multires_filters, stride=2)
+        multires_layer_3 = multires_network.multires_layer(input=multires_layer_2, input_channels=16, filter_sizes=multires_filters, stride=2)
 
-    def setup_network_1(self, _nodes):
-        # convolutional layer down sampling
+        # IMAG OUT
+        IMAG_reverse_multires_layer_4=multires_network.reverse_multires_layer(input=multires_layer_3,input_channels=64,filter_sizes=multires_filters,stride=2,n_of_each_filter=8)
+        IMAG_reverse_multires_layer_5=multires_network.reverse_multires_layer(input=IMAG_reverse_multires_layer_4,input_channels=32,filter_sizes=multires_filters,stride=2,n_of_each_filter=4)
+        IMAG_reverse_multires_layer_6=multires_network.reverse_multires_layer(input=IMAG_reverse_multires_layer_5,input_channels=16,filter_sizes=multires_filters,stride=2,n_of_each_filter=1)
+        # set to single channel output
+        IMAG_OUT=tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=8, padding='SAME', strides=1, activation='relu')(IMAG_reverse_multires_layer_6)
 
-        # _nodes["conv1"] = convolutional_layer(self.x, shape=[3,3,1,32], activate='relu', stride=[1,1])
-        _nodes["conv1"] = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding='SAME', activation='relu')(self.x)
+        # IMAG OUT
+        REAL_reverse_multires_layer_4=multires_network.reverse_multires_layer(input=multires_layer_3,input_channels=64,filter_sizes=multires_filters,stride=2,n_of_each_filter=8)
+        REAL_reverse_multires_layer_5=multires_network.reverse_multires_layer(input=REAL_reverse_multires_layer_4,input_channels=32,filter_sizes=multires_filters,stride=2,n_of_each_filter=4)
+        REAL_reverse_multires_layer_6=multires_network.reverse_multires_layer(input=REAL_reverse_multires_layer_5,input_channels=16,filter_sizes=multires_filters,stride=2,n_of_each_filter=1)
+        # set to single channel output
+        REAL_OUT=tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=8, padding='SAME', strides=1, activation='relu')(IMAG_reverse_multires_layer_6)
 
-        # _nodes["conv2"] = convolutional_layer(_nodes["conv1"], shape=[3,3,32,32], activate='relu', stride=[1,1])
-        _nodes["conv2"] = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding='SAME', activation='relu')(_nodes["conv1"])
+        _nodes["real_out"] = REAL_OUT
+        _nodes["imag_out"] = IMAG_OUT
 
-        # max pooling
-        # _nodes["pool3"] = max_pooling_layer(_nodes["conv2"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
-        _nodes["pool3"] = tf.keras.layers.MaxPooling2D(pool_size=(2,2), padding='SAME')(_nodes["conv2"])
+        _nodes["real_out"] *=2
+        _nodes["imag_out"] *=2
+        _nodes["real_out"] -=1
+        _nodes["imag_out"] -=1
 
-        # convolutional layer
-        # _nodes["conv4"] = convolutional_layer(_nodes["pool3"], shape=[3,3,32,64], activate='relu', stride=[1,1])
-        _nodes["conv4"] = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding='SAME', activation='relu')(_nodes["pool3"])
-
-        # _nodes["conv5"] = convolutional_layer(_nodes["conv4"], shape=[3,3,64,64], activate='relu', stride=[1,1])
-        _nodes["conv5"] = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding='SAME', activation='relu')(_nodes["conv4"])
-
-        # max pooling
-        # _nodes["pool6"] = max_pooling_layer(_nodes["conv5"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
-        _nodes["pool6"] = tf.keras.layers.MaxPooling2D(pool_size=(2,2), padding='SAME')(_nodes["conv5"])
-
-        # convolutional layer
-        # _nodes["conv7"] = convolutional_layer(_nodes["pool6"], shape=[3,3,64,128], activate='relu', stride=[1,1])
-        _nodes["conv7"] = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding='SAME', activation='relu')(_nodes["pool6"])
-
-        # _nodes["conv8"] = convolutional_layer(_nodes["conv7"], shape=[3,3,128,128], activate='relu', stride=[1,1])
-        _nodes["conv8"] = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding='SAME', activation='relu')(_nodes["conv7"])
-
-        # max pooling
-        # _nodes["pool9"] = max_pooling_layer(_nodes["conv8"], pool_size_val=[2,2], stride_val=[2,2], pad=True)
-        _nodes["pool9"] = tf.keras.layers.MaxPooling2D(pool_size=(2,2), padding='SAME')(_nodes["conv8"])
-
-        # convolutional layer
-        # _nodes["conv10"] = convolutional_layer(_nodes["pool9"], shape=[3,3,128,128], activate='relu', stride=[1,1])
-        _nodes["conv10"] = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding='SAME', activation='relu')(_nodes["pool9"])
-
-        # _nodes["conv11"] = convolutional_layer(_nodes["conv10"], shape=[3,3,128,128], activate='relu', stride=[1,1])
-        _nodes["conv11"] = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding='SAME', activation='relu')(_nodes["conv10"])
-
-        # up sampling
-        # _nodes["ups12"] = upsample_2d(_nodes["conv11"], 2)
-        _nodes["ups12"] = tf.keras.layers.UpSampling2D(size=2)(_nodes["conv11"])
-
-        # convolutional layer
-        # _nodes["conv13"] = convolutional_layer(_nodes["ups12"], shape=[3,3,128,64], activate='relu', stride=[1,1])
-        _nodes["conv13"] = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding='SAME', activation='relu')(_nodes["ups12"])
-
-        # _nodes["conv14"] = convolutional_layer(_nodes["conv13"], shape=[3,3,64,64], activate='relu', stride=[1,1])
-        _nodes["conv14"] = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding='SAME', activation='relu')(_nodes["conv13"])
-
-        # up sampling
-        # _nodes["ups15"] = upsample_2d(_nodes["conv14"], 2)
-        _nodes["ups15"] = tf.keras.layers.UpSampling2D(size=2)(_nodes["conv14"])
-
-        # convolutional layer
-        # _nodes["conv16"] = convolutional_layer(_nodes["ups15"], shape=[3,3,64,32], activate='relu', stride=[1,1])
-        _nodes["conv16"] = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding='SAME', activation='relu')(_nodes["ups15"])
-
-        # _nodes["conv17"] = convolutional_layer(_nodes["conv16"], shape=[3,3,32,32], activate='relu', stride=[1,1])
-        _nodes["conv17"] = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding='SAME', activation='relu')(_nodes["conv16"])
-
-        # up sampling
-        # _nodes["ups18"] = upsample_2d(_nodes["conv17"], 2)
-        _nodes["ups18"] = tf.keras.layers.UpSampling2D(size=2)(_nodes["conv17"])
-
-        # _nodes["conv19"] = convolutional_layer(_nodes["ups18"], shape=[3,3,32,1], activate='sigmoid', stride=[1,1])
-        _nodes["imag_logits"] = tf.keras.layers.Conv2D(filters=1, kernel_size=3, padding='SAME')(_nodes["ups18"])
-        _nodes["real_logits"] = tf.keras.layers.Conv2D(filters=1, kernel_size=3, padding='SAME')(_nodes["ups18"])
-        # _nodes["out_logits"] = _nodes["conv19"]
-        _nodes["imag_out"] = tf.nn.sigmoid(_nodes["imag_logits"])
-        _nodes["real_out"] = tf.nn.sigmoid(_nodes["real_logits"])
 
     def setup_network_2(self, _nodes):
 
