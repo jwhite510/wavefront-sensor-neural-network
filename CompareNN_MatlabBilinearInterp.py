@@ -53,18 +53,17 @@ if __name__ == "__main__":
 
     parser=argparse.ArgumentParser()
     parser.add_argument('--network',type=str)
+    parser.add_argument('--IMAGE_ANNOTATE',type=str)
+    parser.add_argument('--SAVE_FOLDER',type=str)
     args=parser.parse_args()
-
-    # # retrieve neural network result
-    # folder_dir="nn_pictures/teslatest5_doubleksize_doublefilters_reconscostfunction_pictures/46/measured/"
-    # # run_name="Data_for_Jonathon_z0_1-fits_ud_1-0_reconstructed.p"
-    # sample_name="Data_for_Jonathon_z-500_1-fits_ud_1-0_reconstructed.p"
-    # filename=os.path.join(folder_dir,sample_name)
-    # print("filename =>", filename)
-    # with open(filename,"rb") as file:
-        # nn_retrieved=pickle.load(file)
-
+    IMAGE_ANNOTATE=args.IMAGE_ANNOTATE
+    SAVE_FOLDER=args.SAVE_FOLDER
+    # IMAGE_ANNOTATE="_c_INF"
+    # SAVE_FOLDER="test_7_6_c50"
+    # set the center for plotting the phase to compare all the figures
+    m_index=(64,64)
     # load diffraction pattern
+    os.mkdir(SAVE_FOLDER)
     index=6
     N=None
     with tables.open_file("zernike3/build/test_noise.hdf5",mode="r") as file:
@@ -83,7 +82,13 @@ if __name__ == "__main__":
     actual_object["tf_reconstructed_diff"] = diffraction_noisefree
     actual_object["real_output"] = object_real
     actual_object["imag_output"] = object_imag
-    diffraction_functions.plot_amplitude_phase_meas_retreival(actual_object,"actual_object",ACTUAL=True)
+
+    # get the peak of the intensity pattern
+    fig=diffraction_functions.plot_amplitude_phase_meas_retreival(actual_object,"actual_object_MASKED"+IMAGE_ANNOTATE,ACTUAL=True,m_index=m_index,mask=True)
+    fig.savefig(os.path.join(SAVE_FOLDER,"actual_object_MASKED"+IMAGE_ANNOTATE+".png"))
+
+    fig=diffraction_functions.plot_amplitude_phase_meas_retreival(actual_object,"actual_object"+IMAGE_ANNOTATE,ACTUAL=True,m_index=m_index)
+    fig.savefig(os.path.join(SAVE_FOLDER,"actual_object"+IMAGE_ANNOTATE+".png"))
 
     # retrieve image with neural network
     network=diffraction_net.DiffractionNet(args.network) # load a pre trained network
@@ -103,7 +108,8 @@ if __name__ == "__main__":
             network.nn_nodes["imag_out"], feed_dict={network.x:diffraction.reshape(1,N,N,1)})
 
     # plot retrieval with neural network
-    diffraction_functions.plot_amplitude_phase_meas_retreival(nn_retrieved,"nn_retrieved")
+    fig=diffraction_functions.plot_amplitude_phase_meas_retreival(nn_retrieved,"nn_retrieved"+IMAGE_ANNOTATE,m_index=m_index)
+    fig.savefig(os.path.join(SAVE_FOLDER,"nn_retrieved"+IMAGE_ANNOTATE+".png"))
 
     # get amplitude mask
     N = np.shape(nn_retrieved["measured_pattern"])[1]
@@ -112,20 +118,24 @@ if __name__ == "__main__":
 
     # run matlab retrieval with and without interpolation
     matlabcdi_retrieved_interp=diffraction_functions.matlab_cdi_retrieval(np.squeeze(nn_retrieved['measured_pattern']),amplitude_mask,interpolate=True)
-    diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved_interp,"matlabcdi_retrieved_interp")
+    fig=diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved_interp,"matlabcdi_retrieved_interp"+IMAGE_ANNOTATE,m_index=m_index)
+    fig.savefig(os.path.join(SAVE_FOLDER,"matlabcdi_retrieved_interp"+IMAGE_ANNOTATE+".png"))
 
     # noise reduction
     matlabcdi_retrieved_interp_NR=diffraction_functions.matlab_cdi_retrieval(np.squeeze(nn_retrieved['measured_pattern']),amplitude_mask,interpolate=True,noise_reduction=True)
-    diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved_interp_NR,"matlabcdi_retrieved_interp_NR")
+    fig=diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved_interp_NR,"matlabcdi_retrieved_interp_NR"+IMAGE_ANNOTATE,m_index=m_index)
+    fig.savefig(os.path.join(SAVE_FOLDER,"matlabcdi_retrieved_interp_NR"+IMAGE_ANNOTATE+".png"))
 
 
-    matlabcdi_retrieved_NOinterp=diffraction_functions.matlab_cdi_retrieval(np.squeeze(nn_retrieved['measured_pattern']),amplitude_mask,interpolate=False)
-    diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved_NOinterp,"matlabcdi_retrieved_NOinterp")
+    # matlabcdi_retrieved_NOinterp=diffraction_functions.matlab_cdi_retrieval(np.squeeze(nn_retrieved['measured_pattern']),amplitude_mask,interpolate=False)
+    # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved_NOinterp,"matlabcdi_retrieved_NOinterp"+IMAGE_ANNOTATE,m_index=m_index)
+    # fig.savefig(os.path.join(SAVE_FOLDER,"matlabcdi_retrieved_NOinterp"+IMAGE_ANNOTATE+".png"))
 
-    matlabcdi_retrieved_NOinterp_NR=diffraction_functions.matlab_cdi_retrieval(np.squeeze(nn_retrieved['measured_pattern']),amplitude_mask,interpolate=False,noise_reduction=True)
-    diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved_NOinterp_NR,"matlabcdi_retrieved_NOinterp_NR")
+    # matlabcdi_retrieved_NOinterp_NR=diffraction_functions.matlab_cdi_retrieval(np.squeeze(nn_retrieved['measured_pattern']),amplitude_mask,interpolate=False,noise_reduction=True)
+    # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved_NOinterp_NR,"matlabcdi_retrieved_NOinterp_NR"+IMAGE_ANNOTATE,m_index=m_index)
+    # fig.savefig(os.path.join(SAVE_FOLDER,"matlabcdi_retrieved_NOinterp_NR"+IMAGE_ANNOTATE+".png"))
 
-    plt.show()
+    # plt.show()
 
 
 
