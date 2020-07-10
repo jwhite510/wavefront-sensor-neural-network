@@ -17,7 +17,7 @@ class Ui_MainWindow(object):
         MainWindow.resize(800, 600)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.graphicsView = QtWidgets.QGraphicsView(self.centralwidget)
+        self.graphicsView = GraphicsLayoutWidget(self.centralwidget)
         self.graphicsView.setGeometry(QtCore.QRect(30, 40, 391, 431))
         self.graphicsView.setObjectName("graphicsView")
         self.lineEdit = QtWidgets.QLineEdit(self.centralwidget)
@@ -39,6 +39,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+from pyqtgraph import GraphicsLayoutWidget
 
 
 if __name__ == "__main__":
