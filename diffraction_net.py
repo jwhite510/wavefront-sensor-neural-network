@@ -402,7 +402,7 @@ class DiffractionNet():
         _nodes["real_out"] = deconvolutional_layer_interp(_nodes["Lbatch_norm18"],filters=1,kernel_size=8,scale=2)
 
         # _nodes["imag_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["Rbatch_norm18"])
-        _nodes["real_out"] = deconvolutional_layer_interp(_nodes["Rbatch_norm18"],filters=1,kernel_size=8,scale=2)
+        _nodes["imag_out"] = deconvolutional_layer_interp(_nodes["Rbatch_norm18"],filters=1,kernel_size=8,scale=2)
 
         # output is currently between 0 and 1
 
