@@ -106,6 +106,9 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
             new_rotation = float(self.rotation_edit.text())
             new_scale = float(self.scale_edit.text())
             new_orientation = self.orientation_edit.currentText()
+            if new_scale <= 0:
+                raise ValueError("scale must be greater than 0")
+
             self.update_processing_values(new_rotation,new_scale,new_orientation)
 
         except Exception as e:
