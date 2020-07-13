@@ -1,4 +1,6 @@
 import main
+from numpy import unravel_index
+import diffraction_net
 import numpy as np
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -93,6 +95,8 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         self.running=False
         self.plot_RE_IM=False
 
+        # # initialize neural network
+        self.network=diffraction_net.DiffractionNet("noise_test_D_fixednorm_SQUARE6x6_VISIBLESETUP_NOCENTER_peak-50") # load a pre trained network
 
         self.show()
         sys.exit(app.exec_())
@@ -170,6 +174,27 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
             im_p = self.getMeasuredDiffractionPattern.format_measured_diffraction_pattern(im, transform)
 
             # input through neural network
+            out_recons = self.network.sess.run( self.network.nn_nodes["recons_diffraction_pattern"], feed_dict={self.network.x:im_p})
+            out_real = self.network.sess.run( self.network.nn_nodes["real_out"], feed_dict={self.network.x:im_p})
+            out_imag = self.network.sess.run( self.network.nn_nodes["imag_out"], feed_dict={self.network.x:im_p})
+
+            out_real=np.squeeze(out_real)
+            out_imag=np.squeeze(out_imag)
+            out_recons=np.squeeze(out_recons)
+
+            # calculate the intensity
+            complex_obj = out_real + 1j * out_imag
+            I = np.abs(complex_obj)**2
+            m_index = unravel_index(I.argmax(), I.shape)
+            phase_Imax = np.angle(complex_obj[m_index[0], m_index[1]])
+            complex_obj *= np.exp(-1j * phase_Imax)
+            obj_phase = np.angle(complex_obj)
+
+            # not using the amplitude_mask, use the absolute value of the intensity
+            nonzero_intensity = np.array(np.abs(complex_obj))
+            nonzero_intensity[nonzero_intensity < 0.01*np.max(nonzero_intensity)] = 0
+            nonzero_intensity[nonzero_intensity >= 0.01*np.max(nonzero_intensity)] = 1
+            obj_phase *= nonzero_intensity
 
             im_p=np.squeeze(im_p)
 
@@ -179,6 +204,9 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
             print("self.processing.scale =>", self.processing.scale)
 
             self.display_proc_draw["data"].setImage(im_p)
+            self.display_intens_real_draw["data"].setImage(I)
+            self.display_phase_imag_draw["data"].setImage(obj_phase)
+            self.display_recons_draw["data"].setImage(out_recons)
 
     def retrieve_raw_img(self):
         x=np.linspace(-1,1,500).reshape(1,-1)

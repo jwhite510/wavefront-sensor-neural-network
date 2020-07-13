@@ -83,10 +83,10 @@ class DiffractionNet():
         # self.setup_multires_network(self.nn_nodes)
 
         # normal convolutional network
-        # self.setup_network_2(self.nn_nodes)
+        self.setup_network_2(self.nn_nodes)
 
         # interpolation / convolution for up sampling
-        self.setup_interp_network(self.nn_nodes)
+        # self.setup_interp_network(self.nn_nodes)
 
         # learning rate
         self.s_LR = tf.placeholder(tf.float32, shape=[])
