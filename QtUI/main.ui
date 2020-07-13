@@ -6,32 +6,152 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>962</width>
+    <height>846</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="GraphicsLayoutWidget" name="graphicsView">
+   <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>40</y>
-      <width>391</width>
-      <height>431</height>
+      <x>40</x>
+      <y>50</y>
+      <width>801</width>
+      <height>731</height>
      </rect>
     </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="GraphicsLayoutWidget" name="display_raw"/>
+       </item>
+       <item>
+        <widget class="GraphicsLayoutWidget" name="display_proc"/>
+       </item>
+       <item>
+        <widget class="GraphicsLayoutWidget" name="display_intens_real"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QWidget" name="widget" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <widget class="QPushButton" name="pushButton">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>80</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Start</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="rotation_edit">
+          <property name="geometry">
+           <rect>
+            <x>210</x>
+            <y>100</y>
+            <width>113</width>
+            <height>23</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QComboBox" name="orientation_edit">
+          <property name="geometry">
+           <rect>
+            <x>230</x>
+            <y>60</y>
+            <width>79</width>
+            <height>23</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="scale_edit">
+          <property name="geometry">
+           <rect>
+            <x>210</x>
+            <y>140</y>
+            <width>113</width>
+            <height>23</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label">
+          <property name="geometry">
+           <rect>
+            <x>80</x>
+            <y>100</y>
+            <width>121</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>rotation (degrees)</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_2">
+          <property name="geometry">
+           <rect>
+            <x>80</x>
+            <y>140</y>
+            <width>121</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>scale</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_3">
+          <property name="geometry">
+           <rect>
+            <x>80</x>
+            <y>60</y>
+            <width>121</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>orientation</string>
+          </property>
+         </widget>
+        </widget>
+       </item>
+       <item>
+        <widget class="GraphicsLayoutWidget" name="display_recons"/>
+       </item>
+       <item>
+        <widget class="GraphicsLayoutWidget" name="display_phase_imag"/>
+       </item>
+      </layout>
+     </item>
+    </layout>
    </widget>
-   <widget class="QLineEdit" name="lineEdit">
+   <widget class="QPushButton" name="view_toggle">
     <property name="geometry">
      <rect>
-      <x>540</x>
-      <y>100</y>
-      <width>113</width>
-      <height>23</height>
+      <x>850</x>
+      <y>640</y>
+      <width>80</width>
+      <height>51</height>
      </rect>
+    </property>
+    <property name="text">
+     <string>Real/Imag</string>
     </property>
    </widget>
   </widget>
@@ -40,7 +160,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>962</width>
      <height>20</height>
     </rect>
    </property>
@@ -57,14 +177,14 @@
  <resources/>
  <connections>
   <connection>
-   <sender>lineEdit</sender>
+   <sender>rotation_edit</sender>
    <signal>textChanged(QString)</signal>
    <receiver>MainWindow</receiver>
    <slot>textchanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>567</x>
-     <y>129</y>
+     <x>682</x>
+     <y>194</y>
     </hint>
     <hint type="destinationlabel">
      <x>548</x>
@@ -72,9 +192,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>Start_Stop_Clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>499</x>
+     <y>89</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>884</x>
+     <y>52</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>signal1()</signal>
   <slot>textchanged()</slot>
+  <slot>Start_Stop_Clicked()</slot>
  </slots>
 </ui>
