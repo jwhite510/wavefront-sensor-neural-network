@@ -7,6 +7,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import pyqtgraph as pg
 import os
 from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
+import pickle
 
 class Processing():
     def __init__(self):
@@ -203,17 +204,23 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
             print("self.processing.rotation =>", self.processing.rotation)
             print("self.processing.scale =>", self.processing.scale)
 
+            self.display_raw_draw["data"].setImage(im)
             self.display_proc_draw["data"].setImage(im_p)
             self.display_intens_real_draw["data"].setImage(I)
             self.display_phase_imag_draw["data"].setImage(obj_phase)
             self.display_recons_draw["data"].setImage(out_recons)
 
-    def retrieve_raw_img(self):
-        x=np.linspace(-1,1,500).reshape(1,-1)
-        y=np.linspace(-1,1,500).reshape(-1,1)
 
-        z = np.exp(-x**2 / 0.5) * np.exp(-y**2 / 0.5)
-        return z
+    def retrieve_raw_img(self):
+
+        with open("sample.p", "rb") as file:
+            obj = pickle.load(file)
+        obj=np.pad(obj,pad_width=300,mode="constant",constant_values=0)
+        # x=np.linspace(-1,1,500).reshape(1,-1)
+        # y=np.linspace(-1,1,500).reshape(-1,1)
+
+        # z = np.exp(-x**2 / 0.5) * np.exp(-y**2 / 0.5)
+        return obj
         # return np.random.rand(500,600)
 
 
