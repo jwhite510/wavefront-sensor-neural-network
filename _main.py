@@ -1,4 +1,5 @@
 import main
+import time
 from numpy import unravel_index
 import diffraction_net
 import numpy as np
@@ -152,6 +153,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
     def run_retrieval(self):
 
         while self.running:
+            time1=time.time()
             QtCore.QCoreApplication.processEvents()
 
             # grab raw image
@@ -175,9 +177,13 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
             im_p = self.getMeasuredDiffractionPattern.format_measured_diffraction_pattern(im, transform)
 
             # input through neural network
+            print("input through net:")
+            time_a=time.time()
             out_recons = self.network.sess.run( self.network.nn_nodes["recons_diffraction_pattern"], feed_dict={self.network.x:im_p})
             out_real = self.network.sess.run( self.network.nn_nodes["real_out"], feed_dict={self.network.x:im_p})
             out_imag = self.network.sess.run( self.network.nn_nodes["imag_out"], feed_dict={self.network.x:im_p})
+            time_b=time.time()
+            print(time_b-time_a)
 
             out_real=np.squeeze(out_real)
             out_imag=np.squeeze(out_imag)
@@ -209,6 +215,9 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
             self.display_intens_real_draw["data"].setImage(I)
             self.display_phase_imag_draw["data"].setImage(obj_phase)
             self.display_recons_draw["data"].setImage(out_recons)
+            time2=time.time()
+            print("total time:")
+            print(time2-time1)
 
 
     def retrieve_raw_img(self):
