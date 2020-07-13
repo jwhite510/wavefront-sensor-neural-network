@@ -208,10 +208,27 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>view_toggle</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>TogglePlotRE_IM()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>899</x>
+     <y>677</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>898</x>
+     <y>570</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>signal1()</signal>
   <slot>textchanged()</slot>
   <slot>Start_Stop_Clicked()</slot>
+  <slot>TogglePlotRE_IM()</slot>
  </slots>
 </ui>

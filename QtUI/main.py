@@ -88,6 +88,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.rotation_edit.textChanged['QString'].connect(MainWindow.textchanged)
         self.pushButton.clicked.connect(MainWindow.Start_Stop_Clicked)
+        self.view_toggle.clicked.connect(MainWindow.TogglePlotRE_IM)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

@@ -64,6 +64,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
         # state of UI
         self.running=False
+        self.plot_RE_IM=False
 
 
         self.show()
@@ -84,13 +85,27 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
             self.running=False
             self.pushButton.setText("Start")
 
+    def TogglePlotRE_IM(self):
+
+        print(self.plot_RE_IM)
+
+        if self.plot_RE_IM == True:
+            self.plot_RE_IM=False
+            self.display_phase_imag_draw["plot"].setTitle('Phase',color=self.COLORGREEN)
+            self.display_intens_real_draw["plot"].setTitle('Intensity',color=self.COLORGREEN)
+            self.view_toggle.setText("Real/Imag")
+
+        elif self.plot_RE_IM == False:
+            self.plot_RE_IM=True
+            self.display_phase_imag_draw["plot"].setTitle('Imaginary',color=self.COLORGREEN)
+            self.display_intens_real_draw["plot"].setTitle('Real',color=self.COLORGREEN)
+            self.view_toggle.setText("Phase/\nIntensity")
+
     def run_retrieval(self):
 
         while self.running:
             QtCore.QCoreApplication.processEvents()
             self.display_proc_draw["data"].setImage(np.random.rand(10, 10) + 10.)
-            self.display_proc_draw["plot"].getAxis('left').setLabel('some bullshit', color='#54f542')
-            self.display_proc_draw["plot"].getAxis('bottom').setLabel('some other bullsht', color='#54f542')
 
 
 
