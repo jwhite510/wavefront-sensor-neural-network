@@ -3,6 +3,8 @@ import numpy as np
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 import pyqtgraph as pg
+import os
+from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
 
 class Processing():
     def __init__(self):
@@ -78,6 +80,15 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         self.orientation_edit.addItems(['None','Left->Right','Up->Down','Left->Right & Up->Down'])
         self.orientation_edit.setCurrentIndex(2) # default to up->down
 
+        im=self.retrieve_raw_img()
+        experimental_params = {}
+        experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
+        experimental_params['z_distance'] = 16e-3 # [meters] distance from camera
+        experimental_params['wavelength'] = 633e-9 #[meters] wavelength
+        self.getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
+                N_meas=np.shape(im)[0], # for calculating the measured frequency axis (not really needed)
+                experimental_params=experimental_params)
+
         # state of UI
         self.running=False
         self.plot_RE_IM=False
@@ -135,6 +146,16 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         while self.running:
             QtCore.QCoreApplication.processEvents()
 
+            # grab raw image
+            im = self.retrieve_raw_img()
+            # process image
+
+            transform={}
+            transform["rotation_angle"]=self.processing.rotation
+            transform["scale"]=self.processing.scale
+            transform["flip"]=self.processing.orientation
+            im_p = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(im, transform)
+
             # grab image with orientation, rotation, scale settings
             print("self.processing.orientation =>", self.processing.orientation)
             print("self.processing.rotation =>", self.processing.rotation)
@@ -142,6 +163,14 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
 
             self.display_proc_draw["data"].setImage(np.random.rand(10, 10) + 10.)
+
+    def retrieve_raw_img(self):
+        x=np.linspace(-1,1,500)
+        y=np.linspace(-1,1,500)
+
+        z = np.exp(-x**2 / 0.5) * np.exp(-y**2 / 0.5)
+        return z
+        # return np.random.rand(500,600)
 
 
 
