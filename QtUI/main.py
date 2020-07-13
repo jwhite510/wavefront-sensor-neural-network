@@ -51,7 +51,7 @@ class Ui_MainWindow(object):
         self.rotation_edit.setGeometry(QtCore.QRect(210, 100, 113, 23))
         self.rotation_edit.setObjectName("rotation_edit")
         self.orientation_edit = QtWidgets.QComboBox(self.widget)
-        self.orientation_edit.setGeometry(QtCore.QRect(230, 60, 79, 23))
+        self.orientation_edit.setGeometry(QtCore.QRect(158, 60, 171, 23))
         self.orientation_edit.setObjectName("orientation_edit")
         self.scale_edit = QtWidgets.QLineEdit(self.widget)
         self.scale_edit.setGeometry(QtCore.QRect(210, 140, 113, 23))
@@ -86,9 +86,11 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.rotation_edit.textChanged['QString'].connect(MainWindow.textchanged)
         self.pushButton.clicked.connect(MainWindow.Start_Stop_Clicked)
         self.view_toggle.clicked.connect(MainWindow.TogglePlotRE_IM)
+        self.rotation_edit.textChanged['QString'].connect(MainWindow.ProcessingUpdated)
+        self.scale_edit.textChanged['QString'].connect(MainWindow.ProcessingUpdated)
+        self.orientation_edit.currentIndexChanged['QString'].connect(MainWindow.ProcessingUpdated)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

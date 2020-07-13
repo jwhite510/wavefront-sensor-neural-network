@@ -73,9 +73,9 @@
          <widget class="QComboBox" name="orientation_edit">
           <property name="geometry">
            <rect>
-            <x>230</x>
+            <x>158</x>
             <y>60</y>
-            <width>79</width>
+            <width>171</width>
             <height>23</height>
            </rect>
           </property>
@@ -177,22 +177,6 @@
  <resources/>
  <connections>
   <connection>
-   <sender>rotation_edit</sender>
-   <signal>textChanged(QString)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>textchanged()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>682</x>
-     <y>194</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>548</x>
-     <y>254</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>pushButton</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
@@ -224,11 +208,60 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>rotation_edit</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ProcessingUpdated()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>720</x>
+     <y>188</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>846</x>
+     <y>240</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>scale_edit</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ProcessingUpdated()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>711</x>
+     <y>227</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>840</x>
+     <y>282</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>orientation_edit</sender>
+   <signal>currentIndexChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ProcessingUpdated()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>662</x>
+     <y>135</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>851</x>
+     <y>199</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>signal1()</signal>
   <slot>textchanged()</slot>
   <slot>Start_Stop_Clicked()</slot>
   <slot>TogglePlotRE_IM()</slot>
+  <slot>ProcessingUpdated()</slot>
  </slots>
 </ui>

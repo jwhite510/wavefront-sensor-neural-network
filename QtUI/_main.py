@@ -4,6 +4,14 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 import pyqtgraph as pg
 
+class Processing():
+    def __init__(self):
+        # string
+        self.orientation=None
+        # float
+        self.rotation=0.0
+        # float
+        self.scale=1.0
 
 
 class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
@@ -62,6 +70,14 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         self.display_phase_imag_draw["plot"].getAxis('bottom').setLabel('Position', color=self.COLORGREEN)
         self.display_phase_imag_draw["plot"].setTitle('Phase',color=self.COLORGREEN)
 
+        # initialize processing parameters
+        self.processing=Processing()
+        # set the buttons to these values
+        self.rotation_edit.setText(str(self.processing.rotation))
+        self.scale_edit.setText(str(self.processing.scale))
+        self.orientation_edit.addItems(['None','Left->Right','Up->Down','Left->Right & Up->Down'])
+        self.orientation_edit.setCurrentIndex(2) # default to up->down
+
         # state of UI
         self.running=False
         self.plot_RE_IM=False
@@ -71,9 +87,24 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         sys.exit(app.exec_())
 
     def textchanged(self):
-        for _ in range(20):
-            QtCore.QCoreApplication.processEvents()
-            print("the text was changed")
+        print("the text was changed")
+
+    def ProcessingUpdated(self):
+
+        try:
+            new_rotation = float(self.rotation_edit.text())
+            new_scale = float(self.scale_edit.text())
+            new_orientation = self.orientation_edit.currentText()
+            self.update_processing_values(new_rotation,new_scale,new_orientation)
+
+        except Exception as e:
+            print(e)
+            pass
+
+    def update_processing_values(self,new_rotation,new_scale,new_orientation):
+        self.processing.orientation=new_orientation
+        self.processing.rotation=new_rotation
+        self.processing.scale=new_scale
 
     def Start_Stop_Clicked(self):
         if not self.running:
@@ -86,8 +117,6 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
             self.pushButton.setText("Start")
 
     def TogglePlotRE_IM(self):
-
-        print(self.plot_RE_IM)
 
         if self.plot_RE_IM == True:
             self.plot_RE_IM=False
@@ -105,6 +134,13 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
         while self.running:
             QtCore.QCoreApplication.processEvents()
+
+            # grab image with orientation, rotation, scale settings
+            print("self.processing.orientation =>", self.processing.orientation)
+            print("self.processing.rotation =>", self.processing.rotation)
+            print("self.processing.scale =>", self.processing.scale)
+
+
             self.display_proc_draw["data"].setImage(np.random.rand(10, 10) + 10.)
 
 
