@@ -45,8 +45,6 @@ class GetMeasuredDiffractionPattern():
 
 
     def format_measured_diffraction_pattern(self, measured_diffraction_pattern, transform):
-        if transform["flip"] == 'None':
-            transform["flip"]=None
         """
         measured_diffraction_pattern (numpy array)
         transform["rotation_angle"] = float/int (degrees)

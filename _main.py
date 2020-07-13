@@ -153,20 +153,33 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
             transform={}
             transform["rotation_angle"]=self.processing.rotation
             transform["scale"]=self.processing.scale
-            transform["flip"]=self.processing.orientation
-            im_p = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(im, transform)
+            if self.processing.orientation == "None":
+                transform["flip"]=None
+
+            elif self.processing.orientation == "Left->Right":
+                transform["flip"]="lr"
+
+            elif self.processing.orientation == "Up->Down":
+                transform["flip"]="ud"
+
+            elif self.processing.orientation == "Left->Right & Up->Down":
+                transform["flip"]="lrud"
+            im_p = self.getMeasuredDiffractionPattern.format_measured_diffraction_pattern(im, transform)
+
+            # input through neural network
+
+            im_p=np.squeeze(im_p)
 
             # grab image with orientation, rotation, scale settings
             print("self.processing.orientation =>", self.processing.orientation)
             print("self.processing.rotation =>", self.processing.rotation)
             print("self.processing.scale =>", self.processing.scale)
 
-
-            self.display_proc_draw["data"].setImage(np.random.rand(10, 10) + 10.)
+            self.display_proc_draw["data"].setImage(im_p)
 
     def retrieve_raw_img(self):
-        x=np.linspace(-1,1,500)
-        y=np.linspace(-1,1,500)
+        x=np.linspace(-1,1,500).reshape(1,-1)
+        y=np.linspace(-1,1,500).reshape(-1,1)
 
         z = np.exp(-x**2 / 0.5) * np.exp(-y**2 / 0.5)
         return z
