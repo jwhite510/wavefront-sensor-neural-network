@@ -332,7 +332,10 @@ def create_dataset(filename):
         hdf5file.create_earray(hdf5file.root, "object_imag", tables.Float32Atom(), shape=(0,N*N))
 
         # create array for the image
-        hdf5file.create_earray(hdf5file.root, "diffraction", tables.Float32Atom(), shape=(0,N*N))
+        hdf5file.create_earray(hdf5file.root, "diffraction_noise", tables.Float32Atom(), shape=(0,N*N))
+
+        # create array for the image
+        hdf5file.create_earray(hdf5file.root, "diffraction_noisefree", tables.Float32Atom(), shape=(0,N*N))
 
         hdf5file.create_earray(hdf5file.root, "N", tables.Int32Atom(), shape=(0,1))
 
@@ -423,14 +426,14 @@ def save_to_hdf5(filename, wavefront_sensor, wavefront):
             for i in range(np.shape(wavefront)[0]):
                 object_real = np.real(wavefront[i,:,:])
                 object_imag = np.imag(wavefront[i,:,:])
-                diffraction_pattern_with_noise = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(wavefront_sensor[i,:,:]))))**2
+                diffraction_pattern_noisefree = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(wavefront_sensor[i,:,:]))))**2
 
                 # normalize
-                diffraction_pattern_with_noise = diffraction_pattern_with_noise / np.max(diffraction_pattern_with_noise)
-                diffraction_pattern_with_noise = diffraction_functions.center_image_at_centroid(diffraction_pattern_with_noise)
+                diffraction_pattern_noisefree = diffraction_pattern_noisefree / np.max(diffraction_pattern_noisefree)
+                diffraction_pattern_noisefree = diffraction_functions.center_image_at_centroid(diffraction_pattern_noisefree)
                 hd5file.root.object_real.append(object_real.reshape(1,-1))
                 hd5file.root.object_imag.append(object_imag.reshape(1,-1))
-                hd5file.root.diffraction.append(diffraction_pattern_with_noise.reshape(1,-1))
+                hd5file.root.diffraction_noisefree.append(diffraction_pattern_noisefree.reshape(1,-1))
 
             print("calling flush")
             hd5file.flush()

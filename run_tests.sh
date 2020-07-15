@@ -5,7 +5,7 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"interp_convolution_1"
+"interp_NEARESTNEIGHBOR_convolution_1"
 "36000"
 )
 i=0

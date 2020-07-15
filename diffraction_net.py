@@ -34,7 +34,7 @@ class GetData():
         samples = {}
         samples["object_real_samples"] = self.hdf5_file_train.root.object_real[self.batch_index:self.batch_index + self.batch_size, :]
         samples["object_imag_samples"] = self.hdf5_file_train.root.object_imag[self.batch_index:self.batch_index + self.batch_size, :]
-        samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction[self.batch_index:self.batch_index + self.batch_size, :]
+        samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction_noise[self.batch_index:self.batch_index + self.batch_size, :]
 
         self.batch_index += self.batch_size
 
@@ -44,7 +44,8 @@ class GetData():
         samples = {}
         samples["object_real_samples"] = self.hdf5_file_train.root.object_real[:n_samples, :]
         samples["object_imag_samples"] = self.hdf5_file_train.root.object_imag[:n_samples, :]
-        samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction[:n_samples, :]
+        samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction_noise[:n_samples, :]
+        samples["diffraction_noisefree"] = self.hdf5_file_train.root.diffraction_noisefree[:n_samples, :]
 
         return samples
 
@@ -52,8 +53,8 @@ class GetData():
         samples = {}
         samples["object_real_samples"] = self.hdf5_file_validation.root.object_real[:n_samples, :]
         samples["object_imag_samples"] = self.hdf5_file_validation.root.object_imag[:n_samples, :]
-        samples["diffraction_samples"] = self.hdf5_file_validation.root.diffraction[:n_samples, :]
-        # samples["imag_scalar_samples"] = self.hdf5_file_train.root.imag_norm_factor[:n_samples, :]
+        samples["diffraction_samples"] = self.hdf5_file_validation.root.diffraction_noise[:n_samples, :]
+        samples["diffraction_noisefree"] = self.hdf5_file_validation.root.diffraction_noisefree[:n_samples, :]
 
         return samples
 
@@ -83,10 +84,10 @@ class DiffractionNet():
         # self.setup_multires_network(self.nn_nodes)
 
         # normal convolutional network
-        # self.setup_network_2(self.nn_nodes)
+        self.setup_network_2(self.nn_nodes)
 
         # interpolation / convolution for up sampling
-        self.setup_interp_network(self.nn_nodes)
+        # self.setup_interp_network(self.nn_nodes)
 
         # learning rate
         self.s_LR = tf.placeholder(tf.float32, shape=[])
@@ -547,6 +548,7 @@ class DiffractionNet():
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch))
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/training")
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/validation")
+                check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/validation_detail")
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/measured")
 
                 data = self.get_data.evaluate_on_train_data(n_samples=50)
@@ -554,6 +556,7 @@ class DiffractionNet():
 
                 data = self.get_data.evaluate_on_validation_data(n_samples=50)
                 self.evaluate_performance(data, "validation")
+                self.evaluate_performance_detail(data,"validation_detail")
 
                 self.evaluate_performance_measureddata()
 
@@ -774,6 +777,50 @@ class DiffractionNet():
             fig.savefig(filename)
             plt.close(fig)
 
+    def evaluate_performance_detail(self, _data, _set):
+        print("evaluate detailed")
+        # save the 
+        object_real_samples = _data["object_real_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+        object_imag_samples = _data["object_imag_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+        diffraction_samples = _data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+        diffraction_noisefree = _data["diffraction_noisefree"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+
+        # plot the output
+        real_output = self.sess.run(self.nn_nodes["real_out"], feed_dict={self.x:diffraction_samples})
+        imag_output = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:diffraction_samples})
+        tf_reconstructed_diff = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:diffraction_samples})
+        for index in range(0,10):
+            print("evaluating detailsample: "+str(index))
+
+            # object
+            diffraction_samples[index,:,:,0]
+            object_real_samples[index,:,:,0]
+            object_imag_samples[index,:,:,0]
+            diffraction_noisefree[index,:,:,0]
+
+            # retrieved from net
+            real_output[index,:,:,0]
+            imag_output[index,:,:,0]
+            tf_reconstructed_diff[index,:,:,0]
+
+            # save the actual object
+            actual_object = {}
+            actual_object["measured_pattern"] = diffraction_samples[index,:,:,0]
+            actual_object["tf_reconstructed_diff"] = diffraction_noisefree[index,:,:,0]
+            actual_object["real_output"] = object_real_samples[index,:,:,0]
+            actual_object["imag_output"] = object_imag_samples[index,:,:,0]
+            m_index=(64,64)
+            fig=diffraction_functions.plot_amplitude_phase_meas_retreival(actual_object,"actual_object_"+str(index),ACTUAL=True,m_index=m_index)
+            fig.savefig("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/"+str(index)+"_actual")
+
+            # save the retrieved object
+            nn_retrieved = {}
+            nn_retrieved["measured_pattern"] = diffraction_samples[index,:,:,0]
+            nn_retrieved["tf_reconstructed_diff"] = tf_reconstructed_diff[index,:,:,0]
+            nn_retrieved["real_output"] = real_output[index,:,:,0]
+            nn_retrieved["imag_output"] = imag_output[index,:,:,0]
+            fig=diffraction_functions.plot_amplitude_phase_meas_retreival(nn_retrieved,"nn_retrieved",m_index=m_index)
+            fig.savefig("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/"+str(index)+"_retrieved")
 
 
 def max_pooling_layer(input_x, pool_size_val,  stride_val, pad=False):
@@ -799,7 +846,8 @@ def deconvolutional_layer_interp(input,filters,kernel_size,scale):
     dimx_new = int(scale*dimx)
     dimy_new = int(scale*dimy)
 
-    interpolated_layer = tf.image.resize_bilinear(input,[dimx_new,dimy_new])
+    # interpolated_layer = tf.image.resize_bilinear(input,[dimx_new,dimy_new])
+    interpolated_layer = tf.image.resize_nearest_neighbor(input,[dimx_new,dimy_new])
     layer_new = tf.keras.layers.Conv2D(filters=filters, kernel_size=kernel_size, padding='SAME', strides=1)(interpolated_layer)
     return layer_new
 

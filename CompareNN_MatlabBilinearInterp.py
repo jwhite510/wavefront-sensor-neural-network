@@ -71,11 +71,8 @@ if __name__ == "__main__":
         N = file.root.N[0,0]
         object_real = file.root.object_real[index, :].reshape(N,N)
         object_imag = file.root.object_imag[index, :].reshape(N,N)
-        diffraction = file.root.diffraction[index, :].reshape(N,N)
-    # no noise diffraction pattern
-    with tables.open_file("zernike3/build/test.hdf5",mode="r") as file:
-        N = file.root.N[0,0]
-        diffraction_noisefree = file.root.diffraction[index, :].reshape(N,N)
+        diffraction = file.root.diffraction_noise[index, :].reshape(N,N)
+        diffraction_noisefree = file.root.diffraction_noisefree[index, :].reshape(N,N)
 
     actual_object = {}
     actual_object["measured_pattern"] = diffraction

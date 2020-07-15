@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
                 object_real=hd5file.root.object_real[_i, :].reshape(N,N)
                 object_imag=hd5file.root.object_imag[_i, :].reshape(N,N)
-                diffraction=hd5file.root.diffraction[_i, :].reshape(N,N)
+                diffraction=hd5file.root.diffraction_noisefree[_i, :].reshape(N,N)
 
                 if args.peakcount>0:
                     # apply poisson noise
@@ -75,12 +75,14 @@ if __name__ == "__main__":
 
                     newhd5file.root.object_real.append(object_real.reshape(1,-1))
                     newhd5file.root.object_imag.append(object_imag.reshape(1,-1))
-                    newhd5file.root.diffraction.append(diffraction_pattern_with_noise_poisson_and_camera.reshape(1,-1))
+                    newhd5file.root.diffraction_noise.append(diffraction_pattern_with_noise_poisson_and_camera.reshape(1,-1))
+                    newhd5file.root.diffraction_noisefree.append(diffraction.reshape(1,-1))
 
                 else:
                     newhd5file.root.object_real.append(object_real.reshape(1,-1))
                     newhd5file.root.object_imag.append(object_imag.reshape(1,-1))
-                    newhd5file.root.diffraction.append(diffraction.reshape(1,-1))
+                    newhd5file.root.diffraction_noise.append(diffraction.reshape(1,-1))
+                    newhd5file.root.diffraction_noisefree.append(diffraction.reshape(1,-1))
 
 
                 # diffraction=diffraction_pattern_with_noise_poisson_and_camera
