@@ -115,7 +115,12 @@ class DiffractionNet():
         self.nn_nodes["recons_diffraction_pattern"] = diffraction_functions.tf_reconstruct_diffraction_pattern(real_norm=self.nn_nodes["real_out"], imag_norm=self.nn_nodes["imag_out"],propagateTF=propagateTF)
         self.nn_nodes["reconstruction_loss"] = tf.losses.mean_squared_error(labels=self.x, predictions=self.nn_nodes["recons_diffraction_pattern"])
 
-        self.nn_nodes["cost_function"] = self.nn_nodes["real_loss"] + self.nn_nodes["imag_loss"] + self.nn_nodes["reconstruction_loss"]
+        # intensity loss
+        self.nn_nodes["intensity_actual"] = tf.abs(tf.complex(real=self.real_actual,imag=self.imag_actual))**2
+        self.nn_nodes["intensity_out"] = tf.abs(tf.complex(real=self.nn_nodes["real_out"],imag=self.nn_nodes["imag_out"]))**2
+        self.nn_nodes["intensity_loss"] = tf.losses.mean_squared_error(labels=self.x, predictions=self.nn_nodes["recons_diffraction_pattern"])
+
+        self.nn_nodes["cost_function"] = self.nn_nodes["real_loss"] + self.nn_nodes["imag_loss"] + self.nn_nodes["reconstruction_loss"] + self.nn_nodes["intensity_loss"]
         # + self.nn_nodes["imag_norm_factor_loss"]
 
         optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)

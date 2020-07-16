@@ -5,7 +5,7 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"interp_NEARESTNEIGHBOR_convolution_1"
+"detail_eval_INTENSITYCOST_1"
 "36000"
 )
 i=0
@@ -25,7 +25,7 @@ do
 	mpirun -np 20 a.out --count $training_samples --name train.hdf5 --buffersize 100 --seed 8977
 	cd ../..
 
-	peakcounts_arr=(50 10 5 2)
+	peakcounts_arr=(50)
 	camera_noise="../../SquareWFtest/CameraNoise/1_1000/Bild_1.png"
 	for pc in "${peakcounts_arr[@]}"
 	do
