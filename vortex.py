@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 
 def random_beam(x,y,N):
@@ -6,7 +7,7 @@ def random_beam(x,y,N):
     p1 = -1
     p2 = 1
     width_min = 0.1
-    width_max = 3.0
+    width_max = 1.0
     for _ in range(N):
 
         a=np.random.rand()
@@ -35,24 +36,20 @@ def random_beam(x,y,N):
 
     # return E
 
-if __name__ == "__main__":
+def make_vortex(vortex_offset,m,RANDOM_AMP,folder):
 
     x = np.linspace(-10,10,300).reshape(1,-1)
     y = np.linspace(-10,10,300).reshape(-1,1)
     r = np.sqrt(x**2 + y**2)
     # angle
     # phi = 
-
     # construct angle
-
-    vortex_offset = (0.0,0.0)
-
     phi = np.arctan2(y+vortex_offset[1],x+vortex_offset[0])
-    m = 3
-
-    E = np.exp(-x**2)*np.exp(-y**2)
-    np.random.seed(10)
-    E = random_beam(x,y,7)
+    if RANDOM_AMP:
+        np.random.seed(10)
+        E = random_beam(x,y,7)
+    else:
+        E = np.exp(-x**2)*np.exp(-y**2)
 
     E = np.array(E,dtype=np.complex128)
     E*= np.exp(1j * m * phi)
@@ -81,18 +78,38 @@ if __name__ == "__main__":
             ax[i][j].set_xlim(100,200)
             ax[i][j].set_ylim(100,200)
 
+    name = "vortex_m-"+str(m)+"_offset-"+str(vortex_offset[0])+"-"+str(vortex_offset[1])
 
-    # plt.figure()
-    # plt.imshow(np.abs(E)**2)
+    if RANDOM_AMP:
+        name+="_random"
+    else:
+        name +="_gaussian"
+    name = name.replace(".","_")
 
-    # plt.figure()
-    # plt.imshow(np.angle(E))
 
-    # plt.figure()
-    # plt.imshow(np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(E)))))
-    # plt.figure()
-    # plt.imshow(np.angle(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(E)))))
+    if not os.path.isdir(folder):
+        os.mkdir(folder)
+    fig.savefig(os.path.join(folder,name))
 
-    plt.show()
+    return fig
+
+if __name__ == "__main__":
+
+    vortex_offset = (0.0,0.0)
+
+    for _m in [0,1,2,3]:
+        fig=make_vortex(vortex_offset,_m,False,"gaussian_amplitude")
+
+    for _o in [0,0.1,0.2,0.3]:
+        fig=make_vortex((_o,_o),2,False,"gaussian_amplitude")
+
+    for _m in [0,1,2,3]:
+        fig=make_vortex(vortex_offset,_m,True,"random_amplitude")
+
+    for _o in [0,0.1,0.2,0.3]:
+        fig=make_vortex((_o,_o),2,True,"random_amplitude")
+
+
+    # plt.show()
 
 
