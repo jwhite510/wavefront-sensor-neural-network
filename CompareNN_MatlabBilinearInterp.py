@@ -64,7 +64,8 @@ if __name__ == "__main__":
     m_index=(64,64)
     # load diffraction pattern
     os.mkdir(SAVE_FOLDER)
-    index=6
+    index=11
+    # index=9 # best
     N=None
     with tables.open_file("zernike3/build/test_noise.hdf5",mode="r") as file:
     # with tables.open_file("zernike3/build/test.hdf5",mode="r") as file: # use the noise free sample, and matlab result looks good
