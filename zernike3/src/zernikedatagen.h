@@ -333,12 +333,12 @@ void crop_object(array2d<complex<float>> & complex_object, array2d<double> & cro
 }
 class GaussianPropagator
 {
+  public:
   array1d<float>* x;
   array1d<float>* y;
   array2d<float>* gaussian_amp;
   int N_computational;
   Fft2* fft_2;
-  public:
   GaussianPropagator(int N_computational_in)
   {
     N_computational = N_computational_in;
@@ -496,6 +496,44 @@ struct zernike_c
   int n;
 };
 
+struct VortexPhaseGenerator{
+  int Nx;
+  int Ny;
+  array1d<float>x;
+  array1d<float>y;
+  array2d<float>phase;
+  VortexPhaseGenerator(int Nx, int Ny):
+    Nx(Nx),
+    Ny(Ny),
+    x(Nx),
+    y(Nx),
+    phase(Nx,Ny)
+  {
+    // make linspace
+    Linspace(-1,1,x);
+    Linspace(-1,1,y);
+  }
+  array2d<float>* MakePhase(float offsetMax){
+    // create a random vortex phase
+    // random offset
+    int m = 1; //
+    float offsetx=RandomF(-offsetMax,offsetMax);
+    float offsety=RandomF(-offsetMax,offsetMax);
+    for(int i=0; i < Nx; i++){
+      for(int j=0; j < Ny; j++){
+        // phi
+        float phi = atan2(y(j)+offsety, x(i)+offsetx);
+        phase(i,j) = m * phi;
+        // phase(i,j) = exp(complex<float>(0,m*phi));
+      }
+    }
+    return &phase;
+  }
+  ~VortexPhaseGenerator(){
+  }
+
+};
+
 struct DataGenerator
 {
   PythonInterp Python;
@@ -521,6 +559,7 @@ struct DataGenerator
   int max_n;
   array3d<float>* mn_polynomials;
   vector<zernike_c> zernike_cvector;
+  VortexPhaseGenerator vortexphasegenerator;
 
   DataGenerator(const char* pythonhomedir,
       int N_computational,
@@ -529,6 +568,7 @@ struct DataGenerator
 
     : Python(pythonhomedir, "utility"),
       zernike_polynom(N_computational,N_computational),
+      vortexphasegenerator(N_computational,N_computational),
       zernikegenerator(N_computational),
       complex_object(N_computational, N_computational),
       gaussianp(N_computational),
@@ -671,9 +711,22 @@ struct DataGenerator
           zernike_polynom(j,k) +=  r1 * (*mn_polynomials)(i, j, k);
     }
 
-    // apply this phase and propagate it
-    gaussianp.propagate(complex_object, zernike_polynom);
+    // generate random vortex phase
+    // check gaussian amplitude
+    // gaussianp.gaussian_amp
+    array2d<float>* vortexphasep=vortexphasegenerator.MakePhase(0.05); // adjust this maybe
 
+    // write_array(*vortexphasep,"vortexphasep");
+    // system("plotd.py vortexphasep.dat & disown");
+
+    // write_array(*gaussianp.gaussian_amp, "gaussian_amp");
+    // system("plotd.py gaussian_amp.dat & disown");
+
+
+    // apply this phase and propagate it
+    gaussianp.propagate(complex_object, *vortexphasep);
+
+    // write_complex_array(complex_object, "complex_object");
     // Python.call_function_np("plot_zernike", complex_object.data, vector<int>{complex_object.size_0,complex_object.size_1}, PyArray_COMPLEX64);
     cropinterp.crop_interp(complex_object,
         interped_arr, // OUT

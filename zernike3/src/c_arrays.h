@@ -140,6 +140,16 @@ void write_complex_array(array2d<complex<float>>&arr, string filenameprefix)
     }f<<endl;
   } f.close();
 }
+void write_array(array2d<float>&arr, string filenameprefix)
+{
+  ofstream f;
+  f.open(filenameprefix+".dat");
+  for(int i=0; i < arr.size_0; i++){
+    for(int j=0; j < arr.size_1; j++){
+      f<<arr(i,j)<<" ";
+    }f<<endl;
+  } f.close();
+}
 
 
 

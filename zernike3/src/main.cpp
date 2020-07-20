@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
   if(runParameters.RunName == "NONE" || runParameters.Samples == 0 || runParameters.BufferSize == 0 || runParameters.Seed==0) {
     if(process_Rank==0)
-      cout << "--count --buffersize or --name not set" << endl;
+      cout << "--count --buffersize or --name not set or --seed" << endl;
     MPI_Finalize();
     return 1; // parameter not set
   }
