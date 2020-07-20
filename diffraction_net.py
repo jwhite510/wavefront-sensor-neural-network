@@ -445,23 +445,23 @@ class DiffractionNet():
 
         # LEFT
         _nodes["Lconv_t13"] = tf.keras.layers.Conv2DTranspose(filters=512, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["sigmoid12"])
-        _nodes["Lbatch_norm14"] = tf.keras.layers.BatchNormalization()(_nodes["Lconv_t13"])
+        _nodes["Lbatch_norm14"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Lconv_t13'],_nodes['conv6']],axis=3))
 
         _nodes["Lconv_t15"] = tf.keras.layers.Conv2DTranspose(filters=256, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["Lbatch_norm14"])
-        _nodes["Lbatch_norm16"] = tf.keras.layers.BatchNormalization()(_nodes["Lconv_t15"])
+        _nodes["Lbatch_norm16"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Lconv_t15'],_nodes['conv3']],axis=3))
 
         _nodes["Lconv_t17"] = tf.keras.layers.Conv2DTranspose(filters=128, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["Lbatch_norm16"])
-        _nodes["Lbatch_norm18"] = tf.keras.layers.BatchNormalization()(_nodes["Lconv_t17"])
+        _nodes["Lbatch_norm18"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Lconv_t17'],_nodes['conv1']],axis=3))
 
         # RIGHT
         _nodes["Rconv_t13"] = tf.keras.layers.Conv2DTranspose(filters=512, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["sigmoid12"])
-        _nodes["Rbatch_norm14"] = tf.keras.layers.BatchNormalization()(_nodes["Rconv_t13"])
+        _nodes["Rbatch_norm14"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Rconv_t13'],_nodes['conv6']],axis=3))
 
         _nodes["Rconv_t15"] = tf.keras.layers.Conv2DTranspose(filters=256, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["Rbatch_norm14"])
-        _nodes["Rbatch_norm16"] = tf.keras.layers.BatchNormalization()(_nodes["Rconv_t15"])
+        _nodes["Rbatch_norm16"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Rconv_t15'],_nodes['conv3']],axis=3))
 
         _nodes["Rconv_t17"] = tf.keras.layers.Conv2DTranspose(filters=128, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["Rbatch_norm16"])
-        _nodes["Rbatch_norm18"] = tf.keras.layers.BatchNormalization()(_nodes["Rconv_t17"])
+        _nodes["Rbatch_norm18"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Rconv_t17'],_nodes['conv1']],axis=3))
 
         _nodes["real_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["Lbatch_norm18"])
         _nodes["imag_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["Rbatch_norm18"])
