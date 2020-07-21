@@ -145,7 +145,7 @@ class DiffractionNet():
         self.writer = tf.summary.FileWriter("./tensorboard_graph/" + self.name)
 
         # number of epochs to run
-        self.epochs = 50
+        self.epochs = 300
         self.i = 0
         self.epoch = None
         self.dots = None
@@ -453,6 +453,9 @@ class DiffractionNet():
         _nodes["Lconv_t17"] = tf.keras.layers.Conv2DTranspose(filters=128, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["Lbatch_norm16"])
         _nodes["Lbatch_norm18"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Lconv_t17'],_nodes['conv1']],axis=3))
 
+        _nodes["Lconv_t19"] = tf.keras.layers.Conv2DTranspose(filters=128, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["Lbatch_norm18"])
+        _nodes["Lbatch_norm20"] = tf.keras.layers.BatchNormalization()(_nodes['Lconv_t19'])
+
         # RIGHT
         _nodes["Rconv_t13"] = tf.keras.layers.Conv2DTranspose(filters=512, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["sigmoid12"])
         _nodes["Rbatch_norm14"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Rconv_t13'],_nodes['conv6']],axis=3))
@@ -463,10 +466,20 @@ class DiffractionNet():
         _nodes["Rconv_t17"] = tf.keras.layers.Conv2DTranspose(filters=128, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["Rbatch_norm16"])
         _nodes["Rbatch_norm18"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Rconv_t17'],_nodes['conv1']],axis=3))
 
-        _nodes["real_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["Lbatch_norm18"])
-        _nodes["imag_out"] = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["Rbatch_norm18"])
+        _nodes["Rconv_t19"] = tf.keras.layers.Conv2DTranspose(filters=128, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["Rbatch_norm18"])
+        _nodes["Rbatch_norm20"] = tf.keras.layers.BatchNormalization()(_nodes['Rconv_t19'])
+
+	# OUTPUT
+
+        _nodes["real_out"] = tf.keras.layers.Conv2D(filters=32, kernel_size=4, padding='SAME', strides=1,activation='relu')(_nodes['Lbatch_norm20'])
+        _nodes["real_out"] = tf.keras.layers.Conv2D(filters=1, kernel_size=4, padding='SAME', strides=1,activation='relu')(_nodes['real_out'])
+
+        _nodes["imag_out"] = tf.keras.layers.Conv2D(filters=32, kernel_size=4, padding='SAME', strides=1,activation='relu')(_nodes['Rbatch_norm20'])
+        _nodes["imag_out"] = tf.keras.layers.Conv2D(filters=1, kernel_size=4, padding='SAME', strides=1,activation='relu')(_nodes['imag_out'])
         # output is currently between 0 and 1
 
+        # TODO: try using tanh instead of relu in everything and see what happens
+        # dont scale between
         _nodes["real_out"] *=2
         _nodes["imag_out"] *=2
         _nodes["real_out"] -=1
