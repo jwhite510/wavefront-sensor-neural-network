@@ -430,44 +430,44 @@ class DiffractionNet():
 
         _nodes["conv3"] = tf.keras.layers.Conv2D(filters=256, kernel_size=8, padding='SAME', strides=2)(_nodes['leakyrelu2'])
         _nodes["leakyrelu4"] = tf.keras.layers.LeakyReLU(alpha=0.2)(_nodes["conv3"])
-        _nodes["batch_norm5"] = tf.keras.layers.BatchNormalization()(_nodes["leakyrelu4"])
+        _nodes["batch_norm5"] = tf.keras.layers.BatchNormalization()(_nodes["leakyrelu4"], training=True)
 
         _nodes["conv6"] = tf.keras.layers.Conv2D(filters=512, kernel_size=8, padding='SAME', strides=2)(_nodes['batch_norm5'])
         _nodes["leakyrelu7"] = tf.keras.layers.LeakyReLU(alpha=0.2)(_nodes["conv6"])
-        _nodes["batch_norm8"] = tf.keras.layers.BatchNormalization()(_nodes["leakyrelu7"])
+        _nodes["batch_norm8"] = tf.keras.layers.BatchNormalization()(_nodes["leakyrelu7"], training=True)
 
         _nodes["conv9"] = tf.keras.layers.Conv2D(filters=1024, kernel_size=8, padding='SAME', strides=2)(_nodes['batch_norm8'])
         _nodes["leakyrelu10"] = tf.keras.layers.LeakyReLU(alpha=0.2)(_nodes["conv9"])
-        _nodes["batch_norm11"] = tf.keras.layers.BatchNormalization()(_nodes["leakyrelu10"])
+        _nodes["batch_norm11"] = tf.keras.layers.BatchNormalization()(_nodes["leakyrelu10"], training=True)
         _nodes["sigmoid12"] = tf.keras.activations.sigmoid(_nodes["batch_norm11"])
 
         # feature encoded layer
 
         # LEFT
         _nodes["Lconv_t13"] = tf.keras.layers.Conv2DTranspose(filters=512, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["sigmoid12"])
-        _nodes["Lbatch_norm14"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Lconv_t13'],_nodes['conv6']],axis=3))
+        _nodes["Lbatch_norm14"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Lconv_t13'],_nodes['conv6']],axis=3), training=True)
 
         _nodes["Lconv_t15"] = tf.keras.layers.Conv2DTranspose(filters=256, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["Lbatch_norm14"])
-        _nodes["Lbatch_norm16"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Lconv_t15'],_nodes['conv3']],axis=3))
+        _nodes["Lbatch_norm16"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Lconv_t15'],_nodes['conv3']],axis=3), training=True)
 
         _nodes["Lconv_t17"] = tf.keras.layers.Conv2DTranspose(filters=128, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["Lbatch_norm16"])
-        _nodes["Lbatch_norm18"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Lconv_t17'],_nodes['conv1']],axis=3))
+        _nodes["Lbatch_norm18"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Lconv_t17'],_nodes['conv1']],axis=3), training=True)
 
         _nodes["Lconv_t19"] = tf.keras.layers.Conv2DTranspose(filters=128, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["Lbatch_norm18"])
-        _nodes["Lbatch_norm20"] = tf.keras.layers.BatchNormalization()(_nodes['Lconv_t19'])
+        _nodes["Lbatch_norm20"] = tf.keras.layers.BatchNormalization()(_nodes['Lconv_t19'], training=True)
 
         # RIGHT
         _nodes["Rconv_t13"] = tf.keras.layers.Conv2DTranspose(filters=512, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["sigmoid12"])
-        _nodes["Rbatch_norm14"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Rconv_t13'],_nodes['conv6']],axis=3))
+        _nodes["Rbatch_norm14"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Rconv_t13'],_nodes['conv6']],axis=3), training=True)
 
         _nodes["Rconv_t15"] = tf.keras.layers.Conv2DTranspose(filters=256, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["Rbatch_norm14"])
-        _nodes["Rbatch_norm16"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Rconv_t15'],_nodes['conv3']],axis=3))
+        _nodes["Rbatch_norm16"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Rconv_t15'],_nodes['conv3']],axis=3), training=True)
 
         _nodes["Rconv_t17"] = tf.keras.layers.Conv2DTranspose(filters=128, kernel_size=8, padding='SAME', strides=2, activation='relu')(_nodes["Rbatch_norm16"])
-        _nodes["Rbatch_norm18"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Rconv_t17'],_nodes['conv1']],axis=3))
+        _nodes["Rbatch_norm18"] = tf.keras.layers.BatchNormalization()(tf.concat([_nodes['Rconv_t17'],_nodes['conv1']],axis=3), training=True)
 
         _nodes["Rconv_t19"] = tf.keras.layers.Conv2DTranspose(filters=128, kernel_size=4, padding='SAME', strides=2, activation='relu')(_nodes["Rbatch_norm18"])
-        _nodes["Rbatch_norm20"] = tf.keras.layers.BatchNormalization()(_nodes['Rconv_t19'])
+        _nodes["Rbatch_norm20"] = tf.keras.layers.BatchNormalization()(_nodes['Rconv_t19'], training=True)
 
 	# OUTPUT
 
@@ -502,6 +502,7 @@ class DiffractionNet():
             self.epoch = self.i + 1
             print("Epoch : {}".format(self.epoch))
             self.dots = 0
+            showweights=True
             while self.get_data.batch_index < self.get_data.samples:
                 self.show_loading_bar()
 
@@ -513,6 +514,16 @@ class DiffractionNet():
                 object_imag_samples = data["object_imag_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
                 # imag_scalar_samples = data["imag_scalar_samples"].reshape(-1, 1)
                 diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
+
+                if showweights:
+                    w=self.sess.run(self.nn_nodes["batch_norm8"],feed_dict={self.x:diffraction_samples})
+                    with open("batch_norm8_t__{}.p".format(str(int(self.epoch))),"wb") as file:
+                        pickle.dump(w,file)
+
+                    w=self.sess.run(self.nn_nodes["leakyrelu7"],feed_dict={self.x:diffraction_samples})
+                    with open("leakyrelu7_t__{}.p".format(str(int(self.epoch))),"wb") as file:
+                        pickle.dump(w,file)
+                    showweights=False
 
                 # train network
                 self.sess.run(self.nn_nodes["train"], feed_dict={self.x:diffraction_samples,

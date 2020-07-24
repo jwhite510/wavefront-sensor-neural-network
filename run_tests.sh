@@ -5,8 +5,8 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"detail_eval_INTENSITYCOST_2AJ2"
-"64000"
+"detail_eval_INTENSITYCOST_3AJ3_t_normtest2"
+"32000"
 )
 i=0
 while (( $i < ${#runs[@]}))
