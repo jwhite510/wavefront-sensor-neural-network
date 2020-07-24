@@ -55,10 +55,10 @@ class CompareNetworkIterative():
         self.network=diffraction_net.DiffractionNet(args.network) # load a pre trained network
         self.args=args
 
-    def test(self):
+    def test(self,index):
         m_index=(64,64)
         # load diffraction pattern
-        index=11
+        # index=11
         # index=9 # best
         N=None
         with tables.open_file("zernike3/build/test_noise.hdf5",mode="r") as file:
@@ -80,7 +80,7 @@ class CompareNetworkIterative():
 
         fig=diffraction_functions.plot_amplitude_phase_meas_retreival(actual_object,"actual_object",ACTUAL=True,m_index=m_index,mask=False)
 
-        # get the reconstructed diffraction pattern and the real / imaginary object
+        # # get the reconstructed diffraction pattern and the real / imaginary object
         nn_retrieved = {}
         nn_retrieved["measured_pattern"] = diffraction
         nn_retrieved["tf_reconstructed_diff"] = self.network.sess.run(
@@ -89,6 +89,11 @@ class CompareNetworkIterative():
                 self.network.nn_nodes["real_out"], feed_dict={self.network.x:diffraction.reshape(1,N,N,1)})
         nn_retrieved["imag_output"] = self.network.sess.run(
                 self.network.nn_nodes["imag_out"], feed_dict={self.network.x:diffraction.reshape(1,N,N,1)})
+
+        # with open("nn_retrieved.p","wb") as file:
+            # pickle.dump(nn_retrieved,file)
+        # with open("nn_retrieved.p","rb") as file:
+            # nn_retrieved=pickle.load(file)
 
         # plot retrieval with neural network
         # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(nn_retrieved,"nn_retrieved",m_index=m_index)
@@ -99,24 +104,37 @@ class CompareNetworkIterative():
         # get interpolation points
 
         # run matlab retrieval with and without interpolation
-        # matlabcdi_retrieved_interp=diffraction_functions.matlab_cdi_retrieval(np.squeeze(nn_retrieved['measured_pattern']),amplitude_mask,interpolate=True)
+        matlabcdi_retrieved_interp=diffraction_functions.matlab_cdi_retrieval(np.squeeze(nn_retrieved['measured_pattern']),amplitude_mask,interpolate=True)
         # with open("matlab_cdi_retrieval.p","wb") as file:
             # pickle.dump(matlabcdi_retrieved_interp,file)
-        with open("matlab_cdi_retrieval.p","rb") as file:
-            matlabcdi_retrieved_interp=pickle.load(file)
+        # with open("matlab_cdi_retrieval.p","rb") as file:
+            # matlabcdi_retrieved_interp=pickle.load(file)
 
         fig=diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved_interp,"matlabcdi_retrieved_interp",m_index=m_index)
 
         # compare and calculate phase + intensity error
-        # plt.close('all')
-        phase_mse,intensity_mse=intensity_phase_error(actual_object,matlabcdi_retrieved_interp)
+        network={}
+        iterative={}
+
+        phase_mse,intensity_mse=intensity_phase_error(actual_object,matlabcdi_retrieved_interp,"matlabcdi_retrieved_interp")
+        print("phase_mse: ",phase_mse,"  intensity_mse: ",intensity_mse)
+        network['phase_mse']=phase_mse
+        network['intensity_mse']=intensity_mse
+
+        phase_mse,intensity_mse=intensity_phase_error(actual_object,nn_retrieved,"nn_retrieved")
+        print("phase_mse: ",phase_mse,"  intensity_mse: ",intensity_mse)
+        iterative['phase_mse']=phase_mse
+        iterative['intensity_mse']=intensity_mse
+
         # rmse=intensity_phase_error(actual_object,nn_retrieved)
         # actual_object
         # matlabcdi_retrieved_interp
         # nn_retrieved
-        plt.show()
+        plt.close('all')
+        # plt.show()
+        return network,iterative
 
-def intensity_phase_error(actual,predicted):
+def intensity_phase_error(actual,predicted,title):
     """
     actual, predicted
     : dictionaries with keys:
@@ -129,6 +147,14 @@ def intensity_phase_error(actual,predicted):
     """
     actual_c = actual["real_output"]+1j*actual["imag_output"]
     predicted_c = predicted["real_output"]+1j*predicted["imag_output"]
+    actual_c=np.squeeze(actual_c)
+    predicted_c=np.squeeze(predicted_c)
+    actual_c=actual_c/np.max(np.abs(actual_c))
+    predicted_c=predicted_c/np.max(np.abs(predicted_c))
+
+    print("title: ",title)
+    print("np.max(np.abs(actual_c)) =>", np.max(np.abs(actual_c)))
+    print("np.max(np.abs(predicted_c)) =>", np.max(np.abs(predicted_c)))
 
     # set both to 0 at less than 50% predicted peak
     actual_c[np.abs(predicted_c)**2 < 0.05 * np.max(np.abs(predicted_c)**2)] = 0.0
@@ -155,29 +181,52 @@ def intensity_phase_error(actual,predicted):
     intensity_mse = (np.square(A-B)).mean()
 
 
-    plt.figure(101)
-    plt.title("actual_c")
-    plt.imshow(np.angle(actual_c))
-    plt.gca().axvline(x=m_index[1],color="red",alpha=0.8)
-    plt.gca().axhline(y=m_index[0],color="blue",alpha=0.8)
-    plt.colorbar()
+    fig = plt.figure(figsize=(10,10))
+    fig.suptitle(title)
+    gs = fig.add_gridspec(3,2)
 
-    plt.figure(102)
-    plt.title("actual_c")
-    plt.plot(np.angle(actual_c)[m_index[0],:])
-    plt.gca().axvline(x=m_index[1],color="red")
+    # plot rmse
+    fig.text(0.2, 0.95, "intensity_mse:"+str(intensity_mse)+"\n"+"  phase_mse"+str(phase_mse)
+            , ha="center", size=12)
 
-    plt.figure(103)
-    plt.title("predicted_c")
-    plt.imshow(np.angle(predicted_c))
-    plt.gca().axvline(x=m_index[1],color="red",alpha=0.8)
-    plt.gca().axhline(y=m_index[0],color="blue",alpha=0.8)
-    plt.colorbar()
+    # intensity
+    ax=fig.add_subplot(gs[0,0])
+    ax.set_title("actual_I")
+    im=ax.imshow(actual_I)
+    ax.axvline(x=m_index[1],color="red",alpha=0.8)
+    ax.axhline(y=m_index[0],color="blue",alpha=0.8)
+    fig.colorbar(im,ax=ax)
 
-    plt.figure(104)
-    plt.title("predicted_c")
-    plt.plot(np.angle(predicted_c)[m_index[0],:])
-    plt.gca().axvline(x=m_index[1],color="red")
+    ax=fig.add_subplot(gs[0,1])
+    ax.set_title("predicted_I")
+    im=ax.imshow(predicted_I)
+    ax.axvline(x=m_index[1],color="red",alpha=0.8)
+    ax.axhline(y=m_index[0],color="blue",alpha=0.8)
+    fig.colorbar(im,ax=ax)
+
+    ax=fig.add_subplot(gs[1,0])
+    ax.set_title("actual_c angle")
+    im=ax.imshow(np.angle(actual_c))
+    ax.axvline(x=m_index[1],color="red",alpha=0.8)
+    ax.axhline(y=m_index[0],color="blue",alpha=0.8)
+    fig.colorbar(im,ax=ax)
+
+    ax=fig.add_subplot(gs[2,0])
+    ax.set_title("actual_c angle")
+    ax.plot(np.angle(actual_c)[m_index[0],:])
+    ax.axvline(x=m_index[1],color="red")
+
+    ax=fig.add_subplot(gs[1,1])
+    ax.set_title("predicted_c angle")
+    im=ax.imshow(np.angle(predicted_c))
+    ax.axvline(x=m_index[1],color="red",alpha=0.8)
+    ax.axhline(y=m_index[0],color="blue",alpha=0.8)
+    fig.colorbar(im,ax=ax)
+
+    ax=fig.add_subplot(gs[2,1])
+    ax.set_title("predicted_c angle")
+    ax.plot(np.angle(predicted_c)[m_index[0],:])
+    ax.axvline(x=m_index[1],color="red")
 
     # plt.figure(105)
     # plt.imshow(np.angle(predicted_c) - np.angle(actual_c))
@@ -205,6 +254,28 @@ if __name__ == "__main__":
     parser.add_argument('--SAVE_FOLDER',type=str)
     args=parser.parse_args()
     comparenetworkiterative = CompareNetworkIterative(args)
-    comparenetworkiterative.test()
+
+    N = 5
+    network_error_phase=0
+    network_error_intensity=0
+    iterative_error_phase=0
+    iterative_error_intensity=0
+
+    for i in range(0,N):
+        network,iterative=comparenetworkiterative.test(i)
+        network_error_phase+=network['phase_mse']
+        network_error_intensity+=network['intensity_mse']
+        iterative_error_phase+=iterative['phase_mse']
+        iterative_error_intensity+=iterative['intensity_mse']
+
+    network_error_phase*=(1/N)
+    network_error_intensity*=(1/N)
+    iterative_error_phase*=(1/N)
+    iterative_error_intensity*=(1/N)
+
+    print("network_error_phase =>", network_error_phase)
+    print("network_error_intensity =>", network_error_intensity)
+    print("iterative_error_phase =>", iterative_error_phase)
+    print("iterative_error_intensity =>", iterative_error_intensity)
 
 
