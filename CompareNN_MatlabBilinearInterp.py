@@ -55,7 +55,7 @@ class CompareNetworkIterative():
         self.network=diffraction_net.DiffractionNet(args.network) # load a pre trained network
         self.args=args
 
-    def test(self,index):
+    def test(self,index,folder):
         m_index=(64,64)
         # load diffraction pattern
         # index=11
@@ -116,12 +116,12 @@ class CompareNetworkIterative():
         network={}
         iterative={}
 
-        phase_mse,intensity_mse=intensity_phase_error(actual_object,matlabcdi_retrieved_interp,"matlabcdi_retrieved_interp_"+str(index))
+        phase_mse,intensity_mse=intensity_phase_error(actual_object,matlabcdi_retrieved_interp,"matlabcdi_retrieved_interp_"+str(index),folder)
         print("phase_mse: ",phase_mse,"  intensity_mse: ",intensity_mse)
         iterative['phase_mse']=phase_mse
         iterative['intensity_mse']=intensity_mse
 
-        phase_mse,intensity_mse=intensity_phase_error(actual_object,nn_retrieved,"nn_retrieved_"+str(index))
+        phase_mse,intensity_mse=intensity_phase_error(actual_object,nn_retrieved,"nn_retrieved_"+str(index),folder)
         print("phase_mse: ",phase_mse,"  intensity_mse: ",intensity_mse)
         network['phase_mse']=phase_mse
         network['intensity_mse']=intensity_mse
@@ -134,7 +134,7 @@ class CompareNetworkIterative():
         # plt.show()
         return network,iterative
 
-def intensity_phase_error(actual,predicted,title):
+def intensity_phase_error(actual,predicted,title,folder):
     """
     actual, predicted
     : dictionaries with keys:
@@ -183,50 +183,65 @@ def intensity_phase_error(actual,predicted,title):
 
     fig = plt.figure(figsize=(10,10))
     fig.suptitle(title)
-    gs = fig.add_gridspec(3,2)
+    gs = fig.add_gridspec(4,2)
 
     # plot rmse
     fig.text(0.2, 0.95, "intensity_mse:"+str(intensity_mse)+"\n"+"  phase_mse"+str(phase_mse)
             , ha="center", size=12, backgroundcolor="cyan")
 
-    # intensity
+    # measured diffraction pattern
     ax=fig.add_subplot(gs[0,0])
+    ax.set_title("Measured Diffraction Pattern")
+    im=ax.pcolormesh(np.squeeze(predicted['measured_pattern']))
+    fig.colorbar(im,ax=ax)
+
+    ax=fig.add_subplot(gs[0,1])
+    ax.set_title("Reconstructed Diffraction Pattern")
+    im=ax.pcolormesh(np.squeeze(predicted['tf_reconstructed_diff']))
+    fig.colorbar(im,ax=ax)
+
+    # intensity
+    ax=fig.add_subplot(gs[1,0])
     ax.set_title("actual_I")
     im=ax.pcolormesh(actual_I)
     ax.axvline(x=m_index[1],color="red",alpha=0.8)
     ax.axhline(y=m_index[0],color="blue",alpha=0.8)
     fig.colorbar(im,ax=ax)
 
-    ax=fig.add_subplot(gs[0,1])
+    ax=fig.add_subplot(gs[1,1])
     ax.set_title("predicted_I")
     im=ax.pcolormesh(predicted_I)
     ax.axvline(x=m_index[1],color="red",alpha=0.8)
     ax.axhline(y=m_index[0],color="blue",alpha=0.8)
     fig.colorbar(im,ax=ax)
 
-    ax=fig.add_subplot(gs[1,0])
+    ax=fig.add_subplot(gs[2,0])
     ax.set_title("actual_c angle")
     im=ax.pcolormesh(np.angle(actual_c))
     ax.axvline(x=m_index[1],color="red",alpha=0.8)
     ax.axhline(y=m_index[0],color="blue",alpha=0.8)
     fig.colorbar(im,ax=ax)
 
-    ax=fig.add_subplot(gs[2,0])
+    ax=fig.add_subplot(gs[3,0])
     ax.set_title("actual_c angle")
     ax.plot(np.angle(actual_c)[m_index[0],:])
     ax.axvline(x=m_index[1],color="red")
 
-    ax=fig.add_subplot(gs[1,1])
+    ax=fig.add_subplot(gs[2,1])
     ax.set_title("predicted_c angle")
     im=ax.pcolormesh(np.angle(predicted_c))
     ax.axvline(x=m_index[1],color="red",alpha=0.8)
     ax.axhline(y=m_index[0],color="blue",alpha=0.8)
     fig.colorbar(im,ax=ax)
 
-    ax=fig.add_subplot(gs[2,1])
+    ax=fig.add_subplot(gs[3,1])
     ax.set_title("predicted_c angle")
     ax.plot(np.angle(predicted_c)[m_index[0],:])
     ax.axvline(x=m_index[1],color="red")
+
+    if not os.path.isdir(folder):
+        os.mkdir(folder)
+    fig.savefig(os.path.join(folder,title))
 
     # plt.figure(105)
     # plt.pcolormesh(np.angle(predicted_c) - np.angle(actual_c))
@@ -258,9 +273,9 @@ if __name__ == "__main__":
     network_error_intensity=[]
     iterative_error_phase=[]
     iterative_error_intensity=[]
-    N = 3
+    N = 20
     for i in range(0,N):
-        network,iterative=comparenetworkiterative.test(i)
+        network,iterative=comparenetworkiterative.test(i,'test_pc_'+args.pc)
         network_error_phase.append(network['phase_mse'])
         network_error_intensity.append(network['intensity_mse'])
         iterative_error_phase.append(iterative['phase_mse'])
