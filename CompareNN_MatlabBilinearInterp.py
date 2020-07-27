@@ -78,7 +78,7 @@ class CompareNetworkIterative():
         actual_object["real_output"] = object_real
         actual_object["imag_output"] = object_imag
 
-        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(actual_object,"actual_object",ACTUAL=True,m_index=m_index,mask=False)
+        # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(actual_object,"actual_object",ACTUAL=True,m_index=m_index,mask=False)
 
         # # get the reconstructed diffraction pattern and the real / imaginary object
         nn_retrieved = {}
@@ -96,7 +96,7 @@ class CompareNetworkIterative():
             # nn_retrieved=pickle.load(file)
 
         # plot retrieval with neural network
-        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(nn_retrieved,"nn_retrieved",m_index=m_index)
+        # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(nn_retrieved,"nn_retrieved",m_index=m_index)
 
         # get amplitude mask
         N = np.shape(nn_retrieved["measured_pattern"])[1]
@@ -110,21 +110,21 @@ class CompareNetworkIterative():
         # with open("matlab_cdi_retrieval.p","rb") as file:
             # matlabcdi_retrieved_interp=pickle.load(file)
 
-        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved_interp,"matlabcdi_retrieved_interp",m_index=m_index)
+        # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(matlabcdi_retrieved_interp,"matlabcdi_retrieved_interp",m_index=m_index)
 
         # compare and calculate phase + intensity error
         network={}
         iterative={}
 
-        phase_mse,intensity_mse=intensity_phase_error(actual_object,matlabcdi_retrieved_interp,"matlabcdi_retrieved_interp")
-        print("phase_mse: ",phase_mse,"  intensity_mse: ",intensity_mse)
-        network['phase_mse']=phase_mse
-        network['intensity_mse']=intensity_mse
-
-        phase_mse,intensity_mse=intensity_phase_error(actual_object,nn_retrieved,"nn_retrieved")
+        phase_mse,intensity_mse=intensity_phase_error(actual_object,matlabcdi_retrieved_interp,"matlabcdi_retrieved_interp_"+str(index))
         print("phase_mse: ",phase_mse,"  intensity_mse: ",intensity_mse)
         iterative['phase_mse']=phase_mse
         iterative['intensity_mse']=intensity_mse
+
+        phase_mse,intensity_mse=intensity_phase_error(actual_object,nn_retrieved,"nn_retrieved_"+str(index))
+        print("phase_mse: ",phase_mse,"  intensity_mse: ",intensity_mse)
+        network['phase_mse']=phase_mse
+        network['intensity_mse']=intensity_mse
 
         # rmse=intensity_phase_error(actual_object,nn_retrieved)
         # actual_object
