@@ -131,7 +131,7 @@ class CompareNetworkIterative():
         # matlabcdi_retrieved_interp
         # nn_retrieved
         # plt.close('all')
-        plt.show()
+        # plt.show()
         return network,iterative
 
 def intensity_phase_error(actual,predicted,title):
@@ -250,28 +250,30 @@ if __name__ == "__main__":
 
     parser=argparse.ArgumentParser()
     parser.add_argument('--network',type=str)
-    parser.add_argument('--IMAGE_ANNOTATE',type=str)
-    parser.add_argument('--SAVE_FOLDER',type=str)
+    parser.add_argument('--pc',type=str)
     args=parser.parse_args()
     comparenetworkiterative = CompareNetworkIterative(args)
 
-    N = 5
-    network_error_phase=0
-    network_error_intensity=0
-    iterative_error_phase=0
-    iterative_error_intensity=0
-
+    network_error_phase=[]
+    network_error_intensity=[]
+    iterative_error_phase=[]
+    iterative_error_intensity=[]
+    N = 3
     for i in range(0,N):
         network,iterative=comparenetworkiterative.test(i)
-        network_error_phase+=network['phase_mse']
-        network_error_intensity+=network['intensity_mse']
-        iterative_error_phase+=iterative['phase_mse']
-        iterative_error_intensity+=iterative['intensity_mse']
+        network_error_phase.append(network['phase_mse'])
+        network_error_intensity.append(network['intensity_mse'])
+        iterative_error_phase.append(iterative['phase_mse'])
+        iterative_error_intensity.append(iterative['intensity_mse'])
 
-    network_error_phase*=(1/N)
-    network_error_intensity*=(1/N)
-    iterative_error_phase*=(1/N)
-    iterative_error_intensity*=(1/N)
+    # save these to a pickle
+    errorvals={}
+    errorvals["network_error_phase"]=network_error_phase
+    errorvals["network_error_intensity"]=network_error_intensity
+    errorvals["iterative_error_phase"]=iterative_error_phase
+    errorvals["iterative_error_intensity"]=iterative_error_intensity
+    with open('error_'+args.pc+'.p','wb') as file:
+        pickle.dump(errorvals,file)
 
     print("network_error_phase =>", network_error_phase)
     print("network_error_intensity =>", network_error_intensity)
