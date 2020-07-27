@@ -96,7 +96,7 @@ class CompareNetworkIterative():
             # nn_retrieved=pickle.load(file)
 
         # plot retrieval with neural network
-        # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(nn_retrieved,"nn_retrieved",m_index=m_index)
+        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(nn_retrieved,"nn_retrieved",m_index=m_index)
 
         # get amplitude mask
         N = np.shape(nn_retrieved["measured_pattern"])[1]
@@ -130,8 +130,8 @@ class CompareNetworkIterative():
         # actual_object
         # matlabcdi_retrieved_interp
         # nn_retrieved
-        plt.close('all')
-        # plt.show()
+        # plt.close('all')
+        plt.show()
         return network,iterative
 
 def intensity_phase_error(actual,predicted,title):
@@ -187,26 +187,26 @@ def intensity_phase_error(actual,predicted,title):
 
     # plot rmse
     fig.text(0.2, 0.95, "intensity_mse:"+str(intensity_mse)+"\n"+"  phase_mse"+str(phase_mse)
-            , ha="center", size=12)
+            , ha="center", size=12, backgroundcolor="cyan")
 
     # intensity
     ax=fig.add_subplot(gs[0,0])
     ax.set_title("actual_I")
-    im=ax.imshow(actual_I)
+    im=ax.pcolormesh(actual_I)
     ax.axvline(x=m_index[1],color="red",alpha=0.8)
     ax.axhline(y=m_index[0],color="blue",alpha=0.8)
     fig.colorbar(im,ax=ax)
 
     ax=fig.add_subplot(gs[0,1])
     ax.set_title("predicted_I")
-    im=ax.imshow(predicted_I)
+    im=ax.pcolormesh(predicted_I)
     ax.axvline(x=m_index[1],color="red",alpha=0.8)
     ax.axhline(y=m_index[0],color="blue",alpha=0.8)
     fig.colorbar(im,ax=ax)
 
     ax=fig.add_subplot(gs[1,0])
     ax.set_title("actual_c angle")
-    im=ax.imshow(np.angle(actual_c))
+    im=ax.pcolormesh(np.angle(actual_c))
     ax.axvline(x=m_index[1],color="red",alpha=0.8)
     ax.axhline(y=m_index[0],color="blue",alpha=0.8)
     fig.colorbar(im,ax=ax)
@@ -218,7 +218,7 @@ def intensity_phase_error(actual,predicted,title):
 
     ax=fig.add_subplot(gs[1,1])
     ax.set_title("predicted_c angle")
-    im=ax.imshow(np.angle(predicted_c))
+    im=ax.pcolormesh(np.angle(predicted_c))
     ax.axvline(x=m_index[1],color="red",alpha=0.8)
     ax.axhline(y=m_index[0],color="blue",alpha=0.8)
     fig.colorbar(im,ax=ax)
@@ -229,7 +229,7 @@ def intensity_phase_error(actual,predicted,title):
     ax.axvline(x=m_index[1],color="red")
 
     # plt.figure(105)
-    # plt.imshow(np.angle(predicted_c) - np.angle(actual_c))
+    # plt.pcolormesh(np.angle(predicted_c) - np.angle(actual_c))
     # plt.gca().axvline(x=m_index[1],color="red",alpha=0.8)
     # plt.gca().axhline(y=m_index[0],color="blue",alpha=0.8)
     # plt.colorbar()
