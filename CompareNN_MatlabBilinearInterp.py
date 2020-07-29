@@ -174,6 +174,11 @@ def intensity_phase_error(actual,predicted,title,folder):
     while np.sum(amplitude_mask,axis=0)[w_r]==0:
         w_r-=1
 
+    w_t+=8
+    w_b-=8
+    w_l+=8
+    w_r-=8
+
     # set both to 0 outside wavefront sensor area
     predicted_c[0:w_t,:]=0
     predicted_c[w_b:,:]=0
