@@ -51,7 +51,7 @@ if __name__ == "__main__":
     plt.errorbar(np.array(peakcounts,dtype=int),network_avg,network_std,label='neural network',alpha=0.5)
     plt.errorbar(np.array(peakcounts,dtype=int),iterative_avg,iterative_std,label='iterative',alpha=0.5)
     plt.gca().set_xlabel("peak signal count")
-    plt.gca().set_ylabel("Mean Square Error (intensity)")
+    plt.gca().set_ylabel("Average Root Mean Square Error (intensity)")
     plt.legend()
     plt.savefig('intensity.png')
 
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     plt.errorbar(np.array(peakcounts,dtype=int),network_avg,network_std,label='neural network',alpha=0.5)
     plt.errorbar(np.array(peakcounts,dtype=int),iterative_avg,iterative_std,label='iterative',alpha=0.5)
     plt.gca().set_xlabel("peak signal count")
-    plt.gca().set_ylabel("Mean Square Error (phase)")
+    plt.gca().set_ylabel("Average Root Mean Square Error (phase)")
     plt.legend()
     plt.savefig('phase.png')
 

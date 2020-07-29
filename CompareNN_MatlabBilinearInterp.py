@@ -116,15 +116,15 @@ class CompareNetworkIterative():
         network={}
         iterative={}
 
-        phase_mse,intensity_mse=intensity_phase_error(actual_object,matlabcdi_retrieved_interp,"matlabcdi_retrieved_interp_"+str(index),folder)
-        print("phase_mse: ",phase_mse,"  intensity_mse: ",intensity_mse)
-        iterative['phase_mse']=phase_mse
-        iterative['intensity_mse']=intensity_mse
+        phase_rmse,intensity_rmse=intensity_phase_error(actual_object,matlabcdi_retrieved_interp,"matlabcdi_retrieved_interp_"+str(index),folder)
+        print("phase_rmse: ",phase_rmse,"  intensity_rmse: ",intensity_rmse)
+        iterative['phase_rmse']=phase_rmse
+        iterative['intensity_rmse']=intensity_rmse
 
-        phase_mse,intensity_mse=intensity_phase_error(actual_object,nn_retrieved,"nn_retrieved_"+str(index),folder)
-        print("phase_mse: ",phase_mse,"  intensity_mse: ",intensity_mse)
-        network['phase_mse']=phase_mse
-        network['intensity_mse']=intensity_mse
+        phase_rmse,intensity_rmse=intensity_phase_error(actual_object,nn_retrieved,"nn_retrieved_"+str(index),folder)
+        print("phase_rmse: ",phase_rmse,"  intensity_rmse: ",intensity_rmse)
+        network['phase_rmse']=phase_rmse
+        network['intensity_rmse']=intensity_rmse
 
         # rmse=intensity_phase_error(actual_object,nn_retrieved)
         # actual_object
@@ -219,12 +219,12 @@ def intensity_phase_error(actual,predicted,title,folder):
     # phase rmse
     A = np.angle(actual_c).reshape(-1)
     B = np.angle(predicted_c).reshape(-1)
-    phase_mse = (np.square(A-B)).mean()
+    phase_rmse = np.sqrt((np.square(A-B)).mean())
 
     # intensity mse
     A = actual_I.reshape(-1)
     B = predicted_I.reshape(-1)
-    intensity_mse = (np.square(A-B)).mean()
+    intensity_rmse = np.sqrt((np.square(A-B)).mean())
 
 
     fig = plt.figure(figsize=(10,10))
@@ -232,7 +232,7 @@ def intensity_phase_error(actual,predicted,title,folder):
     gs = fig.add_gridspec(4,2)
 
     # plot rmse
-    fig.text(0.2, 0.95, "intensity_mse:"+str(intensity_mse)+"\n"+"  phase_mse"+str(phase_mse)
+    fig.text(0.2, 0.95, "intensity_rmse:"+str(intensity_rmse)+"\n"+"  phase_rmse"+str(phase_rmse)
             , ha="center", size=12, backgroundcolor="cyan")
 
     # measured diffraction pattern
@@ -295,7 +295,7 @@ def intensity_phase_error(actual,predicted,title,folder):
     # plt.gca().axhline(y=m_index[0],color="blue",alpha=0.8)
     # plt.colorbar()
 
-    return phase_mse,intensity_mse
+    return phase_rmse,intensity_rmse
 
 
 
@@ -346,11 +346,11 @@ if __name__ == "__main__":
     N = 20
     for i in range(0,N):
         network,iterative=comparenetworkiterative.test(i,'test_pc_'+args.pc)
-        network_error.phase_error.values.append(network['phase_mse'])
-        network_error.intensity_error.values.append(network['intensity_mse'])
+        network_error.phase_error.values.append(network['phase_rmse'])
+        network_error.intensity_error.values.append(network['intensity_rmse'])
 
-        iterative_error.phase_error.values.append(iterative['phase_mse'])
-        iterative_error.intensity_error.values.append(iterative['intensity_mse'])
+        iterative_error.phase_error.values.append(iterative['phase_rmse'])
+        iterative_error.intensity_error.values.append(iterative['intensity_rmse'])
 
     # calculate statistics
     network_error.calculate_statistics()
