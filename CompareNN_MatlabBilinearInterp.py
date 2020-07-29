@@ -149,6 +149,7 @@ def intensity_phase_error(actual,predicted,title,folder):
     predicted_c = predicted["real_output"]+1j*predicted["imag_output"]
     actual_c=np.squeeze(actual_c)
     predicted_c=np.squeeze(predicted_c)
+    # both normalized
     actual_c=actual_c/np.max(np.abs(actual_c))
     predicted_c=predicted_c/np.max(np.abs(predicted_c))
 
@@ -156,26 +157,71 @@ def intensity_phase_error(actual,predicted,title,folder):
     print("np.max(np.abs(actual_c)) =>", np.max(np.abs(actual_c)))
     print("np.max(np.abs(predicted_c)) =>", np.max(np.abs(predicted_c)))
 
-    # set both to 0 at less than 50% predicted peak
-    actual_c[np.abs(predicted_c)**2 < 0.05 * np.max(np.abs(predicted_c)**2)] = 0.0
-    predicted_c[np.abs(predicted_c)**2 < 0.05 * np.max(np.abs(predicted_c)**2)] = 0.0
+    # get wavefront sensor
+    N=np.shape(actual_c)[0]
+    _,amplitude_mask=diffraction_functions.get_amplitude_mask_and_imagesize(N,int(N/2))
+    # get wavefront sensor boundary
+    w_l=0
+    w_r=N-1
+    w_t=0
+    w_b=N-1
+    while np.sum(amplitude_mask,axis=1)[w_t]==0:
+        w_t+=1
+    while np.sum(amplitude_mask,axis=1)[w_b]==0:
+        w_b-=1
+    while np.sum(amplitude_mask,axis=0)[w_l]==0:
+        w_l+=1
+    while np.sum(amplitude_mask,axis=0)[w_r]==0:
+        w_r-=1
+
+    # set both to 0 outside wavefront sensor area
+    predicted_c[0:w_t,:]=0
+    predicted_c[w_b:,:]=0
+    predicted_c[:,0:w_l]=0
+    predicted_c[:,w_r:]=0
+    actual_c[0:w_t,:]=0
+    actual_c[w_b:,:]=0
+    actual_c[:,0:w_l]=0
+    actual_c[:,w_r:]=0
+
+    # # set both to 0 at less than 50% predicted peak
+    # actual_c[np.abs(predicted_c)**2 < 0.05 * np.max(np.abs(predicted_c)**2)] = 0.0
+    # predicted_c[np.abs(predicted_c)**2 < 0.05 * np.max(np.abs(predicted_c)**2)] = 0.0
 
     actual_I = np.abs(actual_c)**2
     predicted_I = np.abs(predicted_c)**2
 
     # find intensity peak of predicted
-    m_index = unravel_index(predicted_I.argmax(), predicted_I.shape)
-    predicted_phase_Imax = np.angle(predicted_c[m_index[0], m_index[1]])
-    actual_phase_Imax = np.angle(actual_c[m_index[0], m_index[1]])
+    m_index = unravel_index(actual_I.argmax(), actual_I.shape)
+    # m_index = [int(N/2),int(N/2)]
+    # predicted_phase_Imax = np.angle(predicted_c[m_index[0], m_index[1]])
+    # actual_phase_Imax = np.angle(actual_c[m_index[0], m_index[1]])
+
+    # phase angle scan to find smallest phase error
+    min_phase_angle=None
+    min_phase_mse=999.0
+    for d_phi in np.linspace(-2*np.pi,2*np.pi,1000):
+        _predicted_c=np.array(predicted_c)
+        _predicted_c*=np.exp(-1j * d_phi)
+        # phase rmse
+        A = np.angle(actual_c).reshape(-1)
+        B = np.angle(_predicted_c).reshape(-1)
+        phase_mse = (np.square(A-B)).mean()
+        if phase_mse < min_phase_mse:
+            min_phase_mse=phase_mse
+            min_phase_angle=d_phi
+
     # subtract phase at center
-    predicted_c *= np.exp(-1j * predicted_phase_Imax)
-    actual_c *= np.exp(-1j * actual_phase_Imax)
+    predicted_c *= np.exp(-1j * min_phase_angle)
+    # actual_c *= np.exp(-1j * actual_phase_Imax)
+
 
     # phase rmse
     A = np.angle(actual_c).reshape(-1)
     B = np.angle(predicted_c).reshape(-1)
     phase_mse = (np.square(A-B)).mean()
 
+    # intensity mse
     A = actual_I.reshape(-1)
     B = predicted_I.reshape(-1)
     intensity_mse = (np.square(A-B)).mean()
