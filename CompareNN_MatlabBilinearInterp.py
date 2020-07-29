@@ -254,6 +254,27 @@ def intensity_phase_error(actual,predicted,title,folder):
 
 
 
+# class contains list of error values,
+class ErrorDistribution():
+    def __init__(self):
+        self.values=[]
+        self.standard_deviation=None
+        self.average=None
+    def calculate_statistics(self):
+        self.standard_deviation=np.std(self.values)
+        self.average=np.average(self.values)
+
+
+class PhaseIntensityError():
+    def __init__(self):
+        self.phase_error=ErrorDistribution()
+        self.intensity_error=ErrorDistribution()
+
+    def calculate_statistics(self):
+        self.phase_error.calculate_statistics()
+        self.intensity_error.calculate_statistics()
+
+
 if __name__ == "__main__":
 
     # TODO : evaluate rmse at high intensity areas
@@ -273,26 +294,28 @@ if __name__ == "__main__":
     network_error_intensity=[]
     iterative_error_phase=[]
     iterative_error_intensity=[]
+
+    network_error=PhaseIntensityError()
+    iterative_error=PhaseIntensityError()
     N = 20
     for i in range(0,N):
         network,iterative=comparenetworkiterative.test(i,'test_pc_'+args.pc)
-        network_error_phase.append(network['phase_mse'])
-        network_error_intensity.append(network['intensity_mse'])
-        iterative_error_phase.append(iterative['phase_mse'])
-        iterative_error_intensity.append(iterative['intensity_mse'])
+        network_error.phase_error.values.append(network['phase_mse'])
+        network_error.intensity_error.values.append(network['intensity_mse'])
+
+        iterative_error.phase_error.values.append(iterative['phase_mse'])
+        iterative_error.intensity_error.values.append(iterative['intensity_mse'])
+
+    # calculate statistics
+    network_error.calculate_statistics()
+    iterative_error.calculate_statistics()
+
 
     # save these to a pickle
     errorvals={}
-    errorvals["network_error_phase"]=network_error_phase
-    errorvals["network_error_intensity"]=network_error_intensity
-    errorvals["iterative_error_phase"]=iterative_error_phase
-    errorvals["iterative_error_intensity"]=iterative_error_intensity
+    errorvals["network_error"]=network_error
+    errorvals["iterative_error"]=iterative_error
     with open('error_'+args.pc+'.p','wb') as file:
         pickle.dump(errorvals,file)
-
-    print("network_error_phase =>", network_error_phase)
-    print("network_error_intensity =>", network_error_intensity)
-    print("iterative_error_phase =>", iterative_error_phase)
-    print("iterative_error_intensity =>", iterative_error_intensity)
 
 

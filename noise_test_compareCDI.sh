@@ -1,5 +1,8 @@
 #!/bin/bash
 
+rm -rf ./test_pc_*
+rm -rf ./error_*.p
+
 # for the infinity counts comparison case, use the network trained with 50 counts
 camera_noise="../../SquareWFtest/CameraNoise/1_1000/Bild_1.png"
 cd zernike3/build/

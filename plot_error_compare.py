@@ -2,6 +2,34 @@ import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle
+from CompareNN_MatlabBilinearInterp import PhaseIntensityError, ErrorDistribution
+
+
+
+
+def construct_arrays(errorvals,error_type):
+    """
+    errorvals : list of PhaseIntensityError objects
+    error_type : string -> 'phase' or 'intensity'
+    """
+    network_avg=[]
+    network_std=[]
+    iterative_avg=[]
+    iterative_std=[]
+    for _err in errorvals:
+        if error_type == 'phase':
+            network_avg.append(_err['network_error'].phase_error.average)
+            network_std.append(_err['network_error'].phase_error.standard_deviation)
+            iterative_avg.append(_err['iterative_error'].phase_error.average)
+            iterative_std.append(_err['iterative_error'].phase_error.standard_deviation)
+        elif error_type == 'intensity':
+            network_avg.append(_err['network_error'].intensity_error.average)
+            network_std.append(_err['network_error'].intensity_error.standard_deviation)
+            iterative_avg.append(_err['iterative_error'].intensity_error.average)
+            iterative_std.append(_err['iterative_error'].intensity_error.standard_deviation)
+
+    return network_avg,network_std,iterative_avg,iterative_std
+
 
 if __name__ == "__main__":
     parser=argparse.ArgumentParser()
@@ -15,30 +43,9 @@ if __name__ == "__main__":
             peakcounts.append(pc)
             errorvals.append(obj)
 
-    average=[]
-    stdev=[]
-
-    for _err in errorvals:
-        _err['network_error_phase_avg'] = np.average(_err['network_error_phase'])
-        _err['network_error_phase_std'] = np.std(_err['network_error_phase'])
-        _err['network_error_intensity_avg'] = np.average(_err['network_error_intensity'])
-        _err['network_error_intensity_std'] = np.std(_err['network_error_intensity'])
-        _err['iterative_error_phase_avg'] = np.average(_err['iterative_error_phase'])
-        _err['iterative_error_phase_std'] = np.std(_err['iterative_error_phase'])
-        _err['iterative_error_intensity_avg'] = np.average(_err['iterative_error_intensity'])
-        _err['iterative_error_intensity_std'] = np.std(_err['iterative_error_intensity'])
-
+    # construct list of average and standard deviation values
     # plot intensity average + std
-    network_avg=[]
-    network_std=[]
-    iterative_avg=[]
-    iterative_std=[]
-    for _err in errorvals:
-        network_avg.append(_err['network_error_intensity_avg'])
-        network_std.append(_err['network_error_intensity_std'])
-        iterative_avg.append(_err['iterative_error_intensity_avg'])
-        iterative_std.append(_err['iterative_error_intensity_std'])
-
+    network_avg,network_std,iterative_avg,iterative_std=construct_arrays(errorvals,'intensity')
     plt.figure(1)
     plt.title("intensity")
     plt.errorbar(np.array(peakcounts,dtype=int),network_avg,network_std,label='neural network',alpha=0.5)
@@ -49,15 +56,7 @@ if __name__ == "__main__":
     plt.savefig('intensity.png')
 
     # plot intensity average + std
-    network_avg=[]
-    network_std=[]
-    iterative_avg=[]
-    iterative_std=[]
-    for _err in errorvals:
-        network_avg.append(_err['network_error_phase_avg'])
-        network_std.append(_err['network_error_phase_std'])
-        iterative_avg.append(_err['iterative_error_phase_avg'])
-        iterative_std.append(_err['iterative_error_phase_std'])
+    network_avg,network_std,iterative_avg,iterative_std=construct_arrays(errorvals,'phase')
 
     plt.figure(2)
     plt.title("phase")
@@ -67,4 +66,5 @@ if __name__ == "__main__":
     plt.gca().set_ylabel("Mean Square Error (phase)")
     plt.legend()
     plt.savefig('phase.png')
+
     plt.show()
