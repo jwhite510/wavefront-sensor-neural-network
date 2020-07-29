@@ -185,8 +185,8 @@ def intensity_phase_error(actual,predicted,title,folder):
     actual_c[:,w_r:]=0
 
     # # set both to 0 at less than 50% predicted peak
-    # actual_c[np.abs(predicted_c)**2 < 0.05 * np.max(np.abs(predicted_c)**2)] = 0.0
-    # predicted_c[np.abs(predicted_c)**2 < 0.05 * np.max(np.abs(predicted_c)**2)] = 0.0
+    actual_c[np.abs(actual_c)**2 < 0.05 * np.max(np.abs(actual_c)**2)] = 0.0
+    predicted_c[np.abs(actual_c)**2 < 0.05 * np.max(np.abs(actual_c)**2)] = 0.0
 
     actual_I = np.abs(actual_c)**2
     predicted_I = np.abs(predicted_c)**2
