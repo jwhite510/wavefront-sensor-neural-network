@@ -348,7 +348,7 @@ if __name__ == "__main__":
 
     network_error=PhaseIntensityError()
     iterative_error=PhaseIntensityError()
-    N = 20
+    N = 100
     for i in range(0,N):
         network,iterative=comparenetworkiterative.test(i,'test_pc_'+args.pc)
         network_error.phase_error.values.append(network['phase_rmse'])

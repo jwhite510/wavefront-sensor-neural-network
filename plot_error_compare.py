@@ -47,7 +47,7 @@ if __name__ == "__main__":
     # plot intensity average + std
     network_avg,network_std,iterative_avg,iterative_std=construct_arrays(errorvals,'intensity')
     plt.figure(1)
-    plt.title("intensity")
+    plt.title("retrieved intensity error (100 samples per noise level)")
     plt.errorbar(np.array(peakcounts,dtype=int),network_avg,network_std,label='neural network',alpha=0.5)
     plt.errorbar(np.array(peakcounts,dtype=int),iterative_avg,iterative_std,label='iterative',alpha=0.5)
     plt.gca().set_xlabel("peak signal count")
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     network_avg,network_std,iterative_avg,iterative_std=construct_arrays(errorvals,'phase')
 
     plt.figure(2)
-    plt.title("phase")
+    plt.title("retrieved phase error (100 samples per noise level)")
     plt.errorbar(np.array(peakcounts,dtype=int),network_avg,network_std,label='neural network',alpha=0.5)
     plt.errorbar(np.array(peakcounts,dtype=int),iterative_avg,iterative_std,label='iterative',alpha=0.5)
     plt.gca().set_xlabel("peak signal count")
