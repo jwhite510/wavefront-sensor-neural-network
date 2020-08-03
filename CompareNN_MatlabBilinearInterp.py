@@ -1,4 +1,5 @@
 import numpy as np
+from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
 from numpy import unravel_index
 import scipy
 import diffraction_functions
@@ -160,6 +161,9 @@ class CompareNetworkIterative():
         errorvals["iterative_error"]=iterative_error
         with open('error_'+args.pc+'.p','wb') as file:
             pickle.dump(errorvals,file)
+
+    def retrieve_measured(self,measured):
+        pass
 
 
 def intensity_phase_error(actual,predicted,title,folder):
@@ -369,6 +373,45 @@ if __name__ == "__main__":
     args=parser.parse_args()
     comparenetworkiterative = CompareNetworkIterative(args)
     # run test on simulated validation data
-    comparenetworkiterative.simulated_test(100)
+    # comparenetworkiterative.simulated_test(100)
+    filename='2307.npy'
+    a=np.load(filename)
+    a-=np.min(a)
+
+    plt.figure()
+    plt.imshow(a,cmap='jet')
+    experimental_params = {}
+    # experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
+    experimental_params['pixel_size'] = 4.8e-6 # [meters] with 2x2 binning
+    experimental_params['z_distance'] = 13e-3 # [meters] distance from camera
+    experimental_params['wavelength'] = 633e-9 #[meters] wavelength
+    getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
+            N_meas=np.shape(a)[0], # for calculating the measured frequency axis (not really needed)
+            experimental_params=experimental_params)
+    transform={}
+    transform["rotation_angle"]=3
+    transform["scale"]=1.0
+    transform["flip"]=None
+    # transform["flip"]="lr"
+    # transform["flip"]="ud"
+    # transform["flip"]="lrud"
+    m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(a, transform)
+    print("np.min(m) =>", np.min(m))
+    print("np.max(m) =>", np.max(m))
+
+
+    plt.figure()
+    plt.imshow(np.squeeze(m),cmap='jet')
+
+    plt.show()
+    exit()
+
+
+    import ipdb; ipdb.set_trace() # BREAKPOINT
+    print("BREAKPOINT")
+    plt.figure()
+
+
+
 
 
