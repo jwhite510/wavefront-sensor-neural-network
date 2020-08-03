@@ -9,6 +9,7 @@ import pyqtgraph as pg
 import os
 from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
 import pickle
+from live_capture import TIS
 
 class Processing():
     def __init__(self):
@@ -100,8 +101,18 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # # initialize neural network
         self.network=diffraction_net.DiffractionNet("noise_test_D_fixednorm_SQUARE6x6_VISIBLESETUP_NOCENTER_peak-50") # load a pre trained network
 
+        # initialize camera
+        self.Tis = TIS.TIS("48710182", 640, 480, 30, False)
+        self.Tis.Start_pipeline()  # Start the pipeline so the camera streams
+
+
         self.show()
         sys.exit(app.exec_())
+
+    def __del__(self):
+        # cleanup camera
+        Tis.Stop_pipeline()
+
 
     def textchanged(self):
         print("the text was changed")
@@ -222,15 +233,20 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
     def retrieve_raw_img(self):
 
-        with open("sample.p", "rb") as file:
-            obj = pickle.load(file)
-        obj=np.pad(obj,pad_width=300,mode="constant",constant_values=0)
+        # with open("sample.p", "rb") as file:
+            # obj = pickle.load(file)
+        # obj=np.pad(obj,pad_width=300,mode="constant",constant_values=0)
         # x=np.linspace(-1,1,500).reshape(1,-1)
         # y=np.linspace(-1,1,500).reshape(-1,1)
 
         # z = np.exp(-x**2 / 0.5) * np.exp(-y**2 / 0.5)
-        return obj
+        # return obj
         # return np.random.rand(500,600)
+        im=self.Tis.Get_image()
+        im=np.sum(im,axis=2)
+        return im
+
+
 
 
 
