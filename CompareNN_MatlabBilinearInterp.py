@@ -131,6 +131,37 @@ class CompareNetworkIterative():
         # plt.show()
         return network,iterative
 
+    def simulated_test(self,N):
+        # measured sample test
+
+        network_error_phase=[]
+        network_error_intensity=[]
+        iterative_error_phase=[]
+        iterative_error_intensity=[]
+
+        network_error=PhaseIntensityError()
+        iterative_error=PhaseIntensityError()
+        for i in range(0,N):
+            network,iterative=self.test(i,'test_pc_'+args.pc)
+            network_error.phase_error.values.append(network['phase_rmse'])
+            network_error.intensity_error.values.append(network['intensity_rmse'])
+
+            iterative_error.phase_error.values.append(iterative['phase_rmse'])
+            iterative_error.intensity_error.values.append(iterative['intensity_rmse'])
+
+        # calculate statistics
+        network_error.calculate_statistics()
+        iterative_error.calculate_statistics()
+
+
+        # save these to a pickle
+        errorvals={}
+        errorvals["network_error"]=network_error
+        errorvals["iterative_error"]=iterative_error
+        with open('error_'+args.pc+'.p','wb') as file:
+            pickle.dump(errorvals,file)
+
+
 def intensity_phase_error(actual,predicted,title,folder):
     """
     actual, predicted
@@ -337,33 +368,7 @@ if __name__ == "__main__":
     parser.add_argument('--pc',type=str)
     args=parser.parse_args()
     comparenetworkiterative = CompareNetworkIterative(args)
-
-    network_error_phase=[]
-    network_error_intensity=[]
-    iterative_error_phase=[]
-    iterative_error_intensity=[]
-
-    network_error=PhaseIntensityError()
-    iterative_error=PhaseIntensityError()
-    N = 100
-    for i in range(0,N):
-        network,iterative=comparenetworkiterative.test(i,'test_pc_'+args.pc)
-        network_error.phase_error.values.append(network['phase_rmse'])
-        network_error.intensity_error.values.append(network['intensity_rmse'])
-
-        iterative_error.phase_error.values.append(iterative['phase_rmse'])
-        iterative_error.intensity_error.values.append(iterative['intensity_rmse'])
-
-    # calculate statistics
-    network_error.calculate_statistics()
-    iterative_error.calculate_statistics()
-
-
-    # save these to a pickle
-    errorvals={}
-    errorvals["network_error"]=network_error
-    errorvals["iterative_error"]=iterative_error
-    with open('error_'+args.pc+'.p','wb') as file:
-        pickle.dump(errorvals,file)
+    # run test on simulated validation data
+    comparenetworkiterative.simulated_test(100)
 
 
