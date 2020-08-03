@@ -10,6 +10,8 @@ python addnoise.py --infile test.hdf5 --outfile test_noise.hdf5 --peakcount 0 --
 cd ../..
 python CompareNN_MatlabBilinearInterp.py --network vis1_2_peak-50 --pc 0
 
+exit
+
 pca=(50 10 5 2)
 for pc in "${pca[@]}"
 do

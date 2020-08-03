@@ -162,8 +162,30 @@ class CompareNetworkIterative():
         with open('error_'+args.pc+'.p','wb') as file:
             pickle.dump(errorvals,file)
 
-    def retrieve_measured(self,measured):
-        pass
+    def retrieve_measured(self,measured,figtitle):
+        # retrieve with network
+        # plot
+        N=128
+        retrieved = {}
+        retrieved["measured_pattern"] = measured
+        retrieved["tf_reconstructed_diff"] = comparenetworkiterative.network.sess.run(
+                comparenetworkiterative.network.nn_nodes["recons_diffraction_pattern"], feed_dict={comparenetworkiterative.network.x:measured.reshape(1,N,N,1)})
+        retrieved["real_output"] = comparenetworkiterative.network.sess.run(
+                comparenetworkiterative.network.nn_nodes["real_out"], feed_dict={comparenetworkiterative.network.x:measured.reshape(1,N,N,1)})
+        retrieved["imag_output"] = comparenetworkiterative.network.sess.run(
+                comparenetworkiterative.network.nn_nodes["imag_out"], feed_dict={comparenetworkiterative.network.x:measured.reshape(1,N,N,1)})
+
+        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle)
+        return fig
+
+    def get_test_sample(self,index):
+        with tables.open_file("zernike3/build/test_noise.hdf5",mode="r") as file:
+            N = file.root.N[0,0]
+            object_real = file.root.object_real[index, :].reshape(N,N)
+            object_imag = file.root.object_imag[index, :].reshape(N,N)
+            diffraction = file.root.diffraction_noise[index, :].reshape(N,N)
+            diffraction_noisefree = file.root.diffraction_noisefree[index, :].reshape(N,N)
+        return diffraction
 
 
 def intensity_phase_error(actual,predicted,title,folder):
@@ -378,30 +400,36 @@ if __name__ == "__main__":
     a=np.load(filename)
     a-=np.min(a)
 
-    plt.figure()
+    plt.figure(1)
+    plt.title("raw measured")
     plt.imshow(a,cmap='jet')
+    plt.colorbar()
     experimental_params = {}
     # experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
     experimental_params['pixel_size'] = 4.8e-6 # [meters] with 2x2 binning
-    experimental_params['z_distance'] = 13e-3 # [meters] distance from camera
+    experimental_params['z_distance'] = 12e-3 # [meters] distance from camera
     experimental_params['wavelength'] = 633e-9 #[meters] wavelength
     getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
             N_meas=np.shape(a)[0], # for calculating the measured frequency axis (not really needed)
             experimental_params=experimental_params)
     transform={}
-    transform["rotation_angle"]=3
+    transform["rotation_angle"]=0
     transform["scale"]=1.0
-    transform["flip"]=None
+    # transform["flip"]=None
     # transform["flip"]="lr"
-    # transform["flip"]="ud"
+    transform["flip"]="ud"
     # transform["flip"]="lrud"
     m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(a, transform)
-    print("np.min(m) =>", np.min(m))
-    print("np.max(m) =>", np.max(m))
+    fig=comparenetworkiterative.retrieve_measured(m,"measured")
 
+    # compare to training data set
+    sim=comparenetworkiterative.get_test_sample(0)
+    plt.figure(3)
+    plt.title("simulated")
+    plt.imshow(np.squeeze(sim),cmap='jet')
+    plt.colorbar()
 
-    plt.figure()
-    plt.imshow(np.squeeze(m),cmap='jet')
+    fig=comparenetworkiterative.retrieve_measured(sim,"sim")
 
     plt.show()
     exit()
