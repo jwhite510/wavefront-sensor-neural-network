@@ -23,7 +23,7 @@ class Processing():
 
 class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
-    def __init__(self):
+    def __init__(self,params):
         app = QtWidgets.QApplication(sys.argv)
         # MainWindow = QtWidgets.QMainWindow()
         QtWidgets.QMainWindow.__init__(self)
@@ -87,9 +87,9 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
         im=self.retrieve_raw_img()
         experimental_params = {}
-        experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
-        experimental_params['z_distance'] = 16e-3 # [meters] distance from camera
-        experimental_params['wavelength'] = 633e-9 #[meters] wavelength
+        experimental_params['pixel_size'] = params['pixel_size'] # [meters] with 2x2 binning
+        experimental_params['z_distance'] = params['z_distance'] # [meters] distance from camera
+        experimental_params['wavelength'] = params['wavelength'] #[meters] wavelength
         self.getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
                 N_meas=np.shape(im)[0], # for calculating the measured frequency axis (not really needed)
                 experimental_params=experimental_params)
@@ -99,7 +99,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         self.plot_RE_IM=False
 
         # # initialize neural network
-        self.network=diffraction_net.DiffractionNet("noise_test_D_fixednorm_SQUARE6x6_VISIBLESETUP_NOCENTER_peak-50") # load a pre trained network
+        self.network=diffraction_net.DiffractionNet(params['network']) # load a pre trained network
 
         # initialize camera
         self.Tis = TIS.TIS("48710182", 640, 480, 30, False)
@@ -251,7 +251,13 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
 
 if __name__ == "__main__":
-    mainw = MainWindow()
+    params={}
+    params['pixel_size']=27e-6
+    params['z_distance']=16e-3
+    params['wavelength']=633e-9
+    params['network']="noise_test_D_fixednorm_SQUARE6x6_VISIBLESETUP_NOCENTER_peak-50"
+    params['network']="vis1_2_peak-50"
+    mainw = MainWindow(params)
 
 
 
