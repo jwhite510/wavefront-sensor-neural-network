@@ -412,22 +412,25 @@ if __name__ == "__main__":
     getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
             N_meas=np.shape(a)[0], # for calculating the measured frequency axis (not really needed)
             experimental_params=experimental_params)
-    transform={}
-    transform["rotation_angle"]=0
-    transform["scale"]=1.0
-    # transform["flip"]=None
-    # transform["flip"]="lr"
-    transform["flip"]="ud"
-    # transform["flip"]="lrud"
-    m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(a, transform)
-    fig=comparenetworkiterative.retrieve_measured(m,"measured")
+
+    orientations = [None, "lr", "ud", "lrud"]
+    scales = [1.0,0.9,1.1]
+
+    for _orientation in orientations:
+        for _scale in scales:
+            transform={}
+            transform["rotation_angle"]=0
+            transform["scale"]=_scale
+            transform["flip"]=_orientation
+            m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(a, transform)
+            fig=comparenetworkiterative.retrieve_measured(m,"measured_"+str(_scale)+"_"+str(_orientation))
 
     # compare to training data set
     sim=comparenetworkiterative.get_test_sample(0)
-    plt.figure(3)
-    plt.title("simulated")
-    plt.imshow(np.squeeze(sim),cmap='jet')
-    plt.colorbar()
+    # plt.figure(3)
+    # plt.title("simulated")
+    # plt.imshow(np.squeeze(sim),cmap='jet')
+    # plt.colorbar()
 
     fig=comparenetworkiterative.retrieve_measured(sim,"sim")
 
