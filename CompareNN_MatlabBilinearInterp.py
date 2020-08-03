@@ -185,7 +185,13 @@ class CompareNetworkIterative():
             object_imag = file.root.object_imag[index, :].reshape(N,N)
             diffraction = file.root.diffraction_noise[index, :].reshape(N,N)
             diffraction_noisefree = file.root.diffraction_noisefree[index, :].reshape(N,N)
-        return diffraction
+
+        obj={}
+        obj["measured_pattern"]=diffraction
+        obj["tf_reconstructed_diff"]=diffraction_noisefree
+        obj["imag_output"]=object_imag
+        obj["real_output"]=object_real
+        return obj
 
 
 def intensity_phase_error(actual,predicted,title,folder):
@@ -392,6 +398,7 @@ if __name__ == "__main__":
     parser=argparse.ArgumentParser()
     parser.add_argument('--network',type=str)
     parser.add_argument('--pc',type=str)
+    parser.add_argument('--DIR',type=str)
     args=parser.parse_args()
     comparenetworkiterative = CompareNetworkIterative(args)
     # run test on simulated validation data
@@ -414,8 +421,9 @@ if __name__ == "__main__":
             experimental_params=experimental_params)
 
     orientations = [None, "lr", "ud", "lrud"]
-    scales = [1.0,0.9,1.1]
+    scales = [1.0]
 
+    DIR=args.DIR
     for _orientation in orientations:
         for _scale in scales:
             transform={}
@@ -425,14 +433,22 @@ if __name__ == "__main__":
             m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(a, transform)
             fig=comparenetworkiterative.retrieve_measured(m,"measured_"+str(_scale)+"_"+str(_orientation))
 
+            if not os.path.isdir(DIR):
+                os.mkdir(DIR)
+            fig.savefig(os.path.join(DIR,"measured_"+str(_scale).replace('.','_')+str(_orientation)))
+
     # compare to training data set
     sim=comparenetworkiterative.get_test_sample(0)
-    # plt.figure(3)
-    # plt.title("simulated")
-    # plt.imshow(np.squeeze(sim),cmap='jet')
-    # plt.colorbar()
+    fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],"Validation, Predicted")
+    fig.savefig(os.path.join(DIR,"validation_predicted"))
+    # plot simulated retrieved and actual
 
-    fig=comparenetworkiterative.retrieve_measured(sim,"sim")
+    fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True)
+    fig.savefig(os.path.join(DIR,"validation_actual"))
+
+    fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True,mask=True)
+    fig.savefig(os.path.join(DIR,"validation_actual_WF"))
+
 
     plt.show()
     exit()
