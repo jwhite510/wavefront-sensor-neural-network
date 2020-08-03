@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>962</width>
+    <height>846</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QWidget" name="horizontalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>50</y>
+      <width>801</width>
+      <height>731</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="GraphicsLayoutWidget" name="display_raw"/>
+       </item>
+       <item>
+        <widget class="GraphicsLayoutWidget" name="display_proc"/>
+       </item>
+       <item>
+        <widget class="GraphicsLayoutWidget" name="display_intens_real"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QWidget" name="widget" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <widget class="QPushButton" name="pushButton">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>80</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Start</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="rotation_edit">
+          <property name="geometry">
+           <rect>
+            <x>210</x>
+            <y>100</y>
+            <width>113</width>
+            <height>23</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QComboBox" name="orientation_edit">
+          <property name="geometry">
+           <rect>
+            <x>158</x>
+            <y>60</y>
+            <width>171</width>
+            <height>23</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="scale_edit">
+          <property name="geometry">
+           <rect>
+            <x>210</x>
+            <y>140</y>
+            <width>113</width>
+            <height>23</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label">
+          <property name="geometry">
+           <rect>
+            <x>80</x>
+            <y>100</y>
+            <width>121</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>rotation (degrees)</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_2">
+          <property name="geometry">
+           <rect>
+            <x>80</x>
+            <y>140</y>
+            <width>121</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>scale</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_3">
+          <property name="geometry">
+           <rect>
+            <x>80</x>
+            <y>60</y>
+            <width>121</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>orientation</string>
+          </property>
+         </widget>
+        </widget>
+       </item>
+       <item>
+        <widget class="GraphicsLayoutWidget" name="display_recons"/>
+       </item>
+       <item>
+        <widget class="GraphicsLayoutWidget" name="display_phase_imag"/>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QPushButton" name="view_toggle">
+    <property name="geometry">
+     <rect>
+      <x>850</x>
+      <y>640</y>
+      <width>80</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Real/Imag</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>962</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>GraphicsLayoutWidget</class>
+   <extends>QGraphicsView</extends>
+   <header>pyqtgraph</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>Start_Stop_Clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>499</x>
+     <y>89</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>884</x>
+     <y>52</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>view_toggle</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>TogglePlotRE_IM()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>899</x>
+     <y>677</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>898</x>
+     <y>570</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rotation_edit</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ProcessingUpdated()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>720</x>
+     <y>188</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>846</x>
+     <y>240</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>scale_edit</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ProcessingUpdated()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>711</x>
+     <y>227</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>840</x>
+     <y>282</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>orientation_edit</sender>
+   <signal>currentIndexChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ProcessingUpdated()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>662</x>
+     <y>135</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>851</x>
+     <y>199</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <signal>signal1()</signal>
+  <slot>textchanged()</slot>
+  <slot>Start_Stop_Clicked()</slot>
+  <slot>TogglePlotRE_IM()</slot>
+  <slot>ProcessingUpdated()</slot>
+ </slots>
+</ui>
