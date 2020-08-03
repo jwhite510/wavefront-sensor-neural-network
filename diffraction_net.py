@@ -52,7 +52,7 @@ class GetData():
         samples = {}
         samples["object_real_samples"] = self.hdf5_file_validation.root.object_real[:n_samples, :]
         samples["object_imag_samples"] = self.hdf5_file_validation.root.object_imag[:n_samples, :]
-        samples["diffraction_samples"] = self.hdf5_file_validation.root.diffraction[:n_samples, :]
+        samples["diffraction_samples"] = self.hdf5_file_validation.root.diffraction_noise[:n_samples, :]
         samples["diffraction_noisefree"] = self.hdf5_file_validation.root.diffraction_noisefree[:n_samples, :]
 
         return samples
