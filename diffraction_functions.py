@@ -232,11 +232,14 @@ def center_image_at_centroid(mat):
     s_x, s_y = np.shape(mat)
     assert s_y == s_x
 
-    c_y = calc_centroid(mat, axis=0)
-    c_x = calc_centroid(mat, axis=1)
+    m_index = unravel_index(mat.argmax(), mat.shape)
+    # distance to peak intensity
+
+    # c_y = calc_centroid(mat, axis=0)
+    # c_x = calc_centroid(mat, axis=1)
     # distance from centroid
-    dis_x = (s_x / 2) - c_x
-    dis_y = (s_x / 2) - c_y
+    dis_x = (s_x / 2) - m_index[1]
+    dis_y = (s_x / 2) - m_index[0]
 
     # scipy im shift
     # mat = sc_im_shift(mat,(dis_y,dis_x)) # x / y notation is opposite from the roll, i checked

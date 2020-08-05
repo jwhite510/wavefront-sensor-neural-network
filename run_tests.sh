@@ -5,7 +5,7 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"vis1_2"
+"net3_test_center_intensity"
 "36000"
 )
 i=0

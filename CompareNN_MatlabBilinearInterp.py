@@ -371,15 +371,15 @@ def plot_show_cm(mat,title):
     im=ax[0].imshow(np.squeeze(mat),cmap='jet',vmin=0.0,vmax=1.0)
     # im=ax[0].imshow(np.squeeze(mat),cmap='jet')
     fig.colorbar(im,ax=ax[0])
-    cy=diffraction_functions.calc_centroid(mat,0)# summation along columns
-    cx=diffraction_functions.calc_centroid(mat,1)# summation along rows
+    # cy=diffraction_functions.calc_centroid(mat,0)# summation along columns
+    # cx=diffraction_functions.calc_centroid(mat,1)# summation along rows
     ax[0].axvline(x=63, color="red",alpha=0.5)
     ax[0].axhline(y=63, color="red",alpha=0.5)
-    ax[0].axvline(x=cx, color="yellow",alpha=0.5)
-    ax[0].axhline(y=cy, color="yellow",alpha=0.5)
+    # ax[0].axvline(x=cx, color="yellow",alpha=0.5)
+    # ax[0].axhline(y=cy, color="yellow",alpha=0.5)
 
     # plot distance from cm
-    ax[0].text(0.1, 0.6,"cx:"+str(cx)+"\ncy:"+str(cy), fontsize=10, ha='center', transform=ax[0].transAxes, backgroundcolor="red")
+    # ax[0].text(0.1, 0.6,"cx:"+str(cx)+"\ncy:"+str(cy), fontsize=10, ha='center', transform=ax[0].transAxes, backgroundcolor="red")
 
     ax[0].text(0.2, 0.9,"center of image", fontsize=10, ha='center', transform=ax[0].transAxes, backgroundcolor="red")
     ax[0].text(0.2, 0.8,"center of mass", fontsize=10, ha='center', transform=ax[0].transAxes, backgroundcolor="yellow")
