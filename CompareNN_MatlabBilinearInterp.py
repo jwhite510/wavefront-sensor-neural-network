@@ -168,12 +168,12 @@ class CompareNetworkIterative():
         N=128
         retrieved = {}
         retrieved["measured_pattern"] = measured
-        retrieved["tf_reconstructed_diff"] = comparenetworkiterative.network.sess.run(
-                comparenetworkiterative.network.nn_nodes["recons_diffraction_pattern"], feed_dict={comparenetworkiterative.network.x:measured.reshape(1,N,N,1)})
-        retrieved["real_output"] = comparenetworkiterative.network.sess.run(
-                comparenetworkiterative.network.nn_nodes["real_out"], feed_dict={comparenetworkiterative.network.x:measured.reshape(1,N,N,1)})
-        retrieved["imag_output"] = comparenetworkiterative.network.sess.run(
-                comparenetworkiterative.network.nn_nodes["imag_out"], feed_dict={comparenetworkiterative.network.x:measured.reshape(1,N,N,1)})
+        retrieved["tf_reconstructed_diff"] = self.network.sess.run(
+                self.network.nn_nodes["recons_diffraction_pattern"], feed_dict={self.network.x:measured.reshape(1,N,N,1)})
+        retrieved["real_output"] = self.network.sess.run(
+                self.network.nn_nodes["real_out"], feed_dict={self.network.x:measured.reshape(1,N,N,1)})
+        retrieved["imag_output"] = self.network.sess.run(
+                self.network.nn_nodes["imag_out"], feed_dict={self.network.x:measured.reshape(1,N,N,1)})
 
         fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle)
         return fig
@@ -362,6 +362,34 @@ def intensity_phase_error(actual,predicted,title,folder):
 
     return phase_rmse,intensity_rmse
 
+def plot_show_cm(mat,title):
+    mat=np.squeeze(mat)
+    fig,ax=plt.subplots(1,2,figsize=(10,5))
+    fig.suptitle(title)
+
+    ax[0].set_title('linear scale, center and center of mass')
+    im=ax[0].imshow(np.squeeze(mat),cmap='jet',vmin=0.0,vmax=1.0)
+    # im=ax[0].imshow(np.squeeze(mat),cmap='jet')
+    fig.colorbar(im,ax=ax[0])
+    cy=diffraction_functions.calc_centroid(mat,0)# summation along columns
+    cx=diffraction_functions.calc_centroid(mat,1)# summation along rows
+    ax[0].axvline(x=63, color="red",alpha=0.5)
+    ax[0].axhline(y=63, color="red",alpha=0.5)
+    ax[0].axvline(x=cx, color="yellow",alpha=0.5)
+    ax[0].axhline(y=cy, color="yellow",alpha=0.5)
+
+    # plot distance from cm
+    ax[0].text(0.1, 0.6,"cx:"+str(cx)+"\ncy:"+str(cy), fontsize=10, ha='center', transform=ax[0].transAxes, backgroundcolor="red")
+
+    ax[0].text(0.2, 0.9,"center of image", fontsize=10, ha='center', transform=ax[0].transAxes, backgroundcolor="red")
+    ax[0].text(0.2, 0.8,"center of mass", fontsize=10, ha='center', transform=ax[0].transAxes, backgroundcolor="yellow")
+
+    ax[1].set_title('log(image)')
+    im=ax[1].imshow(np.squeeze(np.log(mat)),cmap='jet',vmin=-20,vmax=0.0)
+    # im=ax[1].imshow(np.squeeze(np.log(mat)),cmap='jet')
+    fig.colorbar(im,ax=ax[1])
+
+    return fig
 
 
 
@@ -431,14 +459,20 @@ if __name__ == "__main__":
             transform["scale"]=_scale
             transform["flip"]=_orientation
             m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(a, transform)
+
+            fig=plot_show_cm(m,"measured_"+str(_scale)+"_"+str(_orientation))
             fig=comparenetworkiterative.retrieve_measured(m,"measured_"+str(_scale)+"_"+str(_orientation))
 
             if not os.path.isdir(DIR):
                 os.mkdir(DIR)
             fig.savefig(os.path.join(DIR,"measured_"+str(_scale).replace('.','_')+str(_orientation)))
 
-    # compare to training data set
+
+    # plot simulated sample
     sim=comparenetworkiterative.get_test_sample(0)
+    fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
+
+    # compare to training data set
     fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],"Validation, Predicted")
     fig.savefig(os.path.join(DIR,"validation_predicted"))
     # plot simulated retrieved and actual
