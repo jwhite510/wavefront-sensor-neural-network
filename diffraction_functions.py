@@ -188,6 +188,20 @@ def format_experimental_trace(N, df_ratio, measured_diffraction_pattern, rotatio
     # divide scale the measured trace by this amount
     new_size = np.shape(measured_diffraction_pattern)[0] * df_ratio
     new_size = int(new_size)
+
+    # if the image is not square, make it square
+    # print("shape before ",np.shape(measured_diffraction_pattern))
+    s=np.shape(measured_diffraction_pattern)
+    if s[0]>s[1]:
+        # less rows than cols
+        N=s[1] # number of cols
+        measured_diffraction_pattern=measured_diffraction_pattern[(s[0]//2)-(N//2):(s[0]//2)+(N//2),:]
+    elif s[0]<s[1]:
+        # more cols than rows
+        N=s[0] # number of rows
+        measured_diffraction_pattern=measured_diffraction_pattern[:,(s[1]//2)-(N//2):(s[1]//2)+(N//2)]
+    # print("shape after ",np.shape(measured_diffraction_pattern))
+
     measured_diffraction_pattern = resize(measured_diffraction_pattern, (new_size, new_size))
 
     # rotate the image by eye
