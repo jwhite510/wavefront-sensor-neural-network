@@ -178,6 +178,16 @@ class CompareNetworkIterative():
         fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle)
         return fig
 
+    def matlab_cdi_retrieval(self,measured,figtitle):
+        measured=np.squeeze(measured)
+        N = np.shape(measured)[1]
+        _, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
+        retrieved=diffraction_functions.matlab_cdi_retrieval(measured,amplitude_mask,interpolate=True)
+
+        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle)
+        return fig
+
+
     def get_test_sample(self,index):
         with tables.open_file("zernike3/build/test_noise.hdf5",mode="r") as file:
             N = file.root.N[0,0]
@@ -458,6 +468,8 @@ if __name__ == "__main__":
     scales = [1.0]
 
     DIR=args.DIR
+    if not os.path.isdir(DIR):
+        os.mkdir(DIR)
     for _orientation in orientations:
         for _scale in scales:
             transform={}
@@ -481,11 +493,12 @@ if __name__ == "__main__":
             # m[110:120,110:120]=10*np.max(m) # for testing
             # fig=plot_show_cm(m,"measured_"+str(_scale)+"_"+str(_orientation))
 
-            fig=comparenetworkiterative.retrieve_measured(m,"measured_"+str(_scale)+"_"+str(_orientation))
+            fig=comparenetworkiterative.retrieve_measured(m,"NN-measured_"+str(_scale)+"_"+str(_orientation))
+            fig.savefig(os.path.join(DIR,"NN-measured_"+str(_scale).replace('.','_')+str(_orientation)))
 
-            # if not os.path.isdir(DIR):
-                # os.mkdir(DIR)
-            # fig.savefig(os.path.join(DIR,"measured_"+str(_scale).replace('.','_')+str(_orientation)))
+            # also retrieve with matlab CDI code
+            fig=comparenetworkiterative.matlab_cdi_retrieval(m,"ITERATIVE-measured_"+str(_scale)+"_"+str(_orientation))
+            fig.savefig(os.path.join(DIR,"ITERATIVE-measured_"+str(_scale).replace('.','_')+str(_orientation)))
 
 
     # plot simulated sample
