@@ -448,6 +448,8 @@ if __name__ == "__main__":
     filename='2307.npy'
     a=np.load(filename)
     a-=np.min(a)
+    a-=2.26
+    a[a<0.005*np.max(a)]=0
 
     plt.figure(1)
     plt.title("raw measured")
@@ -473,26 +475,17 @@ if __name__ == "__main__":
     for _orientation in orientations:
         for _scale in scales:
             transform={}
-            transform["rotation_angle"]=0
+            transform["rotation_angle"]=3 # clockwise
             transform["scale"]=_scale
             transform["flip"]=_orientation
-
-            # fig=plot_show_cm(a,"before processing 1",same_colorbar=False)
-            a-=2.26
-            a[a<0.005*np.max(a)]=0
-            # fig=plot_show_cm(a,"before processing 2",same_colorbar=False)
 
             m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(a, transform)
             m[m<0.005*np.max(m)]=0
             m=np.squeeze(m)
 
-            # m-=0.0129
-            # m[m<0]=0
-            # m=m/np.max(m)
-
-            # m[110:120,110:120]=10*np.max(m) # for testing
             # fig=plot_show_cm(m,"measured_"+str(_scale)+"_"+str(_orientation))
 
+            # retrieve with neural network
             fig=comparenetworkiterative.retrieve_measured(m,"NN-measured_"+str(_scale)+"_"+str(_orientation))
             fig.savefig(os.path.join(DIR,"NN-measured_"+str(_scale).replace('.','_')+str(_orientation)))
 
