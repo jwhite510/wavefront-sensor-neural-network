@@ -362,14 +362,16 @@ def intensity_phase_error(actual,predicted,title,folder):
 
     return phase_rmse,intensity_rmse
 
-def plot_show_cm(mat,title):
+def plot_show_cm(mat,title,same_colorbar=True):
     mat=np.squeeze(mat)
     fig,ax=plt.subplots(1,2,figsize=(10,5))
     fig.suptitle(title)
 
     ax[0].set_title('linear scale, center and center of mass')
-    im=ax[0].imshow(np.squeeze(mat),cmap='jet',vmin=0.0,vmax=1.0)
-    # im=ax[0].imshow(np.squeeze(mat),cmap='jet')
+    if same_colorbar:
+        im=ax[0].imshow(np.squeeze(mat),cmap='jet',vmin=0.0,vmax=1.0)
+    else:
+        im=ax[0].imshow(np.squeeze(mat),cmap='jet')
     fig.colorbar(im,ax=ax[0])
     cy=diffraction_functions.calc_centroid(mat,0)# summation along columns
     cx=diffraction_functions.calc_centroid(mat,1)# summation along rows
@@ -385,8 +387,10 @@ def plot_show_cm(mat,title):
     ax[0].text(0.2, 0.8,"center of mass", fontsize=10, ha='center', transform=ax[0].transAxes, backgroundcolor="yellow")
 
     ax[1].set_title('log(image)')
-    im=ax[1].imshow(np.squeeze(np.log(mat)),cmap='jet',vmin=-20,vmax=0.0)
-    # im=ax[1].imshow(np.squeeze(np.log(mat)),cmap='jet')
+    if same_colorbar:
+        im=ax[1].imshow(np.squeeze(np.log(mat)),cmap='jet',vmin=-20,vmax=0.0)
+    else:
+        im=ax[1].imshow(np.squeeze(np.log(mat)),cmap='jet')
     fig.colorbar(im,ax=ax[1])
 
     return fig
@@ -449,6 +453,8 @@ if __name__ == "__main__":
             experimental_params=experimental_params)
 
     orientations = [None, "lr", "ud", "lrud"]
+    plt.close('all')
+    # orientations = [None]
     scales = [1.0]
 
     DIR=args.DIR
@@ -458,19 +464,36 @@ if __name__ == "__main__":
             transform["rotation_angle"]=0
             transform["scale"]=_scale
             transform["flip"]=_orientation
-            m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(a, transform)
 
-            fig=plot_show_cm(m,"measured_"+str(_scale)+"_"+str(_orientation))
+            # fig=plot_show_cm(a,"before processing 1",same_colorbar=False)
+            a-=2.26
+            a[a<0.005*np.max(a)]=0
+            # fig=plot_show_cm(a,"before processing 2",same_colorbar=False)
+
+            m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(a, transform)
+            m[m<0.005*np.max(m)]=0
+            m=np.squeeze(m)
+
+            # m-=0.0129
+            # m[m<0]=0
+            # m=m/np.max(m)
+
+            # m[110:120,110:120]=10*np.max(m) # for testing
+            # fig=plot_show_cm(m,"measured_"+str(_scale)+"_"+str(_orientation))
+
             fig=comparenetworkiterative.retrieve_measured(m,"measured_"+str(_scale)+"_"+str(_orientation))
 
-            if not os.path.isdir(DIR):
-                os.mkdir(DIR)
-            fig.savefig(os.path.join(DIR,"measured_"+str(_scale).replace('.','_')+str(_orientation)))
+            # if not os.path.isdir(DIR):
+                # os.mkdir(DIR)
+            # fig.savefig(os.path.join(DIR,"measured_"+str(_scale).replace('.','_')+str(_orientation)))
 
 
     # plot simulated sample
     sim=comparenetworkiterative.get_test_sample(0)
     fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
+
+    plt.show()
+    exit()
 
     # compare to training data set
     fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],"Validation, Predicted")
