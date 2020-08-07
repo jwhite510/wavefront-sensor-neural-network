@@ -445,11 +445,17 @@ if __name__ == "__main__":
     comparenetworkiterative = CompareNetworkIterative(args)
     # run test on simulated validation data
     # comparenetworkiterative.simulated_test(100)
-    filename='2307.npy'
+    filename='8_6_data/06082020.npy'
+    # filename='2307.npy'
     a=np.load(filename)
-    a-=np.min(a)
-    a-=2.26
-    a[a<0.005*np.max(a)]=0
+    # plt.figure(1)
+    # plt.imshow(a,cmap='jet')
+    # plt.colorbar()
+    # plt.show()
+    # exit()
+    # a-=np.min(a)
+    # a-=2.26
+    # a[a<0.005*np.max(a)]=0
 
     plt.figure(1)
     plt.title("raw measured")
@@ -458,7 +464,11 @@ if __name__ == "__main__":
     experimental_params = {}
     # experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
     experimental_params['pixel_size'] = 4.8e-6 # [meters] with 2x2 binning
-    experimental_params['z_distance'] = 12e-3 # [meters] distance from camera
+
+    # experimental_params['z_distance'] = 12e-3 # [meters] distance from camera
+    # new
+    experimental_params['z_distance'] = 16.4e-3 # [meters] distance from camera
+
     experimental_params['wavelength'] = 633e-9 #[meters] wavelength
     getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
             N_meas=np.shape(a)[0], # for calculating the measured frequency axis (not really needed)
@@ -480,10 +490,16 @@ if __name__ == "__main__":
             transform["flip"]=_orientation
 
             m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(a, transform)
-            m[m<0.005*np.max(m)]=0
+            # m[m<0.005*np.max(m)]=0
             m=np.squeeze(m)
 
-            # fig=plot_show_cm(m,"measured_"+str(_scale)+"_"+str(_orientation))
+            fig=plot_show_cm(a,"before processing")
+            fig=plot_show_cm(m,"measured_"+str(_scale)+"_"+str(_orientation))
+            sim=comparenetworkiterative.get_test_sample(0)
+            fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
+
+            plt.show()
+            exit()
 
             # retrieve with neural network
             fig=comparenetworkiterative.retrieve_measured(m,"NN-measured_"+str(_scale)+"_"+str(_orientation))
