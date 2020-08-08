@@ -210,14 +210,17 @@ def format_experimental_trace(N, df_ratio, measured_diffraction_pattern, rotatio
     # crop the edges off the image
 
     if new_size>N:
-        measured_diffraction_pattern = measured_diffraction_pattern[int((new_size/2) - (N/2)):int((new_size/2) + (N/2)) , int((new_size/2) - (N/2)):int((new_size/2) + (N/2))]
+        measured_diffraction_pattern = measured_diffraction_pattern[int((new_size/2) - (N/2)):int((new_size/2) + (N/2)) ,
+                int((new_size/2) - (N/2)):int((new_size/2) + (N/2))]
     elif new_size<N:
         _measured_diffraction_pattern=np.zeros((N,N),dtype=measured_diffraction_pattern.dtype)
-
-        if measured_diffraction_pattern.shape[0]%2==1:
-            _measured_diffraction_pattern[(N//2 - measured_diffraction_pattern.shape[0]//2):(N//2 + measured_diffraction_pattern.shape[0]//2),(N//2 - measured_diffraction_pattern.shape[1]//2):(N//2 + measured_diffraction_pattern.shape[1]//2)] = measured_diffraction_pattern[:-1,:-1]
+        _shape=measured_diffraction_pattern.shape
+        if _shape[0]%2==1:
+            _measured_diffraction_pattern[(N//2 - _shape[0]//2):(N//2 + _shape[0]//2),
+                    (N//2 - _shape[1]//2):(N//2 + _shape[1]//2)] = measured_diffraction_pattern[:-1,:-1]
         else:
-            _measured_diffraction_pattern[(N//2 - measured_diffraction_pattern.shape[0]//2):(N//2 + measured_diffraction_pattern.shape[0]//2),(N//2 - measured_diffraction_pattern.shape[1]//2):(N//2 + measured_diffraction_pattern.shape[1]//2)] = measured_diffraction_pattern
+            _measured_diffraction_pattern[(N//2 - _shape[0]//2):(N//2 + _shape[0]//2),
+                    (N//2 - _shape[1]//2):(N//2 + _shape[1]//2)] = measured_diffraction_pattern
 
         measured_diffraction_pattern=_measured_diffraction_pattern
 
