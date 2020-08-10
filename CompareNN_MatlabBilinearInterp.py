@@ -162,7 +162,7 @@ class CompareNetworkIterative():
         with open('error_'+args.pc+'.p','wb') as file:
             pickle.dump(errorvals,file)
 
-    def retrieve_measured(self,measured,figtitle):
+    def retrieve_measured(self,measured,figtitle,mask=False):
         # retrieve with network
         # plot
         N=128
@@ -175,16 +175,16 @@ class CompareNetworkIterative():
         retrieved["imag_output"] = self.network.sess.run(
                 self.network.nn_nodes["imag_out"], feed_dict={self.network.x:measured.reshape(1,N,N,1)})
 
-        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle)
+        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
         return fig
 
-    def matlab_cdi_retrieval(self,measured,figtitle):
+    def matlab_cdi_retrieval(self,measured,figtitle,mask=False):
         measured=np.squeeze(measured)
         N = np.shape(measured)[1]
         _, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
         retrieved=diffraction_functions.matlab_cdi_retrieval(measured,amplitude_mask,interpolate=True)
 
-        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle)
+        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
         return fig
 
 
@@ -493,9 +493,18 @@ if __name__ == "__main__":
             fig=comparenetworkiterative.retrieve_measured(m,"NN-measured_"+str(_scale)+"_"+str(_orientation))
             fig.savefig(os.path.join(DIR,"NN-measured_"+str(_scale).replace('.','_')+str(_orientation)))
 
+            if _orientation==None:
+                # retrieve with mask
+                fig=comparenetworkiterative.retrieve_measured(m,"masked_NN-measured_"+str(_scale)+"_"+str(_orientation),mask=True)
+                fig.savefig(os.path.join(DIR,"masked_NN-measured_"+str(_scale).replace('.','_')+str(_orientation)))
+
             # also retrieve with matlab CDI code
             fig=comparenetworkiterative.matlab_cdi_retrieval(m,"ITERATIVE-measured_"+str(_scale)+"_"+str(_orientation))
             fig.savefig(os.path.join(DIR,"ITERATIVE-measured_"+str(_scale).replace('.','_')+str(_orientation)))
+
+            if _orientation==None:
+                fig=comparenetworkiterative.matlab_cdi_retrieval(m,"masked_ITERATIVE-measured_"+str(_scale)+"_"+str(_orientation),mask=True)
+                fig.savefig(os.path.join(DIR,"masked_ITERATIVE-measured_"+str(_scale).replace('.','_')+str(_orientation)))
 
     plt.show()
     exit()
