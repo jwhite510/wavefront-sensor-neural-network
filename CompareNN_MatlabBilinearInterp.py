@@ -454,28 +454,18 @@ if __name__ == "__main__":
     # plt.show()
     # exit()
     # a-=np.min(a)
+    a[a<0]=0
     # a-=2.26
     # a[a<0.005*np.max(a)]=0
-
-    plt.figure(1)
-    plt.title("raw measured")
-    plt.imshow(a,cmap='jet')
-    plt.colorbar()
     experimental_params = {}
-    # experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
     experimental_params['pixel_size'] = 4.8e-6 # [meters] with 2x2 binning
-
-    # experimental_params['z_distance'] = 12e-3 # [meters] distance from camera
-    # new
     experimental_params['z_distance'] = 16.4e-3 # [meters] distance from camera
-
     experimental_params['wavelength'] = 633e-9 #[meters] wavelength
     getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
             N_meas=np.shape(a)[0], # for calculating the measured frequency axis (not really needed)
             experimental_params=experimental_params)
 
     orientations = [None, "lr", "ud", "lrud"]
-    plt.close('all')
     # orientations = [None]
     scales = [1.0]
 
@@ -485,7 +475,7 @@ if __name__ == "__main__":
     for _orientation in orientations:
         for _scale in scales:
             transform={}
-            transform["rotation_angle"]=3 # clockwise
+            transform["rotation_angle"]=0 # clockwise
             transform["scale"]=_scale
             transform["flip"]=_orientation
 
@@ -493,13 +483,11 @@ if __name__ == "__main__":
             # m[m<0.005*np.max(m)]=0
             m=np.squeeze(m)
 
-            fig=plot_show_cm(a,"before processing")
-            fig=plot_show_cm(m,"measured_"+str(_scale)+"_"+str(_orientation))
-            sim=comparenetworkiterative.get_test_sample(0)
-            fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
+            # fig=plot_show_cm(a,"before processing",same_colorbar=False)
+            # fig=plot_show_cm(m,"measured_"+str(_scale)+"_"+str(_orientation))
+            # sim=comparenetworkiterative.get_test_sample(0)
+            # fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
 
-            plt.show()
-            exit()
 
             # retrieve with neural network
             fig=comparenetworkiterative.retrieve_measured(m,"NN-measured_"+str(_scale)+"_"+str(_orientation))
@@ -508,6 +496,9 @@ if __name__ == "__main__":
             # also retrieve with matlab CDI code
             fig=comparenetworkiterative.matlab_cdi_retrieval(m,"ITERATIVE-measured_"+str(_scale)+"_"+str(_orientation))
             fig.savefig(os.path.join(DIR,"ITERATIVE-measured_"+str(_scale).replace('.','_')+str(_orientation)))
+
+    plt.show()
+    exit()
 
 
     # plot simulated sample
