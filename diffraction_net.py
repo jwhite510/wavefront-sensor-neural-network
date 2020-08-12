@@ -10,6 +10,8 @@ import pickle
 import sys
 from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
 from zernike3.build.PropagateTF import *
+import subprocess
+from subprocess import PIPE
 
 
 class GetData():
@@ -119,7 +121,19 @@ class DiffractionNet():
         # save file
         if not os.path.isdir('./models'):
             os.makedirs('./models')
-        shutil.copyfile('./'+ os.path.basename(__file__), './models/'+os.path.basename(__file__).split(".")[0]+'_{}.py'.format(self.name))
+
+        # copy all files to models folder
+        vcsfiles=subprocess.run(["git", "ls-tree", "-r", "HEAD", "--name-only"],stdout=PIPE,stderr=PIPE).stdout.decode('utf-8').split('\n')
+        if not os.path.isdir(os.path.join('models', self.name)):
+            os.mkdir(os.path.join('models', self.name))
+        for _file in vcsfiles:
+            dest_fname=os.path.join('models',self.name,_file)
+            os.makedirs(os.path.dirname(dest_fname),exist_ok=True)
+            if len(_file)>0:
+                shutil.copyfile(_file,dest_fname)
+
+        # copy .git file
+        subprocess.run(["cp", "-r",".git",os.path.join('models',self.name,'.git')],stdout=PIPE,stderr=PIPE)
 
         # setup logging
         self.tf_loggers = {}
