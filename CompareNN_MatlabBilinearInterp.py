@@ -428,6 +428,41 @@ class PhaseIntensityError():
         self.phase_error.calculate_statistics()
         self.intensity_error.calculate_statistics()
 
+def compare_channels(arr):
+    _r1,_r2=1000+50,1120-50
+    _c1,_c2=1200+40,1300-40
+
+    plt.figure()
+    plt.imshow(arr[:,:,0][_r1:_r2,_c1:_c2],cmap='jet')
+    plt.title("channel: 0")
+
+    plt.figure()
+    plt.imshow(arr[:,:,1][_r1:_r2,_c1:_c2],cmap='jet')
+    plt.title("channel: 1")
+
+    plt.figure()
+    plt.imshow(arr[:,:,2][_r1:_r2,_c1:_c2],cmap='jet')
+    plt.title("channel: 2")
+
+    plt.figure()
+    plt.imshow(arr[:,:,3][_r1:_r2,_c1:_c2],cmap='jet')
+    plt.title("channel: 3")
+
+    plt.figure()
+    plt.imshow(np.abs(arr[:,:,0][_r1:_r2,_c1:_c2]-arr[:,:,1][_r1:_r2,_c1:_c2]),cmap='jet')
+    plt.title("channel: abs(0 - 1)")
+
+    plt.figure()
+    plt.imshow(np.abs(arr[:,:,1][_r1:_r2,_c1:_c2]-arr[:,:,2][_r1:_r2,_c1:_c2]),cmap='jet')
+    plt.title("channel: abs(1 - 2)")
+
+    plt.figure()
+    plt.imshow(np.abs(arr[:,:,0][_r1:_r2,_c1:_c2]-arr[:,:,2][_r1:_r2,_c1:_c2]),cmap='jet')
+    plt.title("channel: abs(0 - 2)")
+
+    plt.show()
+
+
 
 if __name__ == "__main__":
 
@@ -447,21 +482,30 @@ if __name__ == "__main__":
     # run test on simulated validation data
     # comparenetworkiterative.simulated_test(100)
 
+    # list of measured images
+    measured_images={}
+
     # HDR image
     filename='8_6_data/06082020.npy'
     # filename='2307.npy'
     a=np.load(filename)
+    a[a<0]=0
+    measured_images['HDR_image']=a
 
-    # # image from one capture
-    # filename='8_6_data/1_1541/signal/Bild_2.png'
     # filename='8_6_data/1_837/signal/Bild_1.png'
+
+    # image from one capture
+    filename='8_6_data/1_1541/signal/Bild_2.png'
+    a=Image.open(filename)
+    a=np.array(a)
+    a[a<0]=0
+    measured_images['single channel']=a[:,:,0]
+
     # a=Image.open(filename).convert("L")
     # a=np.array(a)
+    # a[a<0]=0
+    # measured_images['greyscale']=a
 
-    # a-=np.min(a)
-    a[a<0]=0
-    # a-=2.26
-    # a[a<0.005*np.max(a)]=0
     experimental_params = {}
     experimental_params['pixel_size'] = 4.8e-6 # [meters] with 2x2 binning
     experimental_params['z_distance'] = 16.4e-3 # [meters] distance from camera
@@ -474,33 +518,33 @@ if __name__ == "__main__":
     # orientations = [None]
     scales = [1.0]
 
-    DIR=args.DIR
-    if not os.path.isdir(DIR):
-        os.mkdir(DIR)
-    for _orientation in orientations:
-        for _scale in scales:
-            transform={}
-            transform["rotation_angle"]=0 # clockwise
-            transform["scale"]=_scale
-            transform["flip"]=_orientation
+    for _name in measured_images.keys():
+        DIR=args.DIR
+        if not os.path.isdir(DIR):
+            os.mkdir(DIR)
+        for _orientation in orientations:
+            for _scale in scales:
+                transform={}
+                transform["rotation_angle"]=0 # clockwise
+                transform["scale"]=_scale
+                transform["flip"]=_orientation
 
-            m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(a, transform)
-            # m[m<0.005*np.max(m)]=0
-            m=np.squeeze(m)
+                m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_images[_name], transform)
+                m[m<0.005*np.max(m)]=0
+                m=np.squeeze(m)
 
-            # fig=plot_show_cm(a,"before processing",same_colorbar=False)
-            # fig=plot_show_cm(m,"measured_"+str(_scale)+"_"+str(_orientation))
-            # sim=comparenetworkiterative.get_test_sample(0)
-            # fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
+                # fig=plot_show_cm(a,"before processing",same_colorbar=False)
+                fig=plot_show_cm(m,_name+"-measured_"+str(_scale)+"_"+str(_orientation))
+                # sim=comparenetworkiterative.get_test_sample(0)
+                # fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
 
+                # retrieve with neural network
+                fig=comparenetworkiterative.retrieve_measured(m,_name+"-NN-measured_"+str(_scale)+"_"+str(_orientation))
+                fig.savefig(os.path.join(DIR,"NN-measured_"+str(_scale).replace('.','_')+str(_orientation)))
 
-            # retrieve with neural network
-            fig=comparenetworkiterative.retrieve_measured(m,"NN-measured_"+str(_scale)+"_"+str(_orientation))
-            fig.savefig(os.path.join(DIR,"NN-measured_"+str(_scale).replace('.','_')+str(_orientation)))
-
-            # also retrieve with matlab CDI code
-            fig=comparenetworkiterative.matlab_cdi_retrieval(m,"ITERATIVE-measured_"+str(_scale)+"_"+str(_orientation))
-            fig.savefig(os.path.join(DIR,"ITERATIVE-measured_"+str(_scale).replace('.','_')+str(_orientation)))
+                # also retrieve with matlab CDI code
+                fig=comparenetworkiterative.matlab_cdi_retrieval(m,_name+"-ITERATIVE-measured_"+str(_scale)+"_"+str(_orientation))
+                fig.savefig(os.path.join(DIR,"ITERATIVE-measured_"+str(_scale).replace('.','_')+str(_orientation)))
     plt.show()
     exit()
 
