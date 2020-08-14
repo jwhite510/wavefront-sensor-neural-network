@@ -499,7 +499,7 @@ if __name__ == "__main__":
     a=Image.open(filename)
     a=np.array(a)
     a[a<0]=0
-    measured_images['single channel']=a[:,:,0]
+    measured_images['one_capture']=a[:,:,0]
 
     # a=Image.open(filename).convert("L")
     # a=np.array(a)
@@ -534,18 +534,24 @@ if __name__ == "__main__":
                 m=np.squeeze(m)
 
                 # fig=plot_show_cm(a,"before processing",same_colorbar=False)
-                fig=plot_show_cm(m,_name+"-measured_"+str(_scale)+"_"+str(_orientation))
-
-                sim=comparenetworkiterative.get_test_sample(0)
-                fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
+                title=_name+"-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                fig=plot_show_cm(m,title)
+                fig.savefig(os.path.join(DIR,title))
 
                 # retrieve with neural network
-                fig=comparenetworkiterative.retrieve_measured(m,_name+"-NN-measured_"+str(_scale)+"_"+str(_orientation))
-                fig.savefig(os.path.join(DIR,"NN-measured_"+str(_scale).replace('.','_')+str(_orientation)))
+                title=_name+"-NN-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                fig=comparenetworkiterative.retrieve_measured(m,title)
+                fig.savefig(os.path.join(DIR,title))
 
                 # also retrieve with matlab CDI code
-                fig=comparenetworkiterative.matlab_cdi_retrieval(m,_name+"-ITERATIVE-measured_"+str(_scale)+"_"+str(_orientation))
-                fig.savefig(os.path.join(DIR,"ITERATIVE-measured_"+str(_scale).replace('.','_')+str(_orientation)))
+                title=_name+"-ITERATIVE-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                fig=comparenetworkiterative.matlab_cdi_retrieval(m,title)
+                fig.savefig(os.path.join(DIR,title))
+
+    sim=comparenetworkiterative.get_test_sample(0)
+    fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
+    fig.savefig(os.path.join(DIR,"validation sample"))
+
     plt.show()
     exit()
 
