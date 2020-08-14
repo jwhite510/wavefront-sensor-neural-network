@@ -10,16 +10,6 @@ rm -rf ./$DIR
 cd zernike3/build/
 python addnoise.py --infile test.hdf5 --outfile test_noise.hdf5 --peakcount 50 --cameraimage $camera_noise
 cd ../..
-python CompareNN_MatlabBilinearInterp.py --network vis1_2_peak-50 --pc 0 --DIR $DIR
+python CompareNN_MatlabBilinearInterp.py --network net3_test_center_intensity_peak-50 --pc 0 --DIR $DIR
 
 exit
-
-pca=(50 10 5 2)
-for pc in "${pca[@]}"
-do
-	cd zernike3/build/
-	python addnoise.py --infile test.hdf5 --outfile test_noise.hdf5 --peakcount $pc --cameraimage $camera_noise
-	cd ../..
-	python CompareNN_MatlabBilinearInterp.py --network noise_test_D_fixednorm_SQUARE6x6_VISIBLESETUP_NOCENTER_peak-$pc --pc $pc
-done
-python plot_error_compare.py --pc ${pca[@]}
