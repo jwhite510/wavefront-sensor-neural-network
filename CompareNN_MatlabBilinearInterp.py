@@ -3,6 +3,7 @@ from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
 from numpy import unravel_index
 import scipy
 import diffraction_functions
+from PIL import Image, ImageDraw
 import matplotlib.pyplot as plt
 import diffraction_net
 import tables
@@ -162,7 +163,7 @@ class CompareNetworkIterative():
         with open('error_'+args.pc+'.p','wb') as file:
             pickle.dump(errorvals,file)
 
-    def retrieve_measured(self,measured,figtitle):
+    def retrieve_measured(self,measured,figtitle,mask=False):
         # retrieve with network
         # plot
         N=128
@@ -175,8 +176,18 @@ class CompareNetworkIterative():
         retrieved["imag_output"] = self.network.sess.run(
                 self.network.nn_nodes["imag_out"], feed_dict={self.network.x:measured.reshape(1,N,N,1)})
 
-        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle)
+        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
         return fig
+
+    def matlab_cdi_retrieval(self,measured,figtitle,mask=False):
+        measured=np.squeeze(measured)
+        N = np.shape(measured)[1]
+        _, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
+        retrieved=diffraction_functions.matlab_cdi_retrieval(measured,amplitude_mask,interpolate=True)
+
+        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
+        return fig
+
 
     def get_test_sample(self,index):
         with tables.open_file("zernike3/build/test_noise.hdf5",mode="r") as file:
@@ -362,14 +373,16 @@ def intensity_phase_error(actual,predicted,title,folder):
 
     return phase_rmse,intensity_rmse
 
-def plot_show_cm(mat,title):
+def plot_show_cm(mat,title,same_colorbar=True):
     mat=np.squeeze(mat)
     fig,ax=plt.subplots(1,2,figsize=(10,5))
     fig.suptitle(title)
 
     ax[0].set_title('linear scale, center and center of mass')
-    im=ax[0].imshow(np.squeeze(mat),cmap='jet',vmin=0.0,vmax=1.0)
-    # im=ax[0].imshow(np.squeeze(mat),cmap='jet')
+    if same_colorbar:
+        im=ax[0].imshow(np.squeeze(mat),cmap='jet',vmin=0.0,vmax=1.0)
+    else:
+        im=ax[0].imshow(np.squeeze(mat),cmap='jet')
     fig.colorbar(im,ax=ax[0])
     # cy=diffraction_functions.calc_centroid(mat,0)# summation along columns
     # cx=diffraction_functions.calc_centroid(mat,1)# summation along rows
@@ -385,8 +398,10 @@ def plot_show_cm(mat,title):
     ax[0].text(0.2, 0.8,"center of mass", fontsize=10, ha='center', transform=ax[0].transAxes, backgroundcolor="yellow")
 
     ax[1].set_title('log(image)')
-    im=ax[1].imshow(np.squeeze(np.log(mat)),cmap='jet',vmin=-20,vmax=0.0)
-    # im=ax[1].imshow(np.squeeze(np.log(mat)),cmap='jet')
+    if same_colorbar:
+        im=ax[1].imshow(np.squeeze(np.log(mat)),cmap='jet',vmin=-20,vmax=0.0)
+    else:
+        im=ax[1].imshow(np.squeeze(np.log(mat)),cmap='jet')
     fig.colorbar(im,ax=ax[1])
 
     return fig
@@ -413,6 +428,41 @@ class PhaseIntensityError():
         self.phase_error.calculate_statistics()
         self.intensity_error.calculate_statistics()
 
+def compare_channels(arr):
+    _r1,_r2=1000+50,1120-50
+    _c1,_c2=1200+40,1300-40
+
+    plt.figure()
+    plt.imshow(arr[:,:,0][_r1:_r2,_c1:_c2],cmap='jet')
+    plt.title("channel: 0")
+
+    plt.figure()
+    plt.imshow(arr[:,:,1][_r1:_r2,_c1:_c2],cmap='jet')
+    plt.title("channel: 1")
+
+    plt.figure()
+    plt.imshow(arr[:,:,2][_r1:_r2,_c1:_c2],cmap='jet')
+    plt.title("channel: 2")
+
+    plt.figure()
+    plt.imshow(arr[:,:,3][_r1:_r2,_c1:_c2],cmap='jet')
+    plt.title("channel: 3")
+
+    plt.figure()
+    plt.imshow(np.abs(arr[:,:,0][_r1:_r2,_c1:_c2]-arr[:,:,1][_r1:_r2,_c1:_c2]),cmap='jet')
+    plt.title("channel: abs(0 - 1)")
+
+    plt.figure()
+    plt.imshow(np.abs(arr[:,:,1][_r1:_r2,_c1:_c2]-arr[:,:,2][_r1:_r2,_c1:_c2]),cmap='jet')
+    plt.title("channel: abs(1 - 2)")
+
+    plt.figure()
+    plt.imshow(np.abs(arr[:,:,0][_r1:_r2,_c1:_c2]-arr[:,:,2][_r1:_r2,_c1:_c2]),cmap='jet')
+    plt.title("channel: abs(0 - 2)")
+
+    plt.show()
+
+
 
 if __name__ == "__main__":
 
@@ -431,46 +481,100 @@ if __name__ == "__main__":
     comparenetworkiterative = CompareNetworkIterative(args)
     # run test on simulated validation data
     # comparenetworkiterative.simulated_test(100)
-    filename='2307.npy'
-    a=np.load(filename)
-    a-=np.min(a)
 
-    plt.figure(1)
-    plt.title("raw measured")
-    plt.imshow(a,cmap='jet')
-    plt.colorbar()
+    # list of measured images
+    measured_images={}
+
+    # HDR image
+    filename='8_6_data/06082020.npy'
+    # filename='2307.npy'
+    a=np.load(filename)
+    a[a<0]=0
+    measured_images['HDR_image']=a
+
+    # filename='8_6_data/1_837/signal/Bild_1.png'
+
+    # image from one capture
+    filename='8_6_data/1_1541/signal/Bild_2.png'
+    a=Image.open(filename)
+    a=np.array(a)
+    a[a<0]=0
+    measured_images['one_capture']=a[:,:,0]
+
+    # a=Image.open(filename).convert("L")
+    # a=np.array(a)
+    # a[a<0]=0
+    # measured_images['greyscale']=a
+
     experimental_params = {}
-    # experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
     experimental_params['pixel_size'] = 4.8e-6 # [meters] with 2x2 binning
-    experimental_params['z_distance'] = 12e-3 # [meters] distance from camera
+    experimental_params['z_distance'] = 16.4e-3 # [meters] distance from camera
     experimental_params['wavelength'] = 633e-9 #[meters] wavelength
     getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
             N_meas=np.shape(a)[0], # for calculating the measured frequency axis (not really needed)
             experimental_params=experimental_params)
 
-    orientations = [None, "lr", "ud", "lrud"]
+    orientations = [None]
+    # orientations = [None]
     scales = [1.0]
 
-    DIR=args.DIR
-    for _orientation in orientations:
-        for _scale in scales:
-            transform={}
-            transform["rotation_angle"]=0
-            transform["scale"]=_scale
-            transform["flip"]=_orientation
-            m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(a, transform)
+    for _name in measured_images.keys():
+        DIR=args.DIR
+        if not os.path.isdir(DIR):
+            os.mkdir(DIR)
+        for _orientation in orientations:
+            for _scale in scales:
+                transform={}
+                transform["rotation_angle"]=0 # clockwise
+                transform["scale"]=_scale
+                transform["flip"]=_orientation
 
-            fig=plot_show_cm(m,"measured_"+str(_scale)+"_"+str(_orientation))
-            fig=comparenetworkiterative.retrieve_measured(m,"measured_"+str(_scale)+"_"+str(_orientation))
+                m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_images[_name], transform)
+                m[m<0.007*np.max(m)]=0
+                m=np.squeeze(m)
 
-            if not os.path.isdir(DIR):
-                os.mkdir(DIR)
-            fig.savefig(os.path.join(DIR,"measured_"+str(_scale).replace('.','_')+str(_orientation)))
+                # center it again
+                plt.figure()
+                plt.pcolormesh(np.array(m),cmap='jet')
+                plt.title('before centering')
+                plt.colorbar()
+
+                m=diffraction_functions.center_image_at_centroid(m)
+
+                plt.figure()
+                plt.title('after centering')
+                plt.pcolormesh(np.array(m),cmap='jet')
+                plt.colorbar()
+
+                # fig=plot_show_cm(a,"before processing",same_colorbar=False)
+                title=_name+"-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                fig=plot_show_cm(m,title)
+                fig.savefig(os.path.join(DIR,title))
+
+                # retrieve with neural network
+                title=_name+"-NN-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                fig=comparenetworkiterative.retrieve_measured(m,title)
+                fig.savefig(os.path.join(DIR,title))
+
+                # also retrieve with matlab CDI code
+                title=_name+"-ITERATIVE-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                fig=comparenetworkiterative.matlab_cdi_retrieval(m,title)
+                fig.savefig(os.path.join(DIR,title))
+
+    # sim=comparenetworkiterative.get_test_sample(0)
+    # fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
+    # fig.savefig(os.path.join(DIR,"validation sample"))
+
+    plt.show()
+    exit()
 
 
     # plot simulated sample
     sim=comparenetworkiterative.get_test_sample(0)
     fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
+
+    plt.show()
+    exit()
 
     # compare to training data set
     fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],"Validation, Predicted")

@@ -208,7 +208,21 @@ def format_experimental_trace(N, df_ratio, measured_diffraction_pattern, rotatio
     measured_diffraction_pattern = ndimage.rotate(measured_diffraction_pattern, rotation_angle, reshape=False)
     measured_diffraction_pattern = center_image_at_centroid(measured_diffraction_pattern)
     # crop the edges off the image
-    measured_diffraction_pattern = measured_diffraction_pattern[int((new_size/2) - (N/2)):int((new_size/2) + (N/2)) , int((new_size/2) - (N/2)):int((new_size/2) + (N/2))]
+
+    if new_size>N:
+        measured_diffraction_pattern = measured_diffraction_pattern[int((new_size/2) - (N/2)):int((new_size/2) + (N/2)) ,
+                int((new_size/2) - (N/2)):int((new_size/2) + (N/2))]
+    elif new_size<N:
+        _measured_diffraction_pattern=np.zeros((N,N),dtype=measured_diffraction_pattern.dtype)
+        _shape=measured_diffraction_pattern.shape
+        if _shape[0]%2==1:
+            _measured_diffraction_pattern[(N//2 - _shape[0]//2):(N//2 + _shape[0]//2),
+                    (N//2 - _shape[1]//2):(N//2 + _shape[1]//2)] = measured_diffraction_pattern[:-1,:-1]
+        else:
+            _measured_diffraction_pattern[(N//2 - _shape[0]//2):(N//2 + _shape[0]//2),
+                    (N//2 - _shape[1]//2):(N//2 + _shape[1]//2)] = measured_diffraction_pattern
+
+        measured_diffraction_pattern=_measured_diffraction_pattern
 
     # plot_image_show_centroid_distance(measured_diffraction_pattern, "measured_diffraction_pattern", 454)
     # trim = 30
