@@ -537,19 +537,6 @@ if __name__ == "__main__":
                 m[m<0.007*np.max(m)]=0
                 m=np.squeeze(m)
 
-                # center it again
-                plt.figure()
-                plt.pcolormesh(np.array(m),cmap='jet')
-                plt.title('before centering')
-                plt.colorbar()
-
-                m=diffraction_functions.center_image_at_centroid(m)
-
-                plt.figure()
-                plt.title('after centering')
-                plt.pcolormesh(np.array(m),cmap='jet')
-                plt.colorbar()
-
                 # fig=plot_show_cm(a,"before processing",same_colorbar=False)
                 title=_name+"-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
                 fig=plot_show_cm(m,title)
@@ -560,25 +547,14 @@ if __name__ == "__main__":
                 fig=comparenetworkiterative.retrieve_measured(m,title)
                 fig.savefig(os.path.join(DIR,title))
 
-                # also retrieve with matlab CDI code
-                title=_name+"-ITERATIVE-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
-                fig=comparenetworkiterative.matlab_cdi_retrieval(m,title)
-                fig.savefig(os.path.join(DIR,title))
-
-    # sim=comparenetworkiterative.get_test_sample(0)
-    # fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
-    # fig.savefig(os.path.join(DIR,"validation sample"))
-
-    plt.show()
-    exit()
-
+                # # also retrieve with matlab CDI code
+                # title=_name+"-ITERATIVE-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                # fig=comparenetworkiterative.matlab_cdi_retrieval(m,title)
+                # fig.savefig(os.path.join(DIR,title))
 
     # plot simulated sample
     sim=comparenetworkiterative.get_test_sample(0)
     fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
-
-    plt.show()
-    exit()
 
     # compare to training data set
     fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],"Validation, Predicted")
@@ -588,8 +564,8 @@ if __name__ == "__main__":
     fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True)
     fig.savefig(os.path.join(DIR,"validation_actual"))
 
-    fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True,mask=True)
-    fig.savefig(os.path.join(DIR,"validation_actual_WF"))
+    # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True,mask=True)
+    # fig.savefig(os.path.join(DIR,"validation_actual_WF"))
 
 
     plt.show()
