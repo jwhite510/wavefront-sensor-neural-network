@@ -551,6 +551,7 @@ if __name__ == "__main__":
     # plot simulated sample
     sim=comparenetworkiterative.get_test_sample(0)
     fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
+    fig.savefig(os.path.join(DIR,"validation_measured_center"))
 
     # compare to training data set
     fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],"Validation, Predicted")
