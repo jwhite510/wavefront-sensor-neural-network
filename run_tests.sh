@@ -7,7 +7,7 @@
 declare -a runs=(
 # "newgputest"
 # "200"
-"teslatest1"
+"xuvresult_1"
 "36000"
 )
 i=0

@@ -24,11 +24,19 @@ def fits_to_numpy(fits_file_name):
     return nparr
 
 
-def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_aperture=False):
+def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_aperture=False,ACTUAL=False,m_index=None,mask=False):
+
+    if ACTUAL:
+        RETRIEVED="ACTUAL"
+        RECONSTRUCTED="ACTUAL"
+    else:
+        RETRIEVED="retrieved"
+        RECONSTRUCTED="reconstructed"
+
 
     # get axes for retrieved object and diffraction pattern
     N=np.shape(np.squeeze(retrieved_obj['measured_pattern']))[0]
-    simulation_axes, _ = get_amplitude_mask_and_imagesize(N, int(N/2))
+    simulation_axes, amplitude_mask = get_amplitude_mask_and_imagesize(N, int(N/2))
 
     # object
     x=simulation_axes['object']['x'] # meters
@@ -60,7 +68,9 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
 
     # calculate the phase
     # subtract phase at intensity peak
-    m_index = unravel_index(I.argmax(), I.shape)
+    if not m_index:
+        m_index = unravel_index(I.argmax(), I.shape)
+
     phase_Imax = np.angle(complex_obj[m_index[0], m_index[1]])
     complex_obj *= np.exp(-1j * phase_Imax)
 
@@ -79,8 +89,12 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     # obj_phase[:, 10:20] = np.max(obj_phase)
     # obj_phase[:, -30:-20] = np.max(obj_phase)
 
-    im = axes["phase"].pcolormesh(x,x,obj_phase)
-    axes["phase"].text(0.2, 0.9,"phase(retrieved)", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor="cyan")
+    if mask:
+        im = axes["phase"].pcolormesh(x,x,amplitude_mask*obj_phase,cmap='jet')
+    else:
+        im = axes["phase"].pcolormesh(x,x,obj_phase,cmap='jet')
+
+    axes["phase"].text(0.2, 0.9,"phase("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["phase"])
     axes["phase"].axvline(x=x[m_index[1]], color="red", alpha=0.8)
     axes["phase"].axhline(y=x[m_index[0]], color="blue", alpha=0.8)
@@ -92,7 +106,10 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     axes["phase_vertical"].text(0.2, -0.25,"phase(vertical)", fontsize=10, ha='center', transform=axes["phase_vertical"].transAxes, backgroundcolor="red")
 
 
-    im = axes["intensity"].pcolormesh(x,x,I)
+    if mask:
+        im = axes["intensity"].pcolormesh(x,x,amplitude_mask*I,cmap='jet')
+    else:
+        im = axes["intensity"].pcolormesh(x,x,I,cmap='jet')
 
     # plot the spherical aperture
     if plot_spherical_aperture:
@@ -101,34 +118,40 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
         axes["intensity"].add_artist(circle)
         axes["intensity"].text(0.8, 0.7,"Spherical\nAperture\n2.7 um", fontsize=10, ha='center', transform=axes["intensity"].transAxes,color="red")
 
-    axes["intensity"].text(0.2, 0.9,"intensity(retrieved)", fontsize=10, ha='center', transform=axes["intensity"].transAxes, backgroundcolor="cyan")
+    axes["intensity"].text(0.2, 0.9,"intensity("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["intensity"].transAxes, backgroundcolor="cyan")
     axes["intensity"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["intensity"])
 
-    im = axes["measured"].pcolormesh(f,f,np.squeeze(retrieved_obj["measured_pattern"]))
+    im = axes["measured"].pcolormesh(f,f,np.squeeze(retrieved_obj["measured_pattern"]),cmap='jet')
     axes["measured"].set_ylabel(r"frequency [1/m]$\cdot 10^{6}$")
     axes["measured"].text(0.2, 0.9,"measured", fontsize=10, ha='center', transform=axes["measured"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["measured"])
 
-    im = axes["reconstructed"].pcolormesh(f,f,np.squeeze(retrieved_obj["tf_reconstructed_diff"]))
-    axes["reconstructed"].text(0.2, 0.9,"reconstructed", fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
+    im = axes["reconstructed"].pcolormesh(f,f,np.squeeze(retrieved_obj["tf_reconstructed_diff"]),cmap='jet')
+    axes["reconstructed"].text(0.2, 0.9,RECONSTRUCTED, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
 
     # calc mse
     A = retrieved_obj["measured_pattern"].reshape(-1)
     B = retrieved_obj["tf_reconstructed_diff"].reshape(-1)
     mse = (np.square(A-B)).mean()
     mse = str(mse)
-    axes["reconstructed"].text(0.2, 1.1,"mse(reconstructed, measured): "+mse, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
+    axes["reconstructed"].text(0.2, 1.1,"mse("+RECONSTRUCTED+", measured): "+mse, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
 
     fig.colorbar(im, ax=axes["reconstructed"])
 
-    im = axes["real"].pcolormesh(x,x,np.squeeze(retrieved_obj["real_output"]))
-    axes["real"].text(0.2, 0.9,"real(retrieved)", fontsize=10, ha='center', transform=axes["real"].transAxes, backgroundcolor="cyan")
+    if mask:
+        im = axes["real"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["real_output"]),cmap='jet')
+    else:
+        im = axes["real"].pcolormesh(x,x,np.squeeze(retrieved_obj["real_output"]),cmap='jet')
+    axes["real"].text(0.2, 0.9,"real("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["real"].transAxes, backgroundcolor="cyan")
     axes["real"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["real"])
 
-    im = axes["imag"].pcolormesh(x,x,np.squeeze(retrieved_obj["imag_output"]))
-    axes["imag"].text(0.2, 0.9,"imag(retrieved)", fontsize=10, ha='center', transform=axes["imag"].transAxes, backgroundcolor="cyan")
+    if mask:
+        im = axes["imag"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["imag_output"]),cmap='jet')
+    else:
+        im = axes["imag"].pcolormesh(x,x,np.squeeze(retrieved_obj["imag_output"]),cmap='jet')
+    axes["imag"].text(0.2, 0.9,"imag("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["imag"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["imag"])
 
     return fig
@@ -881,7 +904,11 @@ def get_and_format_experimental_trace(N, transform):
 
     return measured_pattern
 
-def matlab_cdi_retrieval(diffraction_pattern, support):
+def matlab_cdi_retrieval(diffraction_pattern, support, interpolate=True,noise_reduction=False):
+
+    diffraction_pattern=np.array(diffraction_pattern) # because i dont know if this is passed by reference
+    if noise_reduction:
+        diffraction_pattern[diffraction_pattern<0.05*np.max(diffraction_pattern)]=0
 
     # move to matlab cdi folder
     start_dir = os.getcwd()
@@ -897,23 +924,51 @@ def matlab_cdi_retrieval(diffraction_pattern, support):
 
     retrieved_obj_file = randomid + "_retrieved_obj.mat"
     reconstructed_file = randomid + "_reconstructed.mat"
+    real_interp_file = randomid + "_real_interp.mat"
+    imag_interp_file = randomid + "_imag_interp.mat"
 
     scipy.io.savemat(support_file, {'support':support})
     scipy.io.savemat(diffraction_pattern_file, {'diffraction':diffraction_pattern})
 
     # matlab load file
     with open("loaddata.m", "w") as file:
-        file.write("function [diffraction_pattern_file, support_file, retrieved_obj_file, reconstructed_file] = loaddata()\n")
+        file.write("function [diffraction_pattern_file, support_file, retrieved_obj_file, reconstructed_file, real_interp_file, imag_interp_file] = loaddata()\n")
         file.write("diffraction_pattern_file = '{}';\n".format(diffraction_pattern_file))
         file.write("support_file = '{}';\n".format(support_file))
         file.write("retrieved_obj_file = '{}';\n".format(retrieved_obj_file))
         file.write("reconstructed_file = '{}';\n".format(reconstructed_file))
+        file.write("real_interp_file = '{}';\n".format(real_interp_file))
+        file.write("imag_interp_file = '{}';\n".format(imag_interp_file))
         file.flush()
-    os.system('matlab -nodesktop -r seeded_run_CDI_noprocessing')
+    os.system('/usr/local/R2020a/bin/matlab -nodesktop -r seeded_run_CDI_noprocessing')
+    print("matlab ran")
 
     # load the results from matlab run
     rec_object = scipy.io.loadmat(retrieved_obj_file)['rec_object']
     recon_diffracted = scipy.io.loadmat(reconstructed_file)['recon_diffracted']
+    obj_real_interp1 = scipy.io.loadmat(real_interp_file)['obj_real_interp1']
+    obj_imag_interp1 = scipy.io.loadmat(imag_interp_file)['obj_imag_interp1']
+
+    obj_imag_interp1[np.isnan(obj_imag_interp1)]=0.0
+    obj_real_interp1[np.isnan(obj_real_interp1)]=0.0
+
+    # plt.figure()
+    # plt.pcolormesh(obj_real_interp1)
+    # plt.title("obj_real_interp1")
+
+    # plt.figure()
+    # plt.pcolormesh(obj_imag_interp1)
+    # plt.title("obj_imag_interp1")
+
+    # plt.figure()
+    # plt.pcolormesh(np.real(rec_object))
+    # plt.title("np.real(rec_object)")
+
+    # plt.figure()
+    # plt.pcolormesh(np.imag(rec_object))
+    # plt.title("np.imag(rec_object)")
+
+    # plt.show()
 
     # go back to starting dir
     os.chdir(start_dir)
@@ -921,8 +976,15 @@ def matlab_cdi_retrieval(diffraction_pattern, support):
     retrieved_obj = {}
     retrieved_obj["measured_pattern"] = diffraction_pattern
     retrieved_obj["tf_reconstructed_diff"] = recon_diffracted
-    retrieved_obj["real_output"] = np.real(rec_object)
-    retrieved_obj["imag_output"] = np.imag(rec_object)
+
+    # without the interpolation
+    if interpolate:
+        retrieved_obj["real_output"] = obj_real_interp1
+        retrieved_obj["imag_output"] = obj_imag_interp1
+    else:
+        retrieved_obj["real_output"] = np.real(rec_object)
+        retrieved_obj["imag_output"] = np.imag(rec_object)
+
     return retrieved_obj
 
 
