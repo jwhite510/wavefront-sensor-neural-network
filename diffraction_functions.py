@@ -90,9 +90,9 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     # obj_phase[:, -30:-20] = np.max(obj_phase)
 
     if mask:
-        im = axes["phase"].pcolormesh(x,x,amplitude_mask*obj_phase)
+        im = axes["phase"].pcolormesh(x,x,amplitude_mask*obj_phase,cmap='jet')
     else:
-        im = axes["phase"].pcolormesh(x,x,obj_phase)
+        im = axes["phase"].pcolormesh(x,x,obj_phase,cmap='jet')
 
     axes["phase"].text(0.2, 0.9,"phase("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["phase"])
@@ -107,9 +107,9 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
 
 
     if mask:
-        im = axes["intensity"].pcolormesh(x,x,amplitude_mask*I)
+        im = axes["intensity"].pcolormesh(x,x,amplitude_mask*I,cmap='jet')
     else:
-        im = axes["intensity"].pcolormesh(x,x,I)
+        im = axes["intensity"].pcolormesh(x,x,I,cmap='jet')
 
     # plot the spherical aperture
     if plot_spherical_aperture:
@@ -122,12 +122,12 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     axes["intensity"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["intensity"])
 
-    im = axes["measured"].pcolormesh(f,f,np.squeeze(retrieved_obj["measured_pattern"]))
+    im = axes["measured"].pcolormesh(f,f,np.squeeze(retrieved_obj["measured_pattern"]),cmap='jet')
     axes["measured"].set_ylabel(r"frequency [1/m]$\cdot 10^{6}$")
     axes["measured"].text(0.2, 0.9,"measured", fontsize=10, ha='center', transform=axes["measured"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["measured"])
 
-    im = axes["reconstructed"].pcolormesh(f,f,np.squeeze(retrieved_obj["tf_reconstructed_diff"]))
+    im = axes["reconstructed"].pcolormesh(f,f,np.squeeze(retrieved_obj["tf_reconstructed_diff"]),cmap='jet')
     axes["reconstructed"].text(0.2, 0.9,RECONSTRUCTED, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
 
     # calc mse
@@ -140,17 +140,17 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     fig.colorbar(im, ax=axes["reconstructed"])
 
     if mask:
-        im = axes["real"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["real_output"]))
+        im = axes["real"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["real_output"]),cmap='jet')
     else:
-        im = axes["real"].pcolormesh(x,x,np.squeeze(retrieved_obj["real_output"]))
+        im = axes["real"].pcolormesh(x,x,np.squeeze(retrieved_obj["real_output"]),cmap='jet')
     axes["real"].text(0.2, 0.9,"real("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["real"].transAxes, backgroundcolor="cyan")
     axes["real"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["real"])
 
     if mask:
-        im = axes["imag"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["imag_output"]))
+        im = axes["imag"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["imag_output"]),cmap='jet')
     else:
-        im = axes["imag"].pcolormesh(x,x,np.squeeze(retrieved_obj["imag_output"]))
+        im = axes["imag"].pcolormesh(x,x,np.squeeze(retrieved_obj["imag_output"]),cmap='jet')
     axes["imag"].text(0.2, 0.9,"imag("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["imag"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["imag"])
 
