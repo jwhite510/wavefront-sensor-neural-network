@@ -63,7 +63,7 @@ class CompareNetworkIterative():
         # index=11
         # index=9 # best
         N=None
-        with tables.open_file("zernike3/build/test_noise.hdf5",mode="r") as file:
+        with tables.open_file("zernike3/build/"+self.args.network+"_test_noise.hdf5",mode="r") as file:
         # with tables.open_file("zernike3/build/test.hdf5",mode="r") as file: # use the noise free sample, and matlab result looks good
             N = file.root.N[0,0]
             object_real = file.root.object_real[index, :].reshape(N,N)
@@ -190,7 +190,7 @@ class CompareNetworkIterative():
 
 
     def get_test_sample(self,index):
-        with tables.open_file("zernike3/build/test_noise.hdf5",mode="r") as file:
+        with tables.open_file("zernike3/build/"+self.args.network+"_test_noise.hdf5",mode="r") as file:
             N = file.root.N[0,0]
             object_real = file.root.object_real[index, :].reshape(N,N)
             object_imag = file.root.object_imag[index, :].reshape(N,N)
