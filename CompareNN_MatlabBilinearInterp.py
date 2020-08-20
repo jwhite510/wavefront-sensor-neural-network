@@ -504,29 +504,31 @@ if __name__ == "__main__":
     # 2020 08 12 data, HDR images
     #TODO update these
     for _fn in [
-            "m3_scan_0000.fits",
-            "Data_for_Jonathon/multiple_measurements/m3_scan_0000.fits",
-            "Data_for_Jonathon/multiple_measurements/m3_scan_0001.fits",
-            "Data_for_Jonathon/multiple_measurements/m3_scan_0002.fits",
-            "Data_for_Jonathon/multiple_measurements/m3_scan_0003.fits",
-            "Data_for_Jonathon/multiple_measurements/m3_scan_0004.fits",
-            "Data_for_Jonathon/multiple_measurements/m3_scan_0005.fits",
-            "Data_for_Jonathon/multiple_measurements/m3_scan_0006.fits",
-            "Data_for_Jonathon/multiple_measurements/m3_scan_0007.fits",
-            "Data_for_Jonathon/multiple_measurements/m3_scan_0008.fits",
-            "Data_for_Jonathon/multiple_measurements/m3_scan_0009.fits",
-            "Data_for_Jonathon/z0/1.fits",
-            "Data_for_Jonathon/z0/2.fits",
-            "Data_for_Jonathon/z0/3.fits",
-            "Data_for_Jonathon/z-500/1.fits",
+            # "m3_scan_0000.fits",
+            # "Data_for_Jonathon/multiple_measurements/m3_scan_0000.fits",
+            # "Data_for_Jonathon/multiple_measurements/m3_scan_0001.fits",
+            # "Data_for_Jonathon/multiple_measurements/m3_scan_0002.fits",
+            # "Data_for_Jonathon/multiple_measurements/m3_scan_0003.fits",
+            # "Data_for_Jonathon/multiple_measurements/m3_scan_0004.fits",
+            # "Data_for_Jonathon/multiple_measurements/m3_scan_0005.fits",
+            # "Data_for_Jonathon/multiple_measurements/m3_scan_0006.fits",
+            # "Data_for_Jonathon/multiple_measurements/m3_scan_0007.fits",
+            # "Data_for_Jonathon/multiple_measurements/m3_scan_0008.fits",
+            # "Data_for_Jonathon/multiple_measurements/m3_scan_0009.fits",
+            # "Data_for_Jonathon/z0/1.fits",
+            # "Data_for_Jonathon/z0/2.fits",
+            # "Data_for_Jonathon/z0/3.fits",
+            # "Data_for_Jonathon/z-500/1.fits",
             "Data_for_Jonathon/z-500/2.fits",
-            "Data_for_Jonathon/z-500/3.fits",
-            "Data_for_Jonathon/z-1000/1.fits",
-            "Data_for_Jonathon/z-1000/2.fits",
-            "Data_for_Jonathon/z-1000/3.fits"
+            # "Data_for_Jonathon/z-500/3.fits",
+            # "Data_for_Jonathon/z-1000/1.fits",
+            # "Data_for_Jonathon/z-1000/2.fits",
+            # "Data_for_Jonathon/z-1000/3.fits"
             ]:
-        a=np.load(_fn)
-        a[a<0]=0
+        # a=np.load(_fn)
+        a = diffraction_functions.fits_to_numpy(_fn)
+        # TODO turn this on and off
+        # a[a<0]=0
         measured_images[os.path.split(_fn)[-1].replace('.','_')]=a
 
 
@@ -535,7 +537,8 @@ if __name__ == "__main__":
     # a[a<0]=0
     # measured_images['greyscale']=a
 
-    experimental_params = {} experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
+    experimental_params = {}
+    experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
     experimental_params['z_distance'] = 33e-3 # [meters] distance from camera
     experimental_params['wavelength'] = 13.5e-9 #[meters] wavelength
     getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
@@ -558,7 +561,7 @@ if __name__ == "__main__":
                 transform["flip"]=_orientation
 
                 m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_images[_name], transform)
-                m[m<0.007*np.max(m)]=0
+                # m[m<0.007*np.max(m)]=0
                 m=np.squeeze(m)
 
                 # fig=plot_show_cm(a,"before processing",same_colorbar=False)
@@ -571,10 +574,10 @@ if __name__ == "__main__":
                 fig=comparenetworkiterative.retrieve_measured(m,title)
                 fig.savefig(os.path.join(DIR,title))
 
-                # # also retrieve with matlab CDI code
-                title=_name+"-ITERATIVE-retrieved-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
-                fig=comparenetworkiterative.matlab_cdi_retrieval(m,title)
-                fig.savefig(os.path.join(DIR,title))
+                # # # also retrieve with matlab CDI code
+                # title=_name+"-ITERATIVE-retrieved-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                # fig=comparenetworkiterative.matlab_cdi_retrieval(m,title)
+                # fig.savefig(os.path.join(DIR,title))
 
     # # plot simulated sample
     # sim=comparenetworkiterative.get_test_sample(0)
