@@ -5,7 +5,7 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"8_20_2020_center_intensity" # name
+"8_20_2020_center_intensity_N_1_3" # name
 "36000" # train samples
 "50" # peak count
 )
