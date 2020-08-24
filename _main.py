@@ -10,6 +10,7 @@ import os
 from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
 import pickle
 from live_capture import TIS
+import matplotlib.pyplot as plt
 
 class Processing():
     def __init__(self):
@@ -85,7 +86,24 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         self.orientation_edit.addItems(['None','Left->Right','Up->Down','Left->Right & Up->Down'])
         self.orientation_edit.setCurrentIndex(2) # default to up->down
 
+        # initialize camera
+        self.Tis = TIS.TIS("48710182", 640, 480, 30, False)
+        self.Tis.Start_pipeline()  # Start the pipeline so the camera streams
+
+        # plt.ion()
+        # while True:
+            # if self.Tis.Snap_image(1) is True:  # Snap an image with one second timeout
+                # image = self.Tis.Get_image()  # Get the image. It is a numpy array
+                # plt.figure(1)
+                # plt.imshow(np.squeeze(image))
+                # plt.pause(0.1)
+                # print("hello?")
+        # self.Tis.Stop_pipeline()
+        # exit()
+
         im=self.retrieve_raw_img()
+        # self.Tis.Stop_pipeline()
+
         experimental_params = {}
         experimental_params['pixel_size'] = params['pixel_size'] # [meters] with 2x2 binning
         experimental_params['z_distance'] = params['z_distance'] # [meters] distance from camera
@@ -101,9 +119,6 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # # initialize neural network
         self.network=diffraction_net.DiffractionNet(params['network']) # load a pre trained network
 
-        # initialize camera
-        self.Tis = TIS.TIS("48710182", 640, 480, 30, False)
-        self.Tis.Start_pipeline()  # Start the pipeline so the camera streams
 
 
         self.show()
@@ -111,7 +126,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
     def __del__(self):
         # cleanup camera
-        Tis.Stop_pipeline()
+        self.Tis.Stop_pipeline()
 
 
     def textchanged(self):
@@ -242,9 +257,12 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # z = np.exp(-x**2 / 0.5) * np.exp(-y**2 / 0.5)
         # return obj
         # return np.random.rand(500,600)
-        im=self.Tis.Get_image()
-        im=np.sum(im,axis=2)
-        return im
+        if self.Tis.Snap_image(1) is True:  # Snap an image with one second timeout
+            im=self.Tis.Get_image()
+            im=np.sum(im,axis=2)
+            return im
+        else:
+            return None
 
 
 
@@ -252,11 +270,10 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
 if __name__ == "__main__":
     params={}
-    params['pixel_size']=27e-6
-    params['z_distance']=16e-3
+    params['pixel_size']=4.8e-6 # meters
+    params['z_distance']=16.4e-3 # meter
     params['wavelength']=633e-9
-    params['network']="noise_test_D_fixednorm_SQUARE6x6_VISIBLESETUP_NOCENTER_peak-50"
-    params['network']="vis1_2_peak-50"
+    params['network']="8_20_2020_center_intensity"
     mainw = MainWindow(params)
 
 
