@@ -15,12 +15,12 @@ from subprocess import PIPE
 
 
 class GetData():
-    def __init__(self, batch_size):
+    def __init__(self, batch_size, net_name):
         self.batch_counter = 0
         self.batch_index = 0
         self.batch_size = batch_size
-        self.train_filename = "zernike3/build/train_noise.hdf5"
-        self.test_filename = "zernike3/build/test_noise.hdf5"
+        self.train_filename = "zernike3/build/"+net_name+"_train_noise.hdf5"
+        self.test_filename = "zernike3/build/"+net_name+"_test_noise.hdf5"
         self.hdf5_file_train = tables.open_file(self.train_filename, mode="r")
         self.hdf5_file_validation = tables.open_file(self.test_filename, mode="r")
         self.samples = self.hdf5_file_train.root.object_real.shape[0]
@@ -69,7 +69,7 @@ class DiffractionNet():
         print(name)
 
         # initialize get data object
-        self.get_data = GetData(batch_size=10)
+        self.get_data = GetData(batch_size=10,net_name=self.name)
 
         # input image
         self.x = tf.placeholder(tf.float32, shape=[None, self.get_data.N , self.get_data.N, 1])

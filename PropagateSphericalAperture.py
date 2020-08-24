@@ -30,7 +30,7 @@ if __name__ == "__main__":
     PropagateTF.loadparams("zernike3/build/params_cu.dat",params_cu)
 
     # get position axis of wavefront sensor
-    measured_axes, _=diffraction_functions.get_amplitude_mask_and_imagesize(N,int(N/2))
+    measured_axes, _=diffraction_functions.get_amplitude_mask_and_imagesize(N,int(N/3))
     x=measured_axes["object"]["x"]
 
     # this is the same data contained in measured_axes, but im loading it from the dat file anyway

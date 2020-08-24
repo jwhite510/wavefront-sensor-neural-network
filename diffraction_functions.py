@@ -36,7 +36,7 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
 
     # get axes for retrieved object and diffraction pattern
     N=np.shape(np.squeeze(retrieved_obj['measured_pattern']))[0]
-    simulation_axes, amplitude_mask = get_amplitude_mask_and_imagesize(N, int(N/2))
+    simulation_axes, amplitude_mask = get_amplitude_mask_and_imagesize(N, int(N/3))
 
     # object
     x=simulation_axes['object']['x'] # meters
@@ -90,9 +90,9 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     # obj_phase[:, -30:-20] = np.max(obj_phase)
 
     if mask:
-        im = axes["phase"].pcolormesh(x,x,amplitude_mask*obj_phase,cmap='jet')
+        im = axes["phase"].pcolormesh(x,x,amplitude_mask*obj_phase)
     else:
-        im = axes["phase"].pcolormesh(x,x,obj_phase,cmap='jet')
+        im = axes["phase"].pcolormesh(x,x,obj_phase)
 
     axes["phase"].text(0.2, 0.9,"phase("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["phase"])
@@ -107,9 +107,9 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
 
 
     if mask:
-        im = axes["intensity"].pcolormesh(x,x,amplitude_mask*I,cmap='jet')
+        im = axes["intensity"].pcolormesh(x,x,amplitude_mask*I)
     else:
-        im = axes["intensity"].pcolormesh(x,x,I,cmap='jet')
+        im = axes["intensity"].pcolormesh(x,x,I)
 
     # plot the spherical aperture
     if plot_spherical_aperture:
@@ -122,12 +122,12 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     axes["intensity"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["intensity"])
 
-    im = axes["measured"].pcolormesh(f,f,np.squeeze(retrieved_obj["measured_pattern"]),cmap='jet')
+    im = axes["measured"].pcolormesh(f,f,np.squeeze(retrieved_obj["measured_pattern"]))
     axes["measured"].set_ylabel(r"frequency [1/m]$\cdot 10^{6}$")
     axes["measured"].text(0.2, 0.9,"measured", fontsize=10, ha='center', transform=axes["measured"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["measured"])
 
-    im = axes["reconstructed"].pcolormesh(f,f,np.squeeze(retrieved_obj["tf_reconstructed_diff"]),cmap='jet')
+    im = axes["reconstructed"].pcolormesh(f,f,np.squeeze(retrieved_obj["tf_reconstructed_diff"]))
     axes["reconstructed"].text(0.2, 0.9,RECONSTRUCTED, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
 
     # calc mse
@@ -140,17 +140,17 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     fig.colorbar(im, ax=axes["reconstructed"])
 
     if mask:
-        im = axes["real"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["real_output"]),cmap='jet')
+        im = axes["real"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["real_output"]))
     else:
-        im = axes["real"].pcolormesh(x,x,np.squeeze(retrieved_obj["real_output"]),cmap='jet')
+        im = axes["real"].pcolormesh(x,x,np.squeeze(retrieved_obj["real_output"]))
     axes["real"].text(0.2, 0.9,"real("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["real"].transAxes, backgroundcolor="cyan")
     axes["real"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["real"])
 
     if mask:
-        im = axes["imag"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["imag_output"]),cmap='jet')
+        im = axes["imag"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["imag_output"]))
     else:
-        im = axes["imag"].pcolormesh(x,x,np.squeeze(retrieved_obj["imag_output"]),cmap='jet')
+        im = axes["imag"].pcolormesh(x,x,np.squeeze(retrieved_obj["imag_output"]))
     axes["imag"].text(0.2, 0.9,"imag("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["imag"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["imag"])
 
@@ -888,7 +888,7 @@ def create_phase(N):
 def get_and_format_experimental_trace(N, transform):
     # get the measured trace
     # open the object with known dimmensions
-    obj_calculated_measured_axes, _ = get_amplitude_mask_and_imagesize(N, int(N/2))
+    obj_calculated_measured_axes, _ = get_amplitude_mask_and_imagesize(N, int(N/3))
     diffraction_calculated_measured_axes, measured_pattern = get_measured_diffraction_pattern_grid()
 
     measured_pattern = measured_pattern.astype(np.float64)

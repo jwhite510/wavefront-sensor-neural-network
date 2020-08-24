@@ -63,7 +63,7 @@ class CompareNetworkIterative():
         # index=11
         # index=9 # best
         N=None
-        with tables.open_file("zernike3/build/test_noise.hdf5",mode="r") as file:
+        with tables.open_file("zernike3/build/"+self.args.network+"_test_noise.hdf5",mode="r") as file:
         # with tables.open_file("zernike3/build/test.hdf5",mode="r") as file: # use the noise free sample, and matlab result looks good
             N = file.root.N[0,0]
             object_real = file.root.object_real[index, :].reshape(N,N)
@@ -99,7 +99,7 @@ class CompareNetworkIterative():
 
         # get amplitude mask
         N = np.shape(nn_retrieved["measured_pattern"])[1]
-        _, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
+        _, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/3))
         # get interpolation points
 
         # run matlab retrieval with and without interpolation
@@ -182,7 +182,7 @@ class CompareNetworkIterative():
     def matlab_cdi_retrieval(self,measured,figtitle,mask=False):
         measured=np.squeeze(measured)
         N = np.shape(measured)[1]
-        _, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
+        _, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/3))
         retrieved=diffraction_functions.matlab_cdi_retrieval(measured,amplitude_mask,interpolate=True)
 
         fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
@@ -190,7 +190,7 @@ class CompareNetworkIterative():
 
 
     def get_test_sample(self,index):
-        with tables.open_file("zernike3/build/test_noise.hdf5",mode="r") as file:
+        with tables.open_file("zernike3/build/"+self.args.network+"_test_noise.hdf5",mode="r") as file:
             N = file.root.N[0,0]
             object_real = file.root.object_real[index, :].reshape(N,N)
             object_imag = file.root.object_imag[index, :].reshape(N,N)
@@ -230,7 +230,7 @@ def intensity_phase_error(actual,predicted,title,folder):
 
     # get wavefront sensor
     N=np.shape(actual_c)[0]
-    _,amplitude_mask=diffraction_functions.get_amplitude_mask_and_imagesize(N,int(N/2))
+    _,amplitude_mask=diffraction_functions.get_amplitude_mask_and_imagesize(N,int(N/3))
     # get wavefront sensor boundary
     w_l=0
     w_r=N-1
@@ -396,7 +396,7 @@ def plot_show_cm(mat,title,same_colorbar=True):
     ax[0].axhline(y=cy, color="yellow",alpha=0.5)
 
     # plot distance from cm
-    ax[0].text(0.1, 0.6,"cx:"+str(cx)+"\ncy:"+str(cy), fontsize=10, ha='center', transform=ax[0].transAxes, backgroundcolor="yellow")
+    ax[0].text(0.1, 0.6,"cx:"+str(cx)+"\ncy:"+str(cy), fontsize=10, ha='center', transform=ax[0].transAxes, backgroundcolor="red")
 
     ax[0].text(0.2, 0.9,"center of image", fontsize=10, ha='center', transform=ax[0].transAxes, backgroundcolor="red")
     ax[0].text(0.2, 0.8,"peak of intensity", fontsize=10, ha='center', transform=ax[0].transAxes, backgroundcolor="yellow")
@@ -507,8 +507,8 @@ if __name__ == "__main__":
 
     # 2020 08 12 data, HDR images
     for _fn in [
-            '2020_08_12/1208_focus_up/1208_focus_up.npy',
-            '2020_08_12/1208_focus_up_left/1208_focus_up_left.npy',
+            # '2020_08_12/1208_focus_up/1208_focus_up.npy',
+            # '2020_08_12/1208_focus_up_left/1208_focus_up_left.npy',
 
             '2020_08_12/1208_focus_n7/1208_focus_n7.npy',
             '2020_08_12/1208_focus_n3/1208_focus_n3.npy',
@@ -554,32 +554,32 @@ if __name__ == "__main__":
                 m=np.squeeze(m)
 
                 # fig=plot_show_cm(a,"before processing",same_colorbar=False)
-                title=_name+"-measured_logscale_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                title=_name+"-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
                 fig=plot_show_cm(m,title)
                 fig.savefig(os.path.join(DIR,title))
 
                 # # retrieve with neural network
-                title=_name+"-NN-retrieved-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
-                fig=comparenetworkiterative.retrieve_measured(m,title)
-                fig.savefig(os.path.join(DIR,title))
+                # title=_name+"-NN-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                # fig=comparenetworkiterative.retrieve_measured(m,title)
+                # fig.savefig(os.path.join(DIR,title))
 
                 # # also retrieve with matlab CDI code
-                title=_name+"-ITERATIVE-retrieved-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
-                fig=comparenetworkiterative.matlab_cdi_retrieval(m,title)
-                fig.savefig(os.path.join(DIR,title))
+                # title=_name+"-ITERATIVE-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                # fig=comparenetworkiterative.matlab_cdi_retrieval(m,title)
+                # fig.savefig(os.path.join(DIR,title))
 
-    # # plot simulated sample
-    # sim=comparenetworkiterative.get_test_sample(0)
-    # fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
-    # fig.savefig(os.path.join(DIR,"validation_measured_center"))
+    # plot simulated sample
+    sim=comparenetworkiterative.get_test_sample(0)
+    fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
+    fig.savefig(os.path.join(DIR,"validation_measured_center"))
 
-    # # compare to training data set
-    # fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],"Validation, Predicted")
-    # fig.savefig(os.path.join(DIR,"validation_predicted"))
-    # # plot simulated retrieved and actual
+    # compare to training data set
+    fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],"Validation, Predicted")
+    fig.savefig(os.path.join(DIR,"validation_predicted"))
+    # plot simulated retrieved and actual
 
-    # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True)
-    # fig.savefig(os.path.join(DIR,"validation_actual"))
+    fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True)
+    fig.savefig(os.path.join(DIR,"validation_actual"))
 
     # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True,mask=True)
     # fig.savefig(os.path.join(DIR,"validation_actual_WF"))
