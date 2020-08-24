@@ -515,13 +515,13 @@ if __name__ == "__main__":
             # "Data_for_Jonathon/multiple_measurements/m3_scan_0007.fits",
             # "Data_for_Jonathon/multiple_measurements/m3_scan_0008.fits",
             # "Data_for_Jonathon/multiple_measurements/m3_scan_0009.fits",
-            # "Data_for_Jonathon/z0/1.fits",
+            "Data_for_Jonathon/z0/1.fits",
             # "Data_for_Jonathon/z0/2.fits",
             # "Data_for_Jonathon/z0/3.fits",
-            # "Data_for_Jonathon/z-500/1.fits",
-            "Data_for_Jonathon/z-500/2.fits",
+            "Data_for_Jonathon/z-500/1.fits",
+            # "Data_for_Jonathon/z-500/2.fits",
             # "Data_for_Jonathon/z-500/3.fits",
-            # "Data_for_Jonathon/z-1000/1.fits",
+            "Data_for_Jonathon/z-1000/1.fits",
             # "Data_for_Jonathon/z-1000/2.fits",
             # "Data_for_Jonathon/z-1000/3.fits"
             ]:
@@ -529,7 +529,7 @@ if __name__ == "__main__":
         a = diffraction_functions.fits_to_numpy(_fn)
         # TODO turn this on and off
         # a[a<0]=0
-        measured_images[os.path.split(_fn)[-1].replace('.','_')]=a
+        measured_images[''.join([_fn.split('/')[-1].replace('.','_'),'_',_fn.split('/')[-2]])]=a
 
 
     # a=Image.open(filename).convert("L")
@@ -569,10 +569,10 @@ if __name__ == "__main__":
                 fig=plot_show_cm(m,title)
                 fig.savefig(os.path.join(DIR,title))
 
-                # # retrieve with neural network
-                title=_name+"-NN-retrieved-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
-                fig=comparenetworkiterative.retrieve_measured(m,title)
-                fig.savefig(os.path.join(DIR,title))
+                # # # retrieve with neural network
+                # title=_name+"-NN-retrieved-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                # fig=comparenetworkiterative.retrieve_measured(m,title)
+                # fig.savefig(os.path.join(DIR,title))
 
                 # # # also retrieve with matlab CDI code
                 # title=_name+"-ITERATIVE-retrieved-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)

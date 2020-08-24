@@ -5,7 +5,7 @@ rm -rf ./error_*.p
 
 # for the infinity counts comparison case, use the network trained with 50 counts
 camera_noise="../../SquareWFtest/CameraNoise/1_1000/Bild_1.png"
-DIR="8_13_20_test"
+DIR="8_25_20_test_xuv"
 network="8_20_2020_xuvresult"
 rm -rf ./$DIR
 # cd zernike3/build/
