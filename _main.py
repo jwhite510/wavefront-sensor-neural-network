@@ -87,7 +87,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         self.orientation_edit.setCurrentIndex(2) # default to up->down
 
         # initialize camera
-        self.Tis = TIS.TIS("48710182", 640, 480, 30, False)
+        self.Tis=params['Tis']
         self.Tis.Start_pipeline()  # Start the pipeline so the camera streams
 
         # plt.ion()
@@ -274,6 +274,14 @@ if __name__ == "__main__":
     params['z_distance']=16.4e-3 # meter
     params['wavelength']=633e-9
     params['network']="8_20_2020_center_intensity"
+
+    # for camera
+    # self.Tis = TIS.TIS("48710182", 640, 480, 30, False)
+    # self.Tis = TIS.TIS("48710182", 2592, 2048, 60, False)
+    params['Tis']=TIS.TIS("48710182", 2592, 2048, 60, False)
+    # https://github.com/TheImagingSource/tiscamera
+
+
     mainw = MainWindow(params)
 
 
