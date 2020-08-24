@@ -513,8 +513,8 @@ if __name__ == "__main__":
             '2020_08_12/1208_focus_n7/1208_focus_n7.npy',
             '2020_08_12/1208_focus_n3/1208_focus_n3.npy',
             '2020_08_12/1208_focus/1208_focus.npy',
-            '2020_08_12/1208_focus_f3/1208_focus_f3.npy',
-            '2020_08_12/1208_focus_f7/1208_focus_f7.npy'
+            # '2020_08_12/1208_focus_f3/1208_focus_f3.npy',
+            # '2020_08_12/1208_focus_f7/1208_focus_f7.npy'
             ]:
         a=np.load(_fn)
         a[a<0]=0
@@ -550,7 +550,7 @@ if __name__ == "__main__":
                 transform["flip"]=_orientation
 
                 m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_images[_name], transform)
-                m[m<0.007*np.max(m)]=0
+                m[m<0.003*np.max(m)]=0
                 m=np.squeeze(m)
 
                 # fig=plot_show_cm(a,"before processing",same_colorbar=False)
@@ -568,21 +568,21 @@ if __name__ == "__main__":
                 # fig=comparenetworkiterative.matlab_cdi_retrieval(m,title)
                 # fig.savefig(os.path.join(DIR,title))
 
-    # plot simulated sample
-    sim=comparenetworkiterative.get_test_sample(0)
-    fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
-    fig.savefig(os.path.join(DIR,"validation_measured_center"))
+    # # plot simulated sample
+    # sim=comparenetworkiterative.get_test_sample(0)
+    # fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
+    # fig.savefig(os.path.join(DIR,"validation_measured_center"))
 
-    # compare to training data set
-    fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],"Validation, Predicted")
-    fig.savefig(os.path.join(DIR,"validation_predicted"))
-    # plot simulated retrieved and actual
+    # # compare to training data set
+    # fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],"Validation, Predicted")
+    # fig.savefig(os.path.join(DIR,"validation_predicted"))
+    # # plot simulated retrieved and actual
 
-    fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True)
-    fig.savefig(os.path.join(DIR,"validation_actual"))
+    # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True)
+    # fig.savefig(os.path.join(DIR,"validation_actual"))
 
-    # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True,mask=True)
-    # fig.savefig(os.path.join(DIR,"validation_actual_WF"))
+    # # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True,mask=True)
+    # # fig.savefig(os.path.join(DIR,"validation_actual_WF"))
 
 
     plt.show()
