@@ -67,7 +67,7 @@ class DataGenerator():
         self.crop_size=crop_size
         self.N_computational=N_computational
         # generate zernike coefficients
-        self.batch_size=1
+        self.batch_size=4
         start_n=2
         max_n=4
         self.zernike_cvector = []
@@ -102,21 +102,70 @@ class DataGenerator():
 
         # propagator through wavefront sensor
         propagate_tf=PropagateTF(N_interp,steps_Si,params_Si,slice_Si,steps_cu,params_cu,slice_cu)
-        self.x = tf.placeholder(tf.complex64, shape=[self.batch_size, 128 , 128, 1])
+        self.x = tf.placeholder(tf.complex64, shape=[None, 128 , 128, 1])
         self.prop=propagate_tf.setup_graph_through_wfs(self.x)
         self.buildgraph()
 
     def buildgraph(self):
 
         # scalars for zernike coefficients
-        self.x = tf.placeholder(tf.float32, shape=[self.batch_size, len(self.zernike_cvector)])
+        self.x = tf.placeholder(tf.float32, shape=[None, len(self.zernike_cvector)])
+        self._x = tf.expand_dims(self.x,axis=-1)
+        self._x = tf.expand_dims(self._x,axis=-1)
 
         self.tf_mn_polynomials = tf.constant(self.mn_polynomials,dtype=tf.float32)
+        self.tf_mn_polynomials = tf.expand_dims(self.tf_mn_polynomials,axis=0)
 
-        self.zernike_polynom = tf.zeros([self.batch_size, self.N_computational,self.N_computational],dtype=tf.float32)
+        self.zernike_polynom = self._x * self.tf_mn_polynomials
+        self.zernike_polynom = tf.reduce_sum(self.zernike_polynom,axis=1)
 
-        for i in range(int(self.tf_mn_polynomials.shape[0])):
-            self.zernike_polynom+=self.x[:,i]*self.tf_mn_polynomials[i,:,:]
+
+        # propagate through gaussian
+        x = np.linspace(1,-1,self.N_computational).reshape(-1,1)
+        y = np.linspace(1,-1,self.N_computational).reshape(1,-1)
+        width = 0.05
+        self.gaussian_amp = np.exp(-(x**2)/(width**2))*np.exp(-(y**2)/(width**2))
+        self.gaussian_amp = tf.constant(self.gaussian_amp,dtype=tf.float32)
+        self.gaussian_amp = tf.expand_dims(self.gaussian_amp,axis=0)
+
+        self.field = tf.complex(real=self.gaussian_amp,imag=tf.zeros_like(self.gaussian_amp)) * tf.exp(tf.complex(real=tf.zeros_like(self.zernike_polynom),imag=self.zernike_polynom))
+
+        # fft
+        self.field = tf.expand_dims(self.field,axis=-1)
+        self.field_ft=diffraction_functions.tf_fft2(self.field,dimmensions=[1,2])
+
+        # crop and interpolate
+
+        with tf.Session() as sess:
+            # random numbers sbetween -6 and 6
+
+            f={self.x: np.array([(12*np.random.rand(12))-6,
+                                (12*np.random.rand(12))-6])}
+            # f={self.x: np.array([[0,0,6,6,6,6,6,0,0,0,0,0]])}
+
+            out=sess.run(self.field,feed_dict=f)
+
+            plt.figure()
+            plt.title("numpy compare 0")
+            plt.imshow(np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(out[0,:,:,0])))))
+
+            plt.figure()
+            plt.title("numpy compare 1")
+            plt.imshow(np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(out[1,:,:,0])))))
+
+            out=sess.run(self.field_ft,feed_dict=f)
+            plt.figure()
+            plt.title("0")
+            plt.imshow(np.abs(out[0,:,:,0]))
+
+            plt.figure()
+            plt.title("1")
+            plt.imshow(np.abs(out[1,:,:,0]))
+
+
+            plt.show()
+        exit()
+
 
         with tf.Session() as sess:
             out = sess.run(self.zernike_polynom,feed_dict={self.x:np.array([[1,0,0,0,0,0,0,0,0,0,0,0]])})
