@@ -116,7 +116,7 @@ class DataGenerator():
         self.N_computational=N_computational
         # generate zernike coefficients
         self.batch_size=4
-        start_n=2
+        start_n=1
         max_n=4
         self.zernike_cvector = []
 
@@ -199,9 +199,9 @@ class DataGenerator():
                                 # self.scale:np.array([[1],[1]])
                                 # }
 
-            f={self.x: np.array([[0,0,0,5,0,0,0,0,0,0,0,0],
-                                [ 0,0,0,5,0,0,0,0,0,0,0,0]]),
-                                self.scale:np.array([[1],[2]])
+            f={self.x: np.array([[0,0,0,0,0,5,0,0,0,0,0,0,0,0],
+                                [ 0,0,0,0,0,5,0,0,0,0,0,0,0,0]]),
+                                self.scale:np.array([[0.5],[1]])
                                 }
 
             out=sess.run(self.zernike_polynom,feed_dict=f)
