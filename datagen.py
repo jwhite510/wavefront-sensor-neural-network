@@ -5,10 +5,58 @@ import math
 import diffraction_functions
 
 
+# def gaussian_propagate(zernike_polynom:tf.Tensor,scale:tf.Tensor)->tf.Tensor:
+
+
+def tf_make_zernike(m:int, n:int, N_computational:int, scale:tf.Tensor, amp:tf.Tensor)->tf.Tensor:
+    _scale = tf.expand_dims(scale,axis=-1)
+    x = np.linspace(-7,7,N_computational).reshape(1,-1,1)
+    y = np.linspace(-7,7,N_computational).reshape(1,1,-1)
+    x = (1/_scale)*tf.constant(x,dtype=tf.float32)
+    y = (1/_scale)*tf.constant(y,dtype=tf.float32)
+    # x = scale * x
+    # y = scale * y
+    rho = tf.sqrt(x**2 + y**2)
+    phi = tf.atan2(x,y)
+
+    positive_m = False
+    if m >= 0:
+        positive_m=True
+    m = abs(m)
+    # summation over k
+    rho = tf.expand_dims(rho,axis=1)
+    # for each k value
+    # k = np.linspace(0,(n-m)//2)
+    k = np.arange(start=0,stop=1+((n-m)//2))
+    numerator = (-1)**k
+    for i in range(len(k)):
+        numerator[i]*= math.factorial(n-k[i])
+
+    denominator = np.ones_like(k)
+    for i in range(len(k)):
+        denominator[i]*= math.factorial(k[i])
+        denominator[i]*= math.factorial(((n+m)/2)-k[i])
+        denominator[i]*= math.factorial(((n-m)/2)-k[i])
+
+    scalar = numerator/denominator
+    zernike_polynom = scalar.reshape(1,-1,1,1) * rho**(n-2*k.reshape(1,-1,1,1))
+    zernike_polynom = tf.reduce_sum(zernike_polynom,axis=1)
+
+    if positive_m:
+        zernike_polynom *= tf.cos(m * phi)
+    else:
+        zernike_polynom *= tf.sin(m * phi)
+
+    # set values outside unit circle to 0
+    zernike_polynom*=tf.cast(tf.less_equal(tf.squeeze(rho,axis=1),1),dtype=tf.float32)
+    _amp = tf.expand_dims(amp,axis=-1)
+    _amp = tf.expand_dims(_amp,axis=-1)
+    zernike_polynom*=_amp
+    return tf.expand_dims(zernike_polynom,axis=1)
 
 def makezernike(m: int,n: int, N_computational: int)->np.array:
-    x = np.linspace(-7,7,N_computational).reshape(-1,1)
-    y = np.linspace(-7,7,N_computational).reshape(1,-1)
+    x = np.linspace(-7/2,7/2,N_computational).reshape(-1,1)
+    y = np.linspace(-7/2,7/2,N_computational).reshape(1,-1)
     rho = np.sqrt(x**2 + y**2)
     phi = np.arctan2(x,y)
 
@@ -110,23 +158,28 @@ class DataGenerator():
 
         # scalars for zernike coefficients
         self.x = tf.placeholder(tf.float32, shape=[None, len(self.zernike_cvector)])
-        self._x = tf.expand_dims(self.x,axis=-1)
-        self._x = tf.expand_dims(self._x,axis=-1)
+        # self._x = tf.expand_dims(self.x,axis=-1)
+        # self._x = tf.expand_dims(self._x,axis=-1)
 
-        self.tf_mn_polynomials = tf.constant(self.mn_polynomials,dtype=tf.float32)
-        self.tf_mn_polynomials = tf.expand_dims(self.tf_mn_polynomials,axis=0)
 
-        self.zernike_polynom = self._x * self.tf_mn_polynomials
-        self.zernike_polynom = tf.reduce_sum(self.zernike_polynom,axis=1)
+        self.scale = tf.placeholder(tf.float32, shape=[None,1])
+        # generate polynomials
+        zernikes=[]
+        for i in range(len(self.zernike_cvector)):
+            _z = self.zernike_cvector[i]
+            zernikes.append(tf_make_zernike(_z.m,_z.n,self.N_computational,self.scale,self.x[:,i]))
 
+        zernikes=tf.concat(zernikes,axis=1)
+        self.zernike_polynom = tf.reduce_sum(zernikes,axis=1)
 
         # propagate through gaussian
-        x = np.linspace(1,-1,self.N_computational).reshape(-1,1)
-        y = np.linspace(1,-1,self.N_computational).reshape(1,-1)
+        x = np.linspace(1,-1,self.N_computational).reshape(1,-1,1)
+        y = np.linspace(1,-1,self.N_computational).reshape(1,1,-1)
+        self._scale = tf.expand_dims(self.scale,axis=-1)
+        x = (1/self._scale)*tf.constant(x,dtype=tf.float32)
+        y = (1/self._scale)*tf.constant(y,dtype=tf.float32)
         width = 0.05
-        self.gaussian_amp = np.exp(-(x**2)/(width**2))*np.exp(-(y**2)/(width**2))
-        self.gaussian_amp = tf.constant(self.gaussian_amp,dtype=tf.float32)
-        self.gaussian_amp = tf.expand_dims(self.gaussian_amp,axis=0)
+        self.gaussian_amp = tf.exp(-(x**2)/(width**2))*tf.exp(-(y**2)/(width**2))
 
         self.field = tf.complex(real=self.gaussian_amp,imag=tf.zeros_like(self.gaussian_amp)) * tf.exp(tf.complex(real=tf.zeros_like(self.zernike_polynom),imag=self.zernike_polynom))
 
@@ -141,19 +194,50 @@ class DataGenerator():
             # random numbers sbetween -6 and 6
 
             np.random.seed(12087)
-            f={self.x: np.array([(12*np.random.rand(12))-6,
-                                (12*np.random.rand(12))-6])}
-            # f={self.x: np.array([[0,0,6,6,6,6,6,0,0,0,0,0]])}
+            # f={self.x: np.array([(12*np.random.rand(12))-6,
+                                # (12*np.random.rand(12))-6]),
+                                # self.scale:np.array([[1],[1]])
+                                # }
 
-            out=sess.run(self.field_ft,feed_dict=f)
+            f={self.x: np.array([[0,0,0,5,0,0,0,0,0,0,0,0],
+                                [ 0,0,0,5,0,0,0,0,0,0,0,0]]),
+                                self.scale:np.array([[1],[2]])
+                                }
+
+            out=sess.run(self.zernike_polynom,feed_dict=f)
             plt.figure()
             plt.title("0")
-            plt.imshow(np.abs(out[0,:,:,0]))
+            plt.imshow(out[0,:,:],cmap='jet')
+
+            plt.figure()
+            plt.title("1")
+            plt.imshow(out[1,:,:],cmap='jet')
+
+            out=sess.run(self.gaussian_amp,feed_dict=f)
+            plt.figure()
+            plt.title("0")
+            plt.imshow(out[0,:,:],cmap='jet')
+
+            plt.figure()
+            plt.title("1")
+            plt.imshow(out[1,:,:],cmap='jet')
 
             out=sess.run(self.field_cropped,feed_dict=f)
             plt.figure()
             plt.title("0")
-            plt.imshow(np.abs(out[0,:,:,0]))
+            plt.imshow(np.abs(out[0,:,:,0]),cmap='jet')
+
+            plt.figure()
+            plt.title("1")
+            plt.imshow(np.abs(out[1,:,:,0]),cmap='jet')
+
+            plt.show()
+            exit()
+
+            # out=sess.run(self.field_cropped,feed_dict=f)
+            # plt.figure()
+            # plt.title("0")
+            # plt.imshow(np.abs(out[0,:,:,0]))
 
             plt.show()
         exit()
