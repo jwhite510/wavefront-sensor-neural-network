@@ -5,7 +5,7 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"8_20_2020_center_intensity" # name
+"test123" # name
 "36000" # train samples
 "50" # peak count
 )
@@ -24,8 +24,9 @@ do
 	rm ./${network}*.hdf5
 	# create samples
 	mpirun -np 2 a.out --count 200 --name ${network}_test.hdf5 --buffersize 100 --seed 345678
-	mpirun -np 20 a.out --count $training_samples --name ${network}_train.hdf5 --buffersize 100 --seed 8977
+	# mpirun -np 20 a.out --count $training_samples --name ${network}_train.hdf5 --buffersize 100 --seed 8977
 	cd ../..
+	exit
 
 	camera_noise="../../SquareWFtest/CameraNoise/1_1000/Bild_1.png"
 	# echo $pc

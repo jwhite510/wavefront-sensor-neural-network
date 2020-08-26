@@ -571,6 +571,26 @@ struct DataGenerator
     // single slice of the material
     create_slice(slice_cu, *wavefonts.wavefrontsensor, params_cu);
     create_slice(slice_Si, *wavefonts.wavefrontsensor, params_Si);
+    // // *wavefonts.wavefrontsensor->size_0
+    // ofstream f;
+    // // f.open("wfs__.dat");
+    // // for(int i=0; i < (*wavefonts.wavefrontsensor).size_0; i++){
+      // // for(int j=0; j < (*wavefonts.wavefrontsensor).size_1; j++){
+        // // f<<(*wavefonts.wavefrontsensor)(i,j)<<" ";
+      // // }
+      // // f<<endl;
+    // // }
+    // // f.close();
+
+    // f.open("wfs__.dat");
+    // for(int i=0; i < slice_cu.size_0; i++){
+      // for(int j=0; j < slice_cu.size_1; j++){
+        // f<<slice_cu(i,j).real()<<" ";
+      // }
+      // f<<endl;
+    // }
+    // f.close();
+    // exit(0);
 
     // initialize FFT
     // forward propagate thorugh 50 nm Si3N4 -> delta:0.02661 , beta:0.00926
@@ -712,12 +732,19 @@ struct DataGenerator
     // Python.call_function_np("plot_complex_diffraction", interped_arr.data, vector<int>{interped_arr.size_0,interped_arr.size_1}, PyArray_COMPLEX64);
     // propagate through materials
 
-    // write_complex_array(interped_arr,"interped_arr_before");
+    for(int i=0; i < interped_arr.size_0; i++){
+      for(int j=0; j < interped_arr.size_1; j++){
+        interped_arr(i,j)=complex<float>(1,0);
+      }
+    }
+
+    write_complex_array(interped_arr,"interped_arr_before");
     for(int i=0; i<steps_Si; i++) // 50 nm & dz: 10 nm
       forward_propagate(interped_arr, slice_Si, *wavefonts.f, params_Si, fft_2_interp);
     for(int i=0; i<steps_cu; i++)
       forward_propagate(interped_arr, slice_cu, *wavefonts.f, params_cu, fft_2_interp);
-    // write_complex_array(interped_arr,"interped_arr_after");
+    write_complex_array(interped_arr,"interped_arr_after");
+    exit(0);
 
   }
 

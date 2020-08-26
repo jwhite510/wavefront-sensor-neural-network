@@ -391,7 +391,9 @@ def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
         im = PIL.ImageOps.invert(im)
         size1 = im.size[0]
         # im_size_nm = 5*im.size[0] * 1e-9 # meters -> old settings for xuv
-        im_size_nm = 60e-6 # 60 micrometer side length -> visible light
+        im_size_nm = 60e-7 # 60 micrometer side length -> visible light
+
+
 
         # scale down the image
         im = im.resize((desired_mask_width,desired_mask_width)).convert("L")

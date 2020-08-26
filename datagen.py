@@ -96,12 +96,14 @@ class DataGenerator():
         steps_Si = round(Si_distance / params_Si.dz);
         steps_cu = round(cu_distance / params_cu.dz);
 
+        # TODO why is the c++ code different than this
+
         # propagator through wavefront sensor
         propagate_tf=PropagateTF(N_interp,steps_Si,params_Si,slice_Si,steps_cu,params_cu,slice_cu)
-        self.x = tf.placeholder(tf.complex64, shape=[None, 128 , 128, 1])
+        self.x = tf.placeholder(tf.complex128, shape=[None, 128 , 128, 1])
         self.prop=propagate_tf.setup_graph_through_wfs(self.x)
 
-        before_wf = np.ones((1,128,128,1)).astype(np.complex64)
+        before_wf = np.ones((1,128,128,1)).astype(np.complex128)
         with tf.Session() as sess:
             out=sess.run(self.prop,feed_dict={self.x:before_wf})
 
@@ -110,6 +112,13 @@ class DataGenerator():
 
             plt.figure()
             plt.imshow(np.abs(np.squeeze(out))**2)
+
+        # open c++ data
+        arr_before = np.loadtxt("zernike3/build/interped_arr_before_real.dat")+1j*np.loadtxt("zernike3/build/interped_arr_before_imag.dat")
+        arr_after = np.loadtxt("zernike3/build/interped_arr_after_real.dat")+1j*np.loadtxt("zernike3/build/interped_arr_after_imag.dat")
+
+        plt.figure()
+        plt.imshow(np.abs(arr_after)**2)
         plt.show()
 
 class PropagateTF():
@@ -144,7 +153,7 @@ def forward_propagate(E,slice,f,p):
                 1-
                 (p.lam*f.reshape(-1,1))**2-
                 (p.lam*f.reshape(1,-1))**2,
-                dtype=tf.complex64
+                dtype=tf.complex128
             )
     gamma=tf.sqrt(
             gamma1
