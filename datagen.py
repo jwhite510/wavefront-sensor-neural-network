@@ -135,33 +135,25 @@ class DataGenerator():
         self.field_ft=diffraction_functions.tf_fft2(self.field,dimmensions=[1,2])
 
         # crop and interpolate
+        self.field_cropped = self.field_ft[:,(self.N_computational//2)-(self.N_interp//2):(self.N_computational//2)+(self.N_interp//2),(self.N_computational//2)-(self.N_interp//2):(self.N_computational//2)+(self.N_interp//2),:]
 
         with tf.Session() as sess:
             # random numbers sbetween -6 and 6
 
+            np.random.seed(12087)
             f={self.x: np.array([(12*np.random.rand(12))-6,
                                 (12*np.random.rand(12))-6])}
             # f={self.x: np.array([[0,0,6,6,6,6,6,0,0,0,0,0]])}
-
-            out=sess.run(self.field,feed_dict=f)
-
-            plt.figure()
-            plt.title("numpy compare 0")
-            plt.imshow(np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(out[0,:,:,0])))))
-
-            plt.figure()
-            plt.title("numpy compare 1")
-            plt.imshow(np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(out[1,:,:,0])))))
 
             out=sess.run(self.field_ft,feed_dict=f)
             plt.figure()
             plt.title("0")
             plt.imshow(np.abs(out[0,:,:,0]))
 
+            out=sess.run(self.field_cropped,feed_dict=f)
             plt.figure()
-            plt.title("1")
-            plt.imshow(np.abs(out[1,:,:,0]))
-
+            plt.title("0")
+            plt.imshow(np.abs(out[0,:,:,0]))
 
             plt.show()
         exit()
