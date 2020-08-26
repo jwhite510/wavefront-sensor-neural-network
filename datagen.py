@@ -63,21 +63,25 @@ def create_slice(p: Params, N_interp: int)->np.array:
 
 class DataGenerator():
     def __init__(self,N_computational:int,N_interp:int,crop_size:int):
+        self.N_interp=N_interp
+        self.crop_size=crop_size
+        self.N_computational=N_computational
         # generate zernike coefficients
+        self.batch_size=1
         start_n=2
         max_n=4
-        zernike_cvector = []
+        self.zernike_cvector = []
 
         for n in range(start_n,max_n+1):
             for m in range(n,-n-2,-2):
-                zernike_cvector.append(Zernike_C(m,n))
+                self.zernike_cvector.append(Zernike_C(m,n))
 
-        mn_polynomials=np.zeros((len(zernike_cvector),N_computational,N_computational))
-        mn_polynomials_index=0
-        for _z in zernike_cvector:
+        self.mn_polynomials=np.zeros((len(self.zernike_cvector),N_computational,N_computational))
+        self.mn_polynomials_index=0
+        for _z in self.zernike_cvector:
             z_arr = makezernike(_z.m,_z.n,N_computational)
-            mn_polynomials[mn_polynomials_index,:,:]=z_arr
-            mn_polynomials_index+=1
+            self.mn_polynomials[self.mn_polynomials_index,:,:]=z_arr
+            self.mn_polynomials_index+=1
 
         # define materials
         # https://refractiveindex.info/?shelf=main&book=Cu&page=Johnson
@@ -98,19 +102,42 @@ class DataGenerator():
 
         # propagator through wavefront sensor
         propagate_tf=PropagateTF(N_interp,steps_Si,params_Si,slice_Si,steps_cu,params_cu,slice_cu)
-        self.x = tf.placeholder(tf.complex64, shape=[None, 128 , 128, 1])
+        self.x = tf.placeholder(tf.complex64, shape=[self.batch_size, 128 , 128, 1])
         self.prop=propagate_tf.setup_graph_through_wfs(self.x)
+        self.buildgraph()
 
-        before_wf = np.ones((1,128,128,1)).astype(np.complex64)
+    def buildgraph(self):
+
+        # scalars for zernike coefficients
+        self.x = tf.placeholder(tf.float32, shape=[self.batch_size, len(self.zernike_cvector)])
+
+        self.tf_mn_polynomials = tf.constant(self.mn_polynomials,dtype=tf.float32)
+
+        self.zernike_polynom = tf.zeros([self.batch_size, self.N_computational,self.N_computational],dtype=tf.float32)
+
+        for i in range(int(self.tf_mn_polynomials.shape[0])):
+            self.zernike_polynom+=self.x[:,i]*self.tf_mn_polynomials[i,:,:]
+
         with tf.Session() as sess:
-            out=sess.run(self.prop,feed_dict={self.x:before_wf})
-
+            out = sess.run(self.zernike_polynom,feed_dict={self.x:np.array([[1,0,0,0,0,0,0,0,0,0,0,0]])})
             plt.figure()
-            plt.imshow(np.abs(np.squeeze(before_wf))**2)
+            plt.imshow(np.squeeze(out))
 
+            out = sess.run(self.zernike_polynom,feed_dict={self.x:np.array([[1,1,0,0,0,0,0,0,0,0,0,0]])})
             plt.figure()
-            plt.imshow(np.abs(np.squeeze(out))**2)
-        plt.show()
+            plt.imshow(np.squeeze(out))
+
+            out = sess.run(self.zernike_polynom,feed_dict={self.x:np.array([[1,1,1,1,1,1,0,0,0,0,0,0]])})
+            plt.figure()
+            plt.imshow(np.squeeze(out))
+
+            plt.show()
+
+
+
+    # def makesample()->np.array:
+
+
 
 class PropagateTF():
     def __init__(self, N_interp:int, steps_Si:int, params_Si:Params, slice_Si:np.array, steps_cu:int, params_cu:Params, slice_cu:np.array):
