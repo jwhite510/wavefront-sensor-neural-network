@@ -3,10 +3,9 @@ import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
 import tables
 import os
-os.sys.path.append("../..")
 import diffraction_functions
 import argparse
-import utility
+import datagen
 
 class CameraNoise():
     def __init__(self,imagefile):
@@ -39,7 +38,7 @@ if __name__ == "__main__":
     print("args.cameraimage =>", args.cameraimage)
 
     # create new hdf5 file
-    utility.create_dataset(args.outfile)
+    datagen.create_dataset(args.outfile)
 
     with tables.open_file(args.outfile,mode="a") as newhd5file:
         with tables.open_file(args.infile,mode="r") as hd5file:

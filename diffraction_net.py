@@ -9,7 +9,7 @@ import diffraction_functions
 import pickle
 import sys
 from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
-from zernike3.build.PropagateTF import *
+import datagen
 import subprocess
 from subprocess import PIPE
 
@@ -19,8 +19,8 @@ class GetData():
         self.batch_counter = 0
         self.batch_index = 0
         self.batch_size = batch_size
-        self.train_filename = "zernike3/build/"+net_name+"_train_noise.hdf5"
-        self.test_filename = "zernike3/build/"+net_name+"_test_noise.hdf5"
+        self.train_filename = net_name+"_train_noise.hdf5"
+        self.test_filename = net_name+"_test_noise.hdf5"
         self.hdf5_file_train = tables.open_file(self.train_filename, mode="r")
         self.hdf5_file_validation = tables.open_file(self.test_filename, mode="r")
         self.samples = self.hdf5_file_train.root.object_real.shape[0]
@@ -105,7 +105,7 @@ class DiffractionNet():
         # reconstruction loss
         #####################
         # self.nn_nodes["recons_loss"] = TODO
-        propagateTF=PropagateTF("zernike3/build/")
+        propagateTF=datagen.DataGenerator(1024,128).propagate_tf
         self.nn_nodes["recons_diffraction_pattern"] = diffraction_functions.tf_reconstruct_diffraction_pattern(real_norm=self.nn_nodes["real_out"], imag_norm=self.nn_nodes["imag_out"],propagateTF=propagateTF)
         self.nn_nodes["reconstruction_loss"] = tf.losses.mean_squared_error(labels=self.x, predictions=self.nn_nodes["recons_diffraction_pattern"])
 

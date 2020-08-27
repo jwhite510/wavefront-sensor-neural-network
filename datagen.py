@@ -1,4 +1,6 @@
 import tensorflow as tf
+import argparse
+import tables
 import numpy as np
 import matplotlib.pyplot as plt
 import math
@@ -255,35 +257,97 @@ def forward_propagate(E,slice,f,p):
     E*=H
     E=diffraction_functions.tf_ifft2(E,dimmensions=[1,2])
     return E
+
+def create_dataset(filename):
+
+    print("called create_dataset")
+    print(filename)
+    N = 128
+    with tables.open_file(filename, "w") as hdf5file:
+
+        # create array for the object
+        hdf5file.create_earray(hdf5file.root, "object_real", tables.Float32Atom(), shape=(0,N*N))
+
+        # create array for the object phase
+        hdf5file.create_earray(hdf5file.root, "object_imag", tables.Float32Atom(), shape=(0,N*N))
+
+        # create array for the image
+        hdf5file.create_earray(hdf5file.root, "diffraction_noise", tables.Float32Atom(), shape=(0,N*N))
+
+        # create array for the image
+        hdf5file.create_earray(hdf5file.root, "diffraction_noisefree", tables.Float32Atom(), shape=(0,N*N))
+
+        hdf5file.create_earray(hdf5file.root, "N", tables.Int32Atom(), shape=(0,1))
+
+        hdf5file.close()
+
+    with tables.open_file(filename, mode='a') as hd5file:
+        # save the dimmensions of the data
+        hd5file.root.N.append(np.array([[N]]))
+
+def save_to_hdf5(filename, wavefront_sensor, wavefront):
+    with tables.open_file(filename, mode='a') as hd5file:
+        for i in range(np.shape(wavefront)[0]):
+            object_real = np.real(wavefront[i,:,:])
+            object_imag = np.imag(wavefront[i,:,:])
+            diffraction_pattern_noisefree = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(wavefront_sensor[i,:,:]))))**2
+
+            # normalize
+            diffraction_pattern_noisefree = diffraction_pattern_noisefree / np.max(diffraction_pattern_noisefree)
+            diffraction_pattern_noisefree = diffraction_functions.center_image_at_centroid(diffraction_pattern_noisefree)
+            hd5file.root.object_real.append(object_real.reshape(1,-1))
+            hd5file.root.object_imag.append(object_imag.reshape(1,-1))
+            hd5file.root.diffraction_noisefree.append(diffraction_pattern_noisefree.reshape(1,-1))
+
+        print("calling flush")
+        hd5file.flush()
+
 if __name__ == "__main__":
+
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--count',type=int)
+    parser.add_argument('--seed',type=int)
+    parser.add_argument('--name',type=str)
+    parser.add_argument('--batch_size',type=int)
+    args=parser.parse_args()
+    if args.count % args.batch_size != 0:
+        raise ValueError('batch size and count divide with remainder')
+
+    create_dataset(args.name)
     datagenerator = DataGenerator(1024,128)
     with tf.Session() as sess:
-        np.random.seed(12087)
-        # f={datagenerator.x: np.array([[10,0,0,0,0,5,0,0,0,0,0,0,0,0],
-                            # [ 0,0,0,0,0,5,0,0,0,0,0,0,0,0]]),
-                            # datagenerator.scale:np.array([[1],[1]])
-                            # }
-        f={datagenerator.x: np.array([(12*np.random.rand(14))-6,
-                            (12*np.random.rand(14))-6]),
-                            datagenerator.scale:np.array([[1],[1]])
-                            }
-        # out=sess.run({datagenerator.afterwf,datagenerator.beforewf},feed_dict=f)
-        out=sess.run(datagenerator.beforewf,feed_dict=f)
-        for i in range(2):
-            fig,ax=plt.subplots(1,2,figsize=(10,5))
-            im=ax[0].imshow(np.abs(out[i,:,:,0])**2,cmap='jet')
-            ax[0].set_title("intensity")
-            fig.colorbar(im,ax=ax[0])
-            im=ax[1].imshow(np.angle(out[i,:,:,0]),cmap='jet')
-            ax[1].set_title("angle")
-            fig.colorbar(im,ax=ax[1])
+        np.random.seed(args.seed)
+        _count = 0
+        while _count<args.count:
+            print("_count =>", _count)
+            # make random numbers
 
-        plt.show()
-        out=sess.run(datagenerator.beforewf,feed_dict=f)
-        print(out)
+            # for the zernike coefs
+            n_z_coefs=len(datagenerator.zernike_cvector)* args.batch_size
+            # for the scales
+            n_scales=args.batch_size
 
+            z_coefs = 12*(np.random.rand(n_z_coefs)-0.5)
+            z_coefs=z_coefs.reshape(args.batch_size,-1)
+            scales = 1+1*(np.random.rand(n_scales)-0.5)
+            scales = scales.reshape(args.batch_size,1)
+            # print("scales =>", scales)
+            # print("z_coefs =>", z_coefs)
 
-
-
-    # initialize tensorflow data generation
-
+            f={datagenerator.x: z_coefs,
+               datagenerator.scale:scales
+                                }
+            _afterwf=sess.run(datagenerator.afterwf,feed_dict=f)
+            _beforewf=sess.run(datagenerator.beforewf,feed_dict=f)
+            save_to_hdf5(args.name,np.squeeze(_afterwf),np.squeeze(_beforewf))
+            # plot data
+            # for i in range(2):
+                # fig,ax=plt.subplots(1,2,figsize=(10,5))
+                # im=ax[0].imshow(np.abs(_beforewf[i,:,:,0])**2,cmap='jet')
+                # ax[0].set_title("intensity")
+                # fig.colorbar(im,ax=ax[0])
+                # im=ax[1].imshow(np.angle(_beforewf[i,:,:,0]),cmap='jet')
+                # ax[1].set_title("angle")
+                # fig.colorbar(im,ax=ax[1])
+            # plt.show()
+            _count += args.batch_size

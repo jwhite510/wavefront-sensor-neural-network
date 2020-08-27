@@ -5,7 +5,7 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"8_20_2020_center_intensity" # name
+"py_2_datatest_8_27_20" # name
 "36000" # train samples
 "50" # peak count
 )
@@ -20,20 +20,15 @@ do
 	echo $training_samples
 
 	# generate dataset
-	cd zernike3/build/
 	rm ./${network}*.hdf5
 	# create samples
-	mpirun -np 2 a.out --count 200 --name ${network}_test.hdf5 --buffersize 100 --seed 345678
-	mpirun -np 20 a.out --count $training_samples --name ${network}_train.hdf5 --buffersize 100 --seed 8977
-	cd ../..
+	python datagen.py --count ${training_samples} --name ${network}_train.hdf5 --batch_size 100 --seed 345678
+	python datagen.py --count 200 --name ${network}_test.hdf5 --batch_size 100 --seed 8977
 
-	camera_noise="../../SquareWFtest/CameraNoise/1_1000/Bild_1.png"
-	# echo $pc
-	cd zernike3/build/
+	camera_noise="SquareWFtest/CameraNoise/1_1000/Bild_1.png"
 	# add noise to samples
 	python addnoise.py --infile ${network}_train.hdf5 --outfile ${network}_train_noise.hdf5 --peakcount $pc --cameraimage $camera_noise
 	python addnoise.py --infile ${network}_test.hdf5 --outfile ${network}_test_noise.hdf5 --peakcount $pc --cameraimage $camera_noise
-	cd ../..
 
 	echo ${network}
 	python diffraction_net.py ${network}
