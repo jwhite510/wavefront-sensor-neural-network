@@ -251,13 +251,13 @@ def fft2(array):
 
 def get_wavefront_sensor(a):
     N = 128
-    _, b = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/3))
+    _, b = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
     b = b.astype(np.float32)
     return b
 
 def get_wavefront_sensor_f(a):
     N = 128
-    measured_axes, b = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/3))
+    measured_axes, b = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
     # b = b.astype(np.float32)
     b = measured_axes["diffraction_plane"]["f"].astype(np.float32)
     return b
@@ -452,5 +452,5 @@ def testcall2(filename, array1, array2):
 if __name__ == "__main__":
     print("running main!!!")
     N = 128
-    measured_axes, b = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/3))
+    measured_axes, b = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
 

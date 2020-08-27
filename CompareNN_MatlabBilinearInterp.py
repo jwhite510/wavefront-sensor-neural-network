@@ -99,7 +99,7 @@ class CompareNetworkIterative():
 
         # get amplitude mask
         N = np.shape(nn_retrieved["measured_pattern"])[1]
-        _, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/3))
+        _, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
         # get interpolation points
 
         # run matlab retrieval with and without interpolation
@@ -182,7 +182,7 @@ class CompareNetworkIterative():
     def matlab_cdi_retrieval(self,measured,figtitle,mask=False):
         measured=np.squeeze(measured)
         N = np.shape(measured)[1]
-        _, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/3))
+        _, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
         retrieved=diffraction_functions.matlab_cdi_retrieval(measured,amplitude_mask,interpolate=True)
 
         fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
@@ -230,7 +230,7 @@ def intensity_phase_error(actual,predicted,title,folder):
 
     # get wavefront sensor
     N=np.shape(actual_c)[0]
-    _,amplitude_mask=diffraction_functions.get_amplitude_mask_and_imagesize(N,int(N/3))
+    _,amplitude_mask=diffraction_functions.get_amplitude_mask_and_imagesize(N,int(N/2))
     # get wavefront sensor boundary
     w_l=0
     w_r=N-1

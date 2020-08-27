@@ -307,7 +307,7 @@ void create_slice(array2d<complex<float>> & slice, const array2d<float> & wavefr
 {
   for(int i=0;i<slice.length; i++) {
     // TODO create this properly
-    if(wavefrontsensor.data[i] < 0.5) {
+    if(wavefrontsensor.data[i] < 0.005) {
       slice.data[i] = exp(complex<float>(-1 * p.k * p.beta_Ta * p.dz, 0));
       slice.data[i] *= exp(complex<float>(0,-1 * p.k * p.delta_Ta * p.dz));
     }

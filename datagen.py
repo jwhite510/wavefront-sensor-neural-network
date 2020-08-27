@@ -54,11 +54,11 @@ class Params():
   k = 2 * np.pi / lam
 
 def create_slice(p: Params, N_interp: int)->np.array:
-    _, wfs = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, N_interp//3)
+    _, wfs = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, N_interp//2)
     slice = np.zeros((N_interp,N_interp),dtype=np.complex128)
-    slice[wfs<0.5]=np.exp(-1*p.k * p.beta_Ta * p.dz)*\
+    slice[wfs<0.005]=np.exp(-1*p.k * p.beta_Ta * p.dz)*\
                     np.exp(-1j*p.k*p.delta_Ta*p.dz)
-    slice[wfs>=0.5]=1.0
+    slice[wfs>=0.005]=1.0
     return slice
 
 class DataGenerator():
@@ -113,6 +113,11 @@ class DataGenerator():
             plt.figure()
             plt.imshow(np.abs(np.squeeze(out))**2)
 
+        _, wfs = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, N_interp//2)
+        plt.figure()
+        plt.imshow(wfs)
+        plt.title("wfs")
+
         # open c++ data
         arr_before = np.loadtxt("zernike3/build/interped_arr_before_real.dat")+1j*np.loadtxt("zernike3/build/interped_arr_before_imag.dat")
         arr_after = np.loadtxt("zernike3/build/interped_arr_after_real.dat")+1j*np.loadtxt("zernike3/build/interped_arr_after_imag.dat")
@@ -131,7 +136,7 @@ class PropagateTF():
         self.slice_Si=slice_Si
         self.slice_cu=slice_cu
 
-        measured_axes, _ = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, N_interp//3)
+        measured_axes, _ = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, N_interp//2)
         self.wf_f = measured_axes["diffraction_plane"]["f"]
 
     def setup_graph_through_wfs(self, wavefront):

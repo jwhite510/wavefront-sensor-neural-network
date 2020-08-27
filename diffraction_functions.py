@@ -36,7 +36,7 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
 
     # get axes for retrieved object and diffraction pattern
     N=np.shape(np.squeeze(retrieved_obj['measured_pattern']))[0]
-    simulation_axes, amplitude_mask = get_amplitude_mask_and_imagesize(N, int(N/3))
+    simulation_axes, amplitude_mask = get_amplitude_mask_and_imagesize(N, int(N/2))
 
     # object
     x=simulation_axes['object']['x'] # meters
@@ -391,7 +391,7 @@ def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
         im = PIL.ImageOps.invert(im)
         size1 = im.size[0]
         # im_size_nm = 5*im.size[0] * 1e-9 # meters -> old settings for xuv
-        im_size_nm = 60e-7 # 60 micrometer side length -> visible light
+        im_size_nm = 60e-6 # 60 micrometer side length -> visible light
 
 
 
@@ -890,7 +890,7 @@ def create_phase(N):
 def get_and_format_experimental_trace(N, transform):
     # get the measured trace
     # open the object with known dimmensions
-    obj_calculated_measured_axes, _ = get_amplitude_mask_and_imagesize(N, int(N/3))
+    obj_calculated_measured_axes, _ = get_amplitude_mask_and_imagesize(N, int(N/2))
     diffraction_calculated_measured_axes, measured_pattern = get_measured_diffraction_pattern_grid()
 
     measured_pattern = measured_pattern.astype(np.float64)
