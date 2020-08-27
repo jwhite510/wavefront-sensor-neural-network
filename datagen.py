@@ -110,9 +110,8 @@ def create_slice(p: Params, N_interp: int)->np.array:
     return slice
 
 class DataGenerator():
-    def __init__(self,N_computational:int,N_interp:int,crop_size:int):
+    def __init__(self,N_computational:int,N_interp:int):
         self.N_interp=N_interp
-        self.crop_size=crop_size
         self.N_computational=N_computational
         # generate zernike coefficients
         self.batch_size=4
@@ -124,12 +123,6 @@ class DataGenerator():
             for m in range(n,-n-2,-2):
                 self.zernike_cvector.append(Zernike_C(m,n))
 
-        self.mn_polynomials=np.zeros((len(self.zernike_cvector),N_computational,N_computational))
-        self.mn_polynomials_index=0
-        for _z in self.zernike_cvector:
-            z_arr = makezernike(_z.m,_z.n,N_computational)
-            self.mn_polynomials[self.mn_polynomials_index,:,:]=z_arr
-            self.mn_polynomials_index+=1
 
         # define materials
         # https://refractiveindex.info/?shelf=main&book=Cu&page=Johnson
@@ -148,18 +141,15 @@ class DataGenerator():
         steps_Si = round(Si_distance / params_Si.dz);
         steps_cu = round(cu_distance / params_cu.dz);
         self.propagate_tf=PropagateTF(N_interp,steps_Si,params_Si,slice_Si,steps_cu,params_cu,slice_cu)
-        self.buildgraph()
 
-
-    def buildgraph(self):
-
-        # scalars for zernike coefficients
+        # inputs to graph
         self.x = tf.placeholder(tf.float32, shape=[None, len(self.zernike_cvector)])
-        # self._x = tf.expand_dims(self.x,axis=-1)
-        # self._x = tf.expand_dims(self._x,axis=-1)
-
-
         self.scale = tf.placeholder(tf.float32, shape=[None,1])
+        self.afterwf,self.beforewf=self.buildgraph()
+
+
+    def buildgraph(self)->(tf.Tensor,tf.Tensor):
+
         # generate polynomials
         zernikes=[]
         for i in range(len(self.zernike_cvector)):
@@ -167,102 +157,49 @@ class DataGenerator():
             zernikes.append(tf_make_zernike(_z.m,_z.n,self.N_computational,self.scale,self.x[:,i]))
 
         zernikes=tf.concat(zernikes,axis=1)
-        self.zernike_polynom = tf.reduce_sum(zernikes,axis=1)
+        zernike_polynom = tf.reduce_sum(zernikes,axis=1)
 
         # propagate through gaussian
         x = np.linspace(1,-1,self.N_computational).reshape(1,-1,1)
         y = np.linspace(1,-1,self.N_computational).reshape(1,1,-1)
-        self._scale = tf.expand_dims(self.scale,axis=-1)
-        x = (1/self._scale)*tf.constant(x,dtype=tf.float32)
-        y = (1/self._scale)*tf.constant(y,dtype=tf.float32)
+        _scale = tf.expand_dims(self.scale,axis=-1)
+        x = (1/_scale)*tf.constant(x,dtype=tf.float32)
+        y = (1/_scale)*tf.constant(y,dtype=tf.float32)
         width = 0.05
-        self.gaussian_amp = tf.exp(-(x**2)/(width**2))*tf.exp(-(y**2)/(width**2))
+        gaussian_amp = tf.exp(-(x**2)/(width**2))*tf.exp(-(y**2)/(width**2))
 
-        self.field = tf.complex(real=self.gaussian_amp,imag=tf.zeros_like(self.gaussian_amp)) * tf.exp(tf.complex(real=tf.zeros_like(self.zernike_polynom),imag=self.zernike_polynom))
+        field = tf.complex(real=gaussian_amp,imag=tf.zeros_like(gaussian_amp)) * tf.exp(tf.complex(real=tf.zeros_like(zernike_polynom),imag=zernike_polynom))
 
         # fft
-        self.field = tf.expand_dims(self.field,axis=-1)
-        self.field_ft=diffraction_functions.tf_fft2(self.field,dimmensions=[1,2])
+        field = tf.expand_dims(field,axis=-1)
+        field_ft=diffraction_functions.tf_fft2(field,dimmensions=[1,2])
 
         # crop and interpolate
-        self.field_cropped = self.field_ft[:,(self.N_computational//2)-(self.N_interp//2):(self.N_computational//2)+(self.N_interp//2),(self.N_computational//2)-(self.N_interp//2):(self.N_computational//2)+(self.N_interp//2),:]
+        field_cropped = field_ft[:,(self.N_computational//2)-(self.N_interp//2):(self.N_computational//2)+(self.N_interp//2),(self.N_computational//2)-(self.N_interp//2):(self.N_computational//2)+(self.N_interp//2),:]
 
-        # TODO set phase to 0 at center
-        z_center = self.field_cropped[:,self.N_interp//2,self.N_interp//2,0]
+        z_center = field_cropped[:,self.N_interp//2,self.N_interp//2,0]
         z_center = tf.expand_dims(z_center,-1)
         z_center = tf.expand_dims(z_center,-1)
         z_center = tf.expand_dims(z_center,-1)
-        self.field_cropped = self.field_cropped * tf.exp(tf.complex(real=0.0,imag=-1.0*tf.angle(z_center)))
+        field_cropped = field_cropped * tf.exp(tf.complex(real=0.0,imag=-1.0*tf.angle(z_center)))
 
         # normalize within wavefront sensor
         _, wfs = diffraction_functions.get_amplitude_mask_and_imagesize(self.N_interp, self.N_interp//3)
         wfs = np.expand_dims(wfs,0)
         wfs = np.expand_dims(wfs,-1)
         wfs = tf.constant(wfs,dtype=tf.float32)
-        norm_factor = tf.reduce_max(wfs*tf.abs(self.field_cropped),keepdims=True,axis=[1,2])
-        self.field_cropped = self.field_cropped / tf.complex(real=norm_factor,imag=tf.zeros_like(norm_factor))
+        norm_factor = tf.reduce_max(wfs*tf.abs(field_cropped),keepdims=True,axis=[1,2])
+        field_cropped = field_cropped / tf.complex(real=norm_factor,imag=tf.zeros_like(norm_factor))
         # return this as the field before wfs
 
         # propagator through wavefront sensor
-        self.prop=self.propagate_tf.setup_graph_through_wfs(self.field_cropped)
+        prop=self.propagate_tf.setup_graph_through_wfs(field_cropped)
 
         # to just multiply
-        # self.prop = self.field_cropped * tf.complex(real=wfs,imag=tf.zeros_like(wfs))
-
-        with tf.Session() as sess:
-            # random numbers sbetween -6 and 6
-
-            np.random.seed(12087)
-            f={self.x: np.array([(12*np.random.rand(14))-6,
-                                (12*np.random.rand(14))-6]),
-                                self.scale:np.array([[1],[1]])
-                                }
-
-            # f={self.x: np.array([[10,0,0,0,0,5,0,0,0,0,0,0,0,0],
-                                # [ 0,0,0,0,0,5,0,0,0,0,0,0,0,0]]),
-                                # self.scale:np.array([[1],[1]])
-                                # }
-            out=sess.run(self.field_cropped,feed_dict=f)
-            for i in [0,1]:
-                fig,ax=plt.subplots(1,2)
-                ax[0].imshow(np.real(out[i,:,:,0]),cmap='jet')
-                ax[0].axhline(y=self.N_interp//2, color="black", alpha=0.5)
-                ax[0].axvline(x=self.N_interp//2, color="black", alpha=0.5)
-                ax[0].set_title("real")
-
-                ax[1].imshow(np.imag(out[i,:,:,0]),cmap='jet')
-                ax[1].axhline(y=self.N_interp//2, color="black", alpha=0.5)
-                ax[1].axvline(x=self.N_interp//2, color="black", alpha=0.5)
-                ax[1].set_title("imag")
-
-            plt.figure()
-            plt.title("0")
-            plt.imshow(np.abs(out[0,:,:,0]),cmap='jet')
-            plt.colorbar()
-
-            plt.figure()
-            plt.title("1")
-            plt.imshow(np.abs(out[1,:,:,0]),cmap='jet')
-            plt.colorbar()
-
-            out=sess.run(self.prop,feed_dict=f)
-            plt.figure()
-            plt.title("0")
-            plt.imshow(np.abs(out[0,:,:,0]),cmap='jet')
-            plt.colorbar()
-
-            plt.figure()
-            plt.title("1")
-            plt.imshow(np.abs(out[1,:,:,0]),cmap='jet')
-            plt.colorbar()
-
-            plt.show()
-            exit()
-
-
-    # def makesample()->np.array:
-
-
+        # self.prop = field_cropped * tf.complex(real=wfs,imag=tf.zeros_like(wfs))
+        # TODO
+        # check wavefront sensor image, up sampling problem
+        return prop, field_cropped
 
 class PropagateTF():
     def __init__(self, N_interp:int, steps_Si:int, params_Si:Params, slice_Si:np.array, steps_cu:int, params_cu:Params, slice_cu:np.array):
@@ -319,8 +256,34 @@ def forward_propagate(E,slice,f,p):
     E=diffraction_functions.tf_ifft2(E,dimmensions=[1,2])
     return E
 if __name__ == "__main__":
-    datagenerator = DataGenerator(1024,128,200)
-    pass
+    datagenerator = DataGenerator(1024,128)
+    with tf.Session() as sess:
+        np.random.seed(12087)
+        # f={datagenerator.x: np.array([[10,0,0,0,0,5,0,0,0,0,0,0,0,0],
+                            # [ 0,0,0,0,0,5,0,0,0,0,0,0,0,0]]),
+                            # datagenerator.scale:np.array([[1],[1]])
+                            # }
+        f={datagenerator.x: np.array([(12*np.random.rand(14))-6,
+                            (12*np.random.rand(14))-6]),
+                            datagenerator.scale:np.array([[1],[1]])
+                            }
+        # out=sess.run({datagenerator.afterwf,datagenerator.beforewf},feed_dict=f)
+        out=sess.run(datagenerator.beforewf,feed_dict=f)
+        for i in range(2):
+            fig,ax=plt.subplots(1,2,figsize=(10,5))
+            im=ax[0].imshow(np.abs(out[i,:,:,0])**2,cmap='jet')
+            ax[0].set_title("intensity")
+            fig.colorbar(im,ax=ax[0])
+            im=ax[1].imshow(np.angle(out[i,:,:,0]),cmap='jet')
+            ax[1].set_title("angle")
+            fig.colorbar(im,ax=ax[1])
+
+        plt.show()
+        out=sess.run(datagenerator.beforewf,feed_dict=f)
+        print(out)
+
+
+
 
     # initialize tensorflow data generation
 
