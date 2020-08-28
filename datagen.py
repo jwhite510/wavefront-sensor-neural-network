@@ -342,7 +342,7 @@ if __name__ == "__main__":
             scales = 1+0*(np.random.rand(n_scales)-0.5)
             scales = scales.reshape(args.batch_size,1)
             z_coefs[:,0:3]=0
-            z_coefs[:,7:]=0
+            z_coefs[:,5:]=0
             f={x: z_coefs,
                scale:scales
                                 }

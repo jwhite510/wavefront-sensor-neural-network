@@ -553,7 +553,7 @@ class DiffractionNet():
             print("add_tensorboard_values")
             self.add_tensorboard_values()
             self.update_error_plot_values()
-            if self.i % 20 == 0:
+            if self.i % 10 == 0:
 
                 # create directory if it doesnt exist
                 check_is_dir("nn_pictures")
