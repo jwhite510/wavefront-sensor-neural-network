@@ -11,6 +11,7 @@ from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
 import pickle
 from live_capture import TIS
 import matplotlib.pyplot as plt
+from matplotlib import cm
 
 class Processing():
     def __init__(self):
@@ -33,9 +34,14 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
         self.setupUi(self)
 
+        colormap = cm.get_cmap("nipy_spectral")
+        colormap._init()
+        lut = (colormap._lut*255).view(np.ndarray)
+
         # raw image
         self.display_raw_draw = {}
         self.display_raw_draw["data"] = pg.ImageItem()
+        self.display_raw_draw["data"].setLookupTable(lut)
         self.display_raw_draw["plot"] = self.display_raw.addPlot()
         self.display_raw_draw["plot"].addItem(self.display_raw_draw["data"])
         self.display_raw_draw["plot"].getAxis('left').setLabel('Pixel', color=self.COLORGREEN)
@@ -45,6 +51,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # processed image
         self.display_proc_draw = {}
         self.display_proc_draw["data"] = pg.ImageItem()
+        self.display_proc_draw["data"].setLookupTable(lut)
         self.display_proc_draw["plot"] = self.display_proc.addPlot()
         self.display_proc_draw["plot"].addItem(self.display_proc_draw["data"])
         self.display_proc_draw["plot"].getAxis('left').setLabel('Spatial Frequency', color=self.COLORGREEN)
@@ -54,6 +61,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # reconstructed
         self.display_recons_draw = {}
         self.display_recons_draw["data"] = pg.ImageItem()
+        self.display_recons_draw["data"].setLookupTable(lut)
         self.display_recons_draw["plot"] = self.display_recons.addPlot()
         self.display_recons_draw["plot"].addItem(self.display_recons_draw["data"])
         self.display_recons_draw["plot"].getAxis('left').setLabel('Spatial Frequency', color=self.COLORGREEN)
@@ -63,6 +71,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # intensity / real
         self.display_intens_real_draw = {}
         self.display_intens_real_draw["data"] = pg.ImageItem()
+        self.display_intens_real_draw["data"].setLookupTable(lut)
         self.display_intens_real_draw["plot"] = self.display_intens_real.addPlot()
         self.display_intens_real_draw["plot"].addItem(self.display_intens_real_draw["data"])
         self.display_intens_real_draw["plot"].getAxis('left').setLabel('Position', color=self.COLORGREEN)
@@ -72,6 +81,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # phase / imag
         self.display_phase_imag_draw = {}
         self.display_phase_imag_draw["data"] = pg.ImageItem()
+        self.display_phase_imag_draw["data"].setLookupTable(lut)
         self.display_phase_imag_draw["plot"] = self.display_phase_imag.addPlot()
         self.display_phase_imag_draw["plot"].addItem(self.display_phase_imag_draw["data"])
         self.display_phase_imag_draw["plot"].getAxis('left').setLabel('Position', color=self.COLORGREEN)
