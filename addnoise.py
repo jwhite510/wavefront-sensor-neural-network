@@ -38,10 +38,11 @@ if __name__ == "__main__":
     print("args.cameraimage =>", args.cameraimage)
 
     # create new hdf5 file
-    datagen.create_dataset(args.outfile)
-
-    with tables.open_file(args.outfile,mode="a") as newhd5file:
-        with tables.open_file(args.infile,mode="r") as hd5file:
+    with tables.open_file(args.infile,mode="r") as hd5file:
+        # get number of coefficients
+        n_z_coefs = len(hd5file.root.coefficients[0])
+        datagen.create_dataset(args.outfile,coefficients=n_z_coefs)
+        with tables.open_file(args.outfile,mode="a") as newhd5file:
 
             N = hd5file.root.N[0,0]
             samples = hd5file.root.object_real.shape[0]
@@ -54,6 +55,9 @@ if __name__ == "__main__":
                 object_real=hd5file.root.object_real[_i, :].reshape(N,N)
                 object_imag=hd5file.root.object_imag[_i, :].reshape(N,N)
                 diffraction=hd5file.root.diffraction_noisefree[_i, :].reshape(N,N)
+                _z_coefs = hd5file.root.coefficients[_i, :]
+                _scales = hd5file.root.scale[_i,:]
+
 
                 if args.peakcount>0:
                     # apply poisson noise
@@ -76,12 +80,16 @@ if __name__ == "__main__":
                     newhd5file.root.object_imag.append(object_imag.reshape(1,-1))
                     newhd5file.root.diffraction_noise.append(diffraction_pattern_with_noise_poisson_and_camera.reshape(1,-1))
                     newhd5file.root.diffraction_noisefree.append(diffraction.reshape(1,-1))
+                    newhd5file.root.coefficients.append(_z_coefs.reshape(1,-1))
+                    newhd5file.root.scale.append(_scales.reshape(1,-1))
 
                 else:
                     newhd5file.root.object_real.append(object_real.reshape(1,-1))
                     newhd5file.root.object_imag.append(object_imag.reshape(1,-1))
                     newhd5file.root.diffraction_noise.append(diffraction.reshape(1,-1))
                     newhd5file.root.diffraction_noisefree.append(diffraction.reshape(1,-1))
+                    newhd5file.root.coefficients.append(_z_coefs.reshape(1,-1))
+                    newhd5file.root.scale.append(_scales.reshape(1,-1))
 
 
                 # diffraction=diffraction_pattern_with_noise_poisson_and_camera

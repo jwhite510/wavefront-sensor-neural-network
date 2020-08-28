@@ -258,7 +258,7 @@ def forward_propagate(E,slice,f,p):
     E=diffraction_functions.tf_ifft2(E,dimmensions=[1,2])
     return E
 
-def create_dataset(filename):
+def create_dataset(filename:str, coefficients:int):
 
     print("called create_dataset")
     print(filename)
@@ -277,6 +277,12 @@ def create_dataset(filename):
         # create array for the image
         hdf5file.create_earray(hdf5file.root, "diffraction_noisefree", tables.Float32Atom(), shape=(0,N*N))
 
+        # scale
+        hdf5file.create_earray(hdf5file.root, "scale", tables.Float32Atom(), shape=(0,1))
+
+        # zernike coefficients
+        hdf5file.create_earray(hdf5file.root, "coefficients", tables.Float32Atom(), shape=(0,coefficients))
+
         hdf5file.create_earray(hdf5file.root, "N", tables.Int32Atom(), shape=(0,1))
 
         hdf5file.close()
@@ -285,12 +291,15 @@ def create_dataset(filename):
         # save the dimmensions of the data
         hd5file.root.N.append(np.array([[N]]))
 
-def save_to_hdf5(filename, wavefront_sensor, wavefront):
+def save_to_hdf5(filename:str, afterwf:np.array, beforewf:np.array, z_coefs:np.array, scales:np.array):
     with tables.open_file(filename, mode='a') as hd5file:
-        for i in range(np.shape(wavefront)[0]):
-            object_real = np.real(wavefront[i,:,:])
-            object_imag = np.imag(wavefront[i,:,:])
-            diffraction_pattern_noisefree = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(wavefront_sensor[i,:,:]))))**2
+        for i in range(np.shape(beforewf)[0]):
+            object_real = np.real(beforewf[i,:,:])
+            object_imag = np.imag(beforewf[i,:,:])
+            diffraction_pattern_noisefree = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(afterwf[i,:,:]))))**2
+            _z_coefs = z_coefs[i,:]
+            _scales = scales[i]
+
 
             # normalize
             diffraction_pattern_noisefree = diffraction_pattern_noisefree / np.max(diffraction_pattern_noisefree)
@@ -298,6 +307,8 @@ def save_to_hdf5(filename, wavefront_sensor, wavefront):
             hd5file.root.object_real.append(object_real.reshape(1,-1))
             hd5file.root.object_imag.append(object_imag.reshape(1,-1))
             hd5file.root.diffraction_noisefree.append(diffraction_pattern_noisefree.reshape(1,-1))
+            hd5file.root.coefficients.append(_z_coefs.reshape(1,-1))
+            hd5file.root.scale.append(_scales.reshape(1,-1))
 
         print("calling flush")
         hd5file.flush()
@@ -313,8 +324,8 @@ if __name__ == "__main__":
     if args.count % args.batch_size != 0:
         raise ValueError('batch size and count divide with remainder')
 
-    create_dataset(args.name)
     datagenerator = DataGenerator(1024,128)
+    create_dataset(filename=args.name,coefficients=len(datagenerator.zernike_cvector))
     with tf.Session() as sess:
         np.random.seed(args.seed)
         _count = 0
@@ -339,7 +350,13 @@ if __name__ == "__main__":
                                 }
             _afterwf=sess.run(datagenerator.afterwf,feed_dict=f)
             _beforewf=sess.run(datagenerator.beforewf,feed_dict=f)
-            save_to_hdf5(args.name,np.squeeze(_afterwf),np.squeeze(_beforewf))
+            save_to_hdf5(
+                    args.name,
+                    np.squeeze(_afterwf),
+                    np.squeeze(_beforewf),
+                    np.squeeze(z_coefs),
+                    np.squeeze(scales)
+                    )
             # plot data
             # for i in range(2):
                 # fig,ax=plt.subplots(1,2,figsize=(10,5))
