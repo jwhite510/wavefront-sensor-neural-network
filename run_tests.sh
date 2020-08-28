@@ -5,7 +5,7 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"spherical_only_1" # name
+"spherical_only_1_plus3" # name
 "36000" # train samples
 "50" # peak count
 )
