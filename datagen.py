@@ -144,19 +144,13 @@ class DataGenerator():
         steps_cu = round(cu_distance / params_cu.dz);
         self.propagate_tf=PropagateTF(N_interp,steps_Si,params_Si,slice_Si,steps_cu,params_cu,slice_cu)
 
-        # inputs to graph
-        self.x = tf.placeholder(tf.float32, shape=[None, len(self.zernike_cvector)])
-        self.scale = tf.placeholder(tf.float32, shape=[None,1])
-        self.afterwf,self.beforewf=self.buildgraph()
-
-
-    def buildgraph(self)->(tf.Tensor,tf.Tensor):
+    def buildgraph(self,x:tf.Tensor,scale:tf.Tensor)->(tf.Tensor,tf.Tensor):
 
         # generate polynomials
         zernikes=[]
         for i in range(len(self.zernike_cvector)):
             _z = self.zernike_cvector[i]
-            zernikes.append(tf_make_zernike(_z.m,_z.n,self.N_computational,self.scale,self.x[:,i]))
+            zernikes.append(tf_make_zernike(_z.m,_z.n,self.N_computational,scale,x[:,i]))
 
         zernikes=tf.concat(zernikes,axis=1)
         zernike_polynom = tf.reduce_sum(zernikes,axis=1)
@@ -164,7 +158,7 @@ class DataGenerator():
         # propagate through gaussian
         x = np.linspace(1,-1,self.N_computational).reshape(1,-1,1)
         y = np.linspace(1,-1,self.N_computational).reshape(1,1,-1)
-        _scale = tf.expand_dims(self.scale,axis=-1)
+        _scale = tf.expand_dims(scale,axis=-1)
         x = (1/_scale)*tf.constant(x,dtype=tf.float32)
         y = (1/_scale)*tf.constant(y,dtype=tf.float32)
         width = 0.05
@@ -325,6 +319,11 @@ if __name__ == "__main__":
         raise ValueError('batch size and count divide with remainder')
 
     datagenerator = DataGenerator(1024,128)
+
+    x = tf.placeholder(tf.float32, shape=[None, len(datagenerator.zernike_cvector)])
+    scale = tf.placeholder(tf.float32, shape=[None,1])
+    afterwf,beforewf=datagenerator.buildgraph(x,scale)
+
     create_dataset(filename=args.name,coefficients=len(datagenerator.zernike_cvector))
     with tf.Session() as sess:
         np.random.seed(args.seed)
@@ -345,11 +344,11 @@ if __name__ == "__main__":
             # print("scales =>", scales)
             # print("z_coefs =>", z_coefs)
 
-            f={datagenerator.x: z_coefs,
-               datagenerator.scale:scales
+            f={x: z_coefs,
+               scale:scales
                                 }
-            _afterwf=sess.run(datagenerator.afterwf,feed_dict=f)
-            _beforewf=sess.run(datagenerator.beforewf,feed_dict=f)
+            _afterwf=sess.run(afterwf,feed_dict=f)
+            _beforewf=sess.run(beforewf,feed_dict=f)
             save_to_hdf5(
                     args.name,
                     np.squeeze(_afterwf),

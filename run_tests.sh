@@ -5,7 +5,7 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"py_2_datatest_8_27_20" # name
+"py_2_datatest_zcoefs_8_28_20" # name
 "36000" # train samples
 "50" # peak count
 )
