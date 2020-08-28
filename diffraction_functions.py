@@ -371,6 +371,9 @@ def get_amplitude_mask_and_imagesize2(image_dimmension, desired_mask_width):
 
 def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
 
+        if desired_mask_width%2!=0:
+            desired_mask_width+=1
+
         # image_dimmension must be divisible by 4
         assert image_dimmension/4 == int(image_dimmension/4)
         # get the png image for amplitude
@@ -1030,6 +1033,36 @@ def matlab_cdi_retrieval(diffraction_pattern, support, interpolate=True,noise_re
 
     return retrieved_obj
 
+
+def plot_diffraction_before_after(beforewf:np.array,afterwf:np.array,diffraction:np.array,z_coefs:np.array,scales:np.array)->plt.figure:
+    fig,ax=plt.subplots(2,3,figsize=(12,12))
+    N = np.shape(beforewf)[0]
+
+    fig.text(0.5,0.9,"z_coefs: "+str(z_coefs))
+    fig.text(0.5,0.85,"scale: "+str(scales))
+
+    im=ax[0][0].imshow(np.real(beforewf))
+    fig.colorbar(im,ax=ax[0][0])
+    ax[0][0].set_title("real")
+
+    im=ax[0][1].imshow(np.imag(beforewf))
+    fig.colorbar(im,ax=ax[0][1])
+    ax[0][1].set_title("imag")
+
+    im=ax[0][2].imshow(np.abs(beforewf))
+    fig.colorbar(im,ax=ax[0][2])
+    ax[0][2].set_title("abs")
+
+    im=ax[1][1].imshow(np.abs(afterwf))
+    fig.colorbar(im,ax=ax[1][1])
+    ax[1][1].set_title("after wf (abs)")
+
+    im=ax[1][2].imshow(diffraction)
+    fig.colorbar(im,ax=ax[1][2])
+    ax[1][2].set_title("diffraction")
+    ax[1][2].set_xlim((N//2)+64,(N//2)-64)
+    ax[1][2].set_ylim((N//2)+64,(N//2)-64)
+    return fig
 
 
 # grid space of the diffraction pattern

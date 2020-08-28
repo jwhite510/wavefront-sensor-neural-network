@@ -1,4 +1,5 @@
 import tensorflow as tf
+import os
 import argparse
 import tables
 import numpy as np
@@ -104,7 +105,7 @@ class Params():
   k = 2 * np.pi / lam
 
 def create_slice(p: Params, N_interp: int)->np.array:
-    _, wfs = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, N_interp//3)
+    _, wfs = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, N_interp//4)
     slice = np.zeros((N_interp,N_interp),dtype=np.complex128)
     slice[wfs<0.5]=np.exp(-1*p.k * p.beta_Ta * p.dz)*\
                     np.exp(-1j*p.k*p.delta_Ta*p.dz)
@@ -180,7 +181,7 @@ class DataGenerator():
         field_cropped = field_cropped * tf.exp(tf.complex(real=0.0,imag=-1.0*tf.angle(z_center)))
 
         # normalize within wavefront sensor
-        _, wfs = diffraction_functions.get_amplitude_mask_and_imagesize(self.N_interp, self.N_interp//3)
+        _, wfs = diffraction_functions.get_amplitude_mask_and_imagesize(self.N_interp, self.N_interp//4)
         wfs = np.expand_dims(wfs,0)
         wfs = np.expand_dims(wfs,-1)
         wfs = tf.constant(wfs,dtype=tf.float32)
@@ -207,7 +208,7 @@ class PropagateTF():
         self.slice_Si=slice_Si
         self.slice_cu=slice_cu
 
-        measured_axes, _ = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, N_interp//3)
+        measured_axes, _ = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, N_interp//4)
         self.wf_f = measured_axes["diffraction_plane"]["f"]
 
     def setup_graph_through_wfs(self, wavefront):
@@ -252,11 +253,10 @@ def forward_propagate(E,slice,f,p):
     E=diffraction_functions.tf_ifft2(E,dimmensions=[1,2])
     return E
 
-def create_dataset(filename:str, coefficients:int):
+def create_dataset(filename:str, coefficients:int, N:int):
 
     print("called create_dataset")
     print(filename)
-    N = 128
     with tables.open_file(filename, "w") as hdf5file:
 
         # create array for the object
@@ -318,13 +318,18 @@ if __name__ == "__main__":
     if args.count % args.batch_size != 0:
         raise ValueError('batch size and count divide with remainder')
 
-    datagenerator = DataGenerator(1024,128)
+    datagenerator = DataGenerator(1024,256)
 
     x = tf.placeholder(tf.float32, shape=[None, len(datagenerator.zernike_cvector)])
     scale = tf.placeholder(tf.float32, shape=[None,1])
     afterwf,beforewf=datagenerator.buildgraph(x,scale)
 
-    create_dataset(filename=args.name,coefficients=len(datagenerator.zernike_cvector))
+    # diffraction pattern
+    diffraction = tf.abs(diffraction_functions.tf_fft2(afterwf, dimmensions=[1,2]))**2
+    diffraction = diffraction / tf.reduce_max(diffraction, keepdims=True, axis=[1,2]) # normalize the diffraction pattern
+
+
+    create_dataset(filename=args.name,coefficients=len(datagenerator.zernike_cvector),N=datagenerator.N_interp)
     with tf.Session() as sess:
         np.random.seed(args.seed)
         _count = 0
@@ -341,14 +346,30 @@ if __name__ == "__main__":
             z_coefs=z_coefs.reshape(args.batch_size,-1)
             scales = 1+1*(np.random.rand(n_scales)-0.5)
             scales = scales.reshape(args.batch_size,1)
-            # print("scales =>", scales)
-            # print("z_coefs =>", z_coefs)
 
-            f={x: z_coefs,
-               scale:scales
-                                }
-            _afterwf=sess.run(afterwf,feed_dict=f)
-            _beforewf=sess.run(beforewf,feed_dict=f)
+            _n=10
+            directory='8_28_20'
+            if not os.path.isdir(directory):
+                os.mkdir(directory)
+            for _i,_s in zip(range(_n),np.linspace(-6,6,_n)):
+                z_coefs = np.array([
+                    [0,0,0,_s,0,0,0,0,0,0,0,0,0,0]
+                    ])
+                scales = np.array([[0.5]])
+                f={x: z_coefs,
+                   scale:scales }
+                _z_coefs = z_coefs[0]
+                _scales = scales[0]
+                _afterwf=sess.run(afterwf,feed_dict=f)[0,:,:,0]
+                _beforewf=sess.run(beforewf,feed_dict=f)[0,:,:,0]
+                _diffraction=sess.run(diffraction,feed_dict=f)[0,:,:,0]
+                fig=diffraction_functions.plot_diffraction_before_after(_beforewf,_afterwf,_diffraction,_z_coefs,_scales)
+                fig.savefig(directory+'/'+str(_i).replace('.','_')+'test')
+            plt.show()
+            exit()
+
+
+
             save_to_hdf5(
                     args.name,
                     np.squeeze(_afterwf),

@@ -41,7 +41,7 @@ if __name__ == "__main__":
     with tables.open_file(args.infile,mode="r") as hd5file:
         # get number of coefficients
         n_z_coefs = len(hd5file.root.coefficients[0])
-        datagen.create_dataset(args.outfile,coefficients=n_z_coefs)
+        datagen.create_dataset(args.outfile,coefficients=n_z_coefs,hd5file.root.N[0,0])
         with tables.open_file(args.outfile,mode="a") as newhd5file:
 
             N = hd5file.root.N[0,0]
