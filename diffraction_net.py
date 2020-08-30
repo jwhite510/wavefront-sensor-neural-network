@@ -1,4 +1,5 @@
 import tensorflow as tf
+import argparse
 import time
 import os
 import numpy as np
@@ -12,6 +13,7 @@ from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
 import datagen
 import subprocess
 from subprocess import PIPE
+import noise_resistant_net
 
 
 class GetData():
@@ -70,8 +72,9 @@ class GetData():
         self.hdf5_file_train.close()
 
 class DiffractionNet():
-    def __init__(self, name):
+    def __init__(self, name:str, net_type:str):
         self.name = name
+        self.net_type=net_type
         print("initializing network")
         print(name)
 
@@ -91,11 +94,26 @@ class DiffractionNet():
 
         # real retrieval network
         self.nn_nodes = {}
-        self.setup_network_2(self.nn_nodes,self.get_data.n_z_coefs)
 
-        # output coefs
-        self.nn_nodes["out_scale"]
-        self.nn_nodes["out_zcoefs"]
+        if self.net_type=='original':
+            print("building original network")
+            self.setup_network_2(self.nn_nodes,self.get_data.n_z_coefs)
+            # output coefs
+            self.nn_nodes["out_scale"]
+            self.nn_nodes["out_zcoefs"]
+
+        elif self.net_type=='nr':
+            print("buiding nr network")
+            self.nn_nodes["out_zcoefs"], self.nn_nodes["out_scale"], self.hold_prob = noise_resistant_net.noise_resistant_phase_retrieval_net(self.x,self.get_data.n_z_coefs)
+
+            self.nn_nodes["out_zcoefs"] = tf.sigmoid(self.nn_nodes["out_zcoefs"])
+            self.nn_nodes["out_zcoefs"]*=12
+            self.nn_nodes["out_zcoefs"]-=6
+            self.nn_nodes["out_scale"] = 2*tf.sigmoid(self.nn_nodes["out_scale"])
+
+        else:
+            raise ValueError('choose type of network')
+
 
         # build reconstruction graph
         self.datagenerator=datagen.DataGenerator(1024,128)
@@ -175,7 +193,7 @@ class DiffractionNet():
         self.writer = tf.summary.FileWriter("./tensorboard_graph/" + self.name)
 
         # number of epochs to run
-        self.epochs = 60
+        self.epochs = 12
         self.i = 0
         self.epoch = None
         self.dots = None
@@ -967,8 +985,12 @@ if __name__ == "__main__":
     # getdata = GetData(batch_size=10)
     # getdata.next_batch()
     # del getdata
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--name',type=str)
+    parser.add_argument('--net_type',type=str)
+    args=parser.parse_args()
 
-    diffraction_net = DiffractionNet(name=sys.argv[1])
+    diffraction_net = DiffractionNet(name=args.name,net_type=args.net_type)
     diffraction_net.supervised_learn()
     del diffraction_net
     # pass
