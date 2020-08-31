@@ -3,6 +3,7 @@ import diffraction_functions
 import matplotlib.pyplot as plt
 import pickle
 from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
+from PIL import Image, ImageDraw
 import os
 
 
@@ -90,6 +91,20 @@ def make_nice_figure(retrieved:dict):
         if _i == 2:
             ax.set_xlabel(r"positon [um]")
         ax.text(1.3,0.5,'z='+str(_dist)+' [um]',transform=ax.transAxes,size=20)
+    fig.savefig('xuv_experimental_results_1.png')
+
+    fig=plt.figure(figsize=(10,8))
+    fig.subplots_adjust(left=0.0,right=1.0)
+    gs = fig.add_gridspec(1,1)
+    ax = fig.add_subplot(gs[0,0])
+    im = Image.open('figure_images/xuv_experimental_setup.png')
+    im = np.array(im)
+    ax.imshow(im)
+    ax.text(0.1,0.0,'z=300 [um]',transform=ax.transAxes,size=20,ha='left')
+    ax.text(0.45,0.0,'z=0 [um]',transform=ax.transAxes,size=20,ha='left')
+    ax.text(0.7,0.0,'z=-500 [um]',transform=ax.transAxes,size=20,ha='left')
+    ax.axis('off')
+    fig.savefig('xuv_experimental_results_2.png')
 
     plt.show()
     print(retrieved.keys())
