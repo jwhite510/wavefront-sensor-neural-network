@@ -5,35 +5,11 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"nrtest1" # name
+"_allwithlin_andscale_nrtest1_fixeccostf2" # name
 "36000" # train samples
 "50" # peak count
 "nr" # nr network
 
-"nrtest2" # name
-"36000" # train samples
-"50" # peak count
-"nr" # nr network
-
-"nrtest3" # name
-"36000" # train samples
-"50" # peak count
-"nr" # nr network
-
-"originaltest1" # name
-"36000" # train samples
-"50" # peak count
-"original" # nr network
-
-"originaltest2" # name
-"36000" # train samples
-"50" # peak count
-"original" # nr network
-
-"originaltest3" # name
-"36000" # train samples
-"50" # peak count
-"original" # nr network
 
 )
 i=0

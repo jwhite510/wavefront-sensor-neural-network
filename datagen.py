@@ -339,11 +339,11 @@ if __name__ == "__main__":
 
             z_coefs = 12*(np.random.rand(n_z_coefs)-0.5)
             z_coefs=z_coefs.reshape(args.batch_size,-1)
-            scales = 1+0*(np.random.rand(n_scales)-0.5)
+            scales = 1+1*(np.random.rand(n_scales)-0.5)
             scales = scales.reshape(args.batch_size,1)
-            z_coefs[:,0:3]=0
+            # z_coefs[:,0:3]=0
             # z_coefs[:,9:]=0 # doesnt work
-            z_coefs[:,8:]=0 # works
+            # z_coefs[:,8:]=0 # works
             f={x: z_coefs,
                scale:scales
                                 }

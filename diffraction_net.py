@@ -193,7 +193,7 @@ class DiffractionNet():
         self.writer = tf.summary.FileWriter("./tensorboard_graph/" + self.name)
 
         # number of epochs to run
-        self.epochs = 12
+        self.epochs = 100
         self.i = 0
         self.epoch = None
         self.dots = None
