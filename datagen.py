@@ -8,6 +8,55 @@ import diffraction_functions
 
 
 # def gaussian_propagate(zernike_polynom:tf.Tensor,scale:tf.Tensor)->tf.Tensor:
+def plotsamples(beforewf:np.array,afterwf:np.array,z_coefs:np.array,scales:np.array,zernike_cvector:list,filesuffix:str):
+    for i in range(np.shape(beforewf)[0]):
+        _beforewf = np.squeeze(beforewf[i])
+        _afterwf = np.squeeze(afterwf[i])
+        _z_coefs = z_coefs[i]
+        _scales = scales[i]
+
+        fig=plt.figure(figsize=(10,10))
+        fig.subplots_adjust(left=0.3)
+        gs = fig.add_gridspec(2,2)
+
+        fig.text(0.05,0.9,'Zernike Coefficients:',size=20,color='red')
+        c_str=""
+        for _c, _z in zip(_z_coefs,zernike_cvector):
+            c_str += r"$Z^{"+str(_z.m)+"}_{"+str(_z.n)+"}$"
+            c_str+="    "
+            # c_str+=str(_z.m)+","
+            # c_str+=str(_z.n)+"  "
+            c_str+="%.2f"%_c+'\n'
+        fig.text(0.03,0.85,c_str,ha='left',va='top',size=20)
+
+        fig.text(0.05,0.15,'Scale:',size=20,color='red')
+        fig.text(0.03,0.10,'S:'+"%.2f"%_scales[0],ha='left',va='top',size=20)
+
+        ax=fig.add_subplot(gs[0,0])
+        ax.set_title('intensity')
+        im=ax.pcolormesh(np.abs(_beforewf)**2,cmap='jet')
+        fig.colorbar(im,ax=ax)
+
+        ax=fig.add_subplot(gs[0,1])
+        ax.set_title('phase')
+        phase = np.angle(_beforewf)
+        phase[np.abs(_beforewf)**2 < 0.1*np.max(np.abs(_beforewf)**2)]=0.0
+        im=ax.pcolormesh(phase,cmap='jet')
+        fig.colorbar(im,ax=ax)
+
+        ax=fig.add_subplot(gs[1,0])
+        ax.set_title('after wfs')
+        im=ax.pcolormesh(np.abs(_afterwf)**2,cmap='jet')
+        fig.colorbar(im,ax=ax)
+
+        ax=fig.add_subplot(gs[1,1])
+        ax.set_title('diffraction pattern')
+        difp = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(_afterwf))))**2
+        difp *= 1/np.max(difp)
+        im=ax.pcolormesh(difp,cmap='jet')
+        fig.colorbar(im,ax=ax)
+        fig.savefig(str(i)+filesuffix)
+
 
 
 def tf_make_zernike(m:int, n:int, N_computational:int, scale:tf.Tensor, amp:tf.Tensor)->tf.Tensor:
