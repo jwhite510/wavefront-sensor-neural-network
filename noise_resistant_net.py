@@ -114,12 +114,25 @@ def noise_resistant_phase_retrieval_net(input_image:tf.Tensor,zernike_coefs:int)
 
         fc5 = tf.layers.dense(inputs=conc3, units=256)
 
+        _mean = tf.layers.dense(inputs=fc5,units=128)
+        _gamma = tf.layers.dense(inputs=fc5,units=128)
+        _sigma = tf.exp(0.5*_gamma)
+        noise = tf.random_normal(tf.shape(_sigma),dtype=tf.float32)
+        variations = _mean + _sigma*noise
+
+        # for training
+        latent_loss = 0.5*tf.reduce_sum(tf.exp(_gamma)+tf.square(_mean)-1-_gamma)
+
         # dropout
         hold_prob = tf.placeholder_with_default(1.0, shape=())
-        dropout_layer = tf.nn.dropout(fc5, keep_prob=hold_prob)
+        dropout_layer = tf.nn.dropout(variations, keep_prob=hold_prob)
+
+        # variational
+        L1 = tf.layers.dense(inputs=dropout_layer, units=128)
+        L2 = tf.layers.dense(inputs=L1, units=64)
 
         # output layer
-        predicted_zernike = normal_full_layer(dropout_layer, zernike_coefs)
-        predicted_scale = normal_full_layer(dropout_layer, 1)
+        predicted_zernike = normal_full_layer(L2, zernike_coefs)
+        predicted_scale = normal_full_layer(L2, 1)
 
-        return predicted_zernike, predicted_scale, hold_prob
+        return predicted_zernike, predicted_scale, hold_prob, latent_loss

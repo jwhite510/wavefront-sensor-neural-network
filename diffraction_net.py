@@ -95,16 +95,16 @@ class DiffractionNet():
         # real retrieval network
         self.nn_nodes = {}
 
-        if self.net_type=='original':
-            print("building original network")
-            self.setup_network_2(self.nn_nodes,self.get_data.n_z_coefs)
-            # output coefs
-            self.nn_nodes["out_scale"]
-            self.nn_nodes["out_zcoefs"]
+        # if self.net_type=='original':
+            # print("building original network")
+            # self.setup_network_2(self.nn_nodes,self.get_data.n_z_coefs)
+            # # output coefs
+            # self.nn_nodes["out_scale"]
+            # self.nn_nodes["out_zcoefs"]
 
-        elif self.net_type=='nr':
+        if self.net_type=='nr':
             print("buiding nr network")
-            self.nn_nodes["out_zcoefs"], self.nn_nodes["out_scale"], self.hold_prob = noise_resistant_net.noise_resistant_phase_retrieval_net(self.x,self.get_data.n_z_coefs)
+            self.nn_nodes["out_zcoefs"], self.nn_nodes["out_scale"], self.hold_prob ,self.nn_nodes["latent_loss"] = noise_resistant_net.noise_resistant_phase_retrieval_net(self.x,self.get_data.n_z_coefs)
 
             self.nn_nodes["out_zcoefs"] = tf.sigmoid(self.nn_nodes["out_zcoefs"])
             self.nn_nodes["out_zcoefs"]*=12
@@ -156,7 +156,7 @@ class DiffractionNet():
         self.nn_nodes["reconstruction_loss"] = tf.losses.mean_squared_error(labels=self.x, predictions=self.nn_nodes["recons_diffraction_pattern"])
 
         # self.nn_nodes["cost_function"] = self.nn_nodes["real_loss"] + self.nn_nodes["imag_loss"] + self.nn_nodes["reconstruction_loss"]
-        self.nn_nodes["cost_function"] = self.nn_nodes["zcoef_loss"] + self.nn_nodes["scale_loss"]
+        self.nn_nodes["cost_function"] = self.nn_nodes["zcoef_loss"] + self.nn_nodes["scale_loss"] + self.nn_nodes["latent_loss"]
         # + self.nn_nodes["imag_norm_factor_loss"]
 
         optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
