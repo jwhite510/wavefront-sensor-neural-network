@@ -10,6 +10,8 @@ import os
 from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
 import pickle
 from live_capture import TIS
+import matplotlib.pyplot as plt
+from matplotlib import cm
 
 class Processing():
     def __init__(self):
@@ -32,9 +34,14 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
         self.setupUi(self)
 
+        colormap = cm.get_cmap("nipy_spectral")
+        colormap._init()
+        lut = (colormap._lut*255).view(np.ndarray)
+
         # raw image
         self.display_raw_draw = {}
         self.display_raw_draw["data"] = pg.ImageItem()
+        self.display_raw_draw["data"].setLookupTable(lut)
         self.display_raw_draw["plot"] = self.display_raw.addPlot()
         self.display_raw_draw["plot"].addItem(self.display_raw_draw["data"])
         self.display_raw_draw["plot"].getAxis('left').setLabel('Pixel', color=self.COLORGREEN)
@@ -44,6 +51,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # processed image
         self.display_proc_draw = {}
         self.display_proc_draw["data"] = pg.ImageItem()
+        self.display_proc_draw["data"].setLookupTable(lut)
         self.display_proc_draw["plot"] = self.display_proc.addPlot()
         self.display_proc_draw["plot"].addItem(self.display_proc_draw["data"])
         self.display_proc_draw["plot"].getAxis('left').setLabel('Spatial Frequency', color=self.COLORGREEN)
@@ -53,6 +61,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # reconstructed
         self.display_recons_draw = {}
         self.display_recons_draw["data"] = pg.ImageItem()
+        self.display_recons_draw["data"].setLookupTable(lut)
         self.display_recons_draw["plot"] = self.display_recons.addPlot()
         self.display_recons_draw["plot"].addItem(self.display_recons_draw["data"])
         self.display_recons_draw["plot"].getAxis('left').setLabel('Spatial Frequency', color=self.COLORGREEN)
@@ -62,6 +71,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # intensity / real
         self.display_intens_real_draw = {}
         self.display_intens_real_draw["data"] = pg.ImageItem()
+        self.display_intens_real_draw["data"].setLookupTable(lut)
         self.display_intens_real_draw["plot"] = self.display_intens_real.addPlot()
         self.display_intens_real_draw["plot"].addItem(self.display_intens_real_draw["data"])
         self.display_intens_real_draw["plot"].getAxis('left').setLabel('Position', color=self.COLORGREEN)
@@ -71,6 +81,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # phase / imag
         self.display_phase_imag_draw = {}
         self.display_phase_imag_draw["data"] = pg.ImageItem()
+        self.display_phase_imag_draw["data"].setLookupTable(lut)
         self.display_phase_imag_draw["plot"] = self.display_phase_imag.addPlot()
         self.display_phase_imag_draw["plot"].addItem(self.display_phase_imag_draw["data"])
         self.display_phase_imag_draw["plot"].getAxis('left').setLabel('Position', color=self.COLORGREEN)
@@ -85,7 +96,24 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         self.orientation_edit.addItems(['None','Left->Right','Up->Down','Left->Right & Up->Down'])
         self.orientation_edit.setCurrentIndex(2) # default to up->down
 
+        # initialize camera
+        self.Tis=params['Tis']
+        self.Tis.Start_pipeline()  # Start the pipeline so the camera streams
+
+        # plt.ion()
+        # while True:
+            # if self.Tis.Snap_image(1) is True:  # Snap an image with one second timeout
+                # image = self.Tis.Get_image()  # Get the image. It is a numpy array
+                # plt.figure(1)
+                # plt.imshow(np.squeeze(image))
+                # plt.pause(0.1)
+                # print("hello?")
+        # self.Tis.Stop_pipeline()
+        # exit()
+
         im=self.retrieve_raw_img()
+        # self.Tis.Stop_pipeline()
+
         experimental_params = {}
         experimental_params['pixel_size'] = params['pixel_size'] # [meters] with 2x2 binning
         experimental_params['z_distance'] = params['z_distance'] # [meters] distance from camera
@@ -99,11 +127,8 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         self.plot_RE_IM=False
 
         # # initialize neural network
-        self.network=diffraction_net.DiffractionNet(params['network']) # load a pre trained network
+        self.network=diffraction_net.DiffractionNet(params['network'],"nr") # load a pre trained network
 
-        # initialize camera
-        self.Tis = TIS.TIS("48710182", 640, 480, 30, False)
-        self.Tis.Start_pipeline()  # Start the pipeline so the camera streams
 
 
         self.show()
@@ -111,7 +136,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
     def __del__(self):
         # cleanup camera
-        Tis.Stop_pipeline()
+        self.Tis.Stop_pipeline()
 
 
     def textchanged(self):
@@ -242,9 +267,12 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # z = np.exp(-x**2 / 0.5) * np.exp(-y**2 / 0.5)
         # return obj
         # return np.random.rand(500,600)
-        im=self.Tis.Get_image()
-        im=np.sum(im,axis=2)
-        return im
+        if self.Tis.Snap_image(1) is True:  # Snap an image with one second timeout
+            im=self.Tis.Get_image()
+            im=np.sum(im,axis=2)
+            return im
+        else:
+            return None
 
 
 
@@ -252,11 +280,18 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
 if __name__ == "__main__":
     params={}
-    params['pixel_size']=27e-6
-    params['z_distance']=16e-3
+    params['pixel_size']=4.8e-6 # meters
+    params['z_distance']=16.4e-3 # meter
     params['wavelength']=633e-9
-    params['network']="noise_test_D_fixednorm_SQUARE6x6_VISIBLESETUP_NOCENTER_peak-50"
-    params['network']="vis1_2_peak-50"
+    params['network']="_allwithlin_andscale_nrtest1_fixeccostf3"
+
+    # for camera
+    # self.Tis = TIS.TIS("48710182", 640, 480, 30, False)
+    # self.Tis = TIS.TIS("48710182", 2592, 2048, 60, False)
+    params['Tis']=TIS.TIS("48710182", 2592, 2048, 60, False)
+    # https://github.com/TheImagingSource/tiscamera
+
+
     mainw = MainWindow(params)
 
 
