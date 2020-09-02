@@ -510,9 +510,18 @@ if __name__ == "__main__":
             # '2020_08_12/1208_focus_up/1208_focus_up.npy',
             # '2020_08_12/1208_focus_up_left/1208_focus_up_left.npy',
 
-            '2020_08_12/1208_focus_n7/1208_focus_n7.npy',
-            '2020_08_12/1208_focus_n3/1208_focus_n3.npy',
-            '2020_08_12/1208_focus/1208_focus.npy',
+            # '2020_08_12/1208_focus_n7/1208_focus_n7.npy',
+            # '2020_08_12/1208_focus_n3/1208_focus_n3.npy',
+            # '2020_08_12/1208_focus/1208_focus.npy',
+
+            '9_02_20_data/0812_focus.npy',
+            '9_02_20_data/0812_focus_f3.npy',
+            '9_02_20_data/0812_focus_f7.npy',
+            '9_02_20_data/0812_focus_n3.npy',
+            '9_02_20_data/0812_focus_n7.npy',
+
+
+
             # '2020_08_12/1208_focus_f3/1208_focus_f3.npy',
             # '2020_08_12/1208_focus_f7/1208_focus_f7.npy'
             ]:
@@ -553,10 +562,10 @@ if __name__ == "__main__":
                 m[m<0.003*np.max(m)]=0
                 m=np.squeeze(m)
 
-                # fig=plot_show_cm(a,"before processing",same_colorbar=False)
-                title=_name+"-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
-                fig=plot_show_cm(m,title)
-                fig.savefig(os.path.join(DIR,title))
+                # # fig=plot_show_cm(a,"before processing",same_colorbar=False)
+                # title=_name+"-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                # fig=plot_show_cm(m,title)
+                # fig.savefig(os.path.join(DIR,title))
 
                 # retrieve with neural network
                 title=_name+"-NN-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
