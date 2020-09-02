@@ -54,7 +54,7 @@ def get_interpolation_points(amplitude_mask):
 class CompareNetworkIterative():
     def __init__(self, args):
         # retrieve image with neural network
-        self.network=diffraction_net.DiffractionNet(args.network) # load a pre trained network
+        self.network=diffraction_net.DiffractionNet(args.network,args.net_type) # load a pre trained network
         self.args=args
 
     def test(self,index,folder):
@@ -478,6 +478,7 @@ if __name__ == "__main__":
 
     parser=argparse.ArgumentParser()
     parser.add_argument('--network',type=str)
+    parser.add_argument('--net_type',type=str)
     parser.add_argument('--pc',type=str)
     parser.add_argument('--DIR',type=str)
     args=parser.parse_args()
@@ -557,10 +558,10 @@ if __name__ == "__main__":
                 fig=plot_show_cm(m,title)
                 fig.savefig(os.path.join(DIR,title))
 
-                # # retrieve with neural network
-                # title=_name+"-NN-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
-                # fig=comparenetworkiterative.retrieve_measured(m,title)
-                # fig.savefig(os.path.join(DIR,title))
+                # retrieve with neural network
+                title=_name+"-NN-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                fig=comparenetworkiterative.retrieve_measured(m,title)
+                fig.savefig(os.path.join(DIR,title))
 
                 # # also retrieve with matlab CDI code
                 # title=_name+"-ITERATIVE-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
