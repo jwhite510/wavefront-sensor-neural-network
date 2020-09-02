@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import diffraction_functions
 from  astropy.io import fits
+import params
 
 class GetMeasuredDiffractionPattern():
     """
