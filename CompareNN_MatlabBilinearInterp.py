@@ -489,21 +489,46 @@ if __name__ == "__main__":
     # list of measured images
     measured_images={}
 
-    # HDR image
-    filename='8_6_data/06082020.npy'
-    # filename='2307.npy'
-    a=np.load(filename)
-    a[a<0]=0
-    measured_images['HDR_image']=a
+    # # HDR image
+    # filename='8_6_data/06082020.npy'
+    # # filename='2307.npy'
+    # a=np.load(filename)
+    # a[a<0]=0
+    # measured_images['HDR_image']=a
 
     # filename='8_6_data/1_837/signal/Bild_1.png'
 
-    # image from one capture
-    filename='8_6_data/1_1541/signal/Bild_2.png'
-    a=Image.open(filename)
-    a=np.array(a)
-    a[a<0]=0
-    measured_images['one_capture']=a[:,:,0]
+    # # image from one capture
+    # filename='8_6_data/1_1541/signal/Bild_2.png'
+    # a=Image.open(filename)
+    # a=np.array(a)
+    # a[a<0]=0
+    # measured_images['one_capture']=a[:,:,0]
+
+    # 2020 08 12 data, HDR images
+    for _fn in [
+            # '2020_08_12/1208_focus_up/1208_focus_up.npy',
+            # '2020_08_12/1208_focus_up_left/1208_focus_up_left.npy',
+
+            # '2020_08_12/1208_focus_n7/1208_focus_n7.npy',
+            # '2020_08_12/1208_focus_n3/1208_focus_n3.npy',
+            # '2020_08_12/1208_focus/1208_focus.npy',
+
+            '9_02_20_data/0812_focus.npy',
+            '9_02_20_data/0812_focus_f3.npy',
+            '9_02_20_data/0812_focus_f7.npy',
+            '9_02_20_data/0812_focus_n3.npy',
+            '9_02_20_data/0812_focus_n7.npy',
+
+
+
+            # '2020_08_12/1208_focus_f3/1208_focus_f3.npy',
+            # '2020_08_12/1208_focus_f7/1208_focus_f7.npy'
+            ]:
+        a=np.load(_fn)
+        a[a<0]=0
+        measured_images[os.path.split(_fn)[-1].replace('.','_')]=a
+
 
     # a=Image.open(filename).convert("L")
     # a=np.array(a)
@@ -512,7 +537,7 @@ if __name__ == "__main__":
 
     experimental_params = {}
     experimental_params['pixel_size'] = 4.8e-6 # [meters] with 2x2 binning
-    experimental_params['z_distance'] = 16.4e-3 # [meters] distance from camera
+    experimental_params['z_distance'] = 16.5e-3 # [meters] distance from camera
     experimental_params['wavelength'] = 633e-9 #[meters] wavelength
     getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
             N_meas=np.shape(a)[0], # for calculating the measured frequency axis (not really needed)
@@ -534,13 +559,13 @@ if __name__ == "__main__":
                 transform["flip"]=_orientation
 
                 m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_images[_name], transform)
-                m[m<0.007*np.max(m)]=0
+                m[m<0.003*np.max(m)]=0
                 m=np.squeeze(m)
 
-                # fig=plot_show_cm(a,"before processing",same_colorbar=False)
-                title=_name+"-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
-                fig=plot_show_cm(m,title)
-                fig.savefig(os.path.join(DIR,title))
+                # # fig=plot_show_cm(a,"before processing",same_colorbar=False)
+                # title=_name+"-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                # fig=plot_show_cm(m,title)
+                # fig.savefig(os.path.join(DIR,title))
 
                 # retrieve with neural network
                 title=_name+"-NN-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
@@ -552,21 +577,21 @@ if __name__ == "__main__":
                 # fig=comparenetworkiterative.matlab_cdi_retrieval(m,title)
                 # fig.savefig(os.path.join(DIR,title))
 
-    # plot simulated sample
-    sim=comparenetworkiterative.get_test_sample(0)
-    fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
-    fig.savefig(os.path.join(DIR,"validation_measured_center"))
+    # # plot simulated sample
+    # sim=comparenetworkiterative.get_test_sample(0)
+    # fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
+    # fig.savefig(os.path.join(DIR,"validation_measured_center"))
 
-    # compare to training data set
-    fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],"Validation, Predicted")
-    fig.savefig(os.path.join(DIR,"validation_predicted"))
-    # plot simulated retrieved and actual
+    # # compare to training data set
+    # fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],"Validation, Predicted")
+    # fig.savefig(os.path.join(DIR,"validation_predicted"))
+    # # plot simulated retrieved and actual
 
-    fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True)
-    fig.savefig(os.path.join(DIR,"validation_actual"))
+    # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True)
+    # fig.savefig(os.path.join(DIR,"validation_actual"))
 
-    # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True,mask=True)
-    # fig.savefig(os.path.join(DIR,"validation_actual_WF"))
+    # # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True,mask=True)
+    # # fig.savefig(os.path.join(DIR,"validation_actual_WF"))
 
 
     plt.show()
