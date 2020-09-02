@@ -1,4 +1,6 @@
 import tensorflow as tf
+from params import MaterialParams
+import params
 import argparse
 import tables
 import numpy as np
@@ -96,14 +98,7 @@ class Zernike_C():
         self.m=m
         self.n=n
 
-class Params():
-  beta_Ta=None
-  delta_Ta=None
-  dz = 10e-9
-  lam = 633e-9
-  k = 2 * np.pi / lam
-
-def create_slice(p: Params, N_interp: int)->np.array:
+def create_slice(p: MaterialParams, N_interp: int)->np.array:
     _, wfs = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, N_interp//3)
     slice = np.zeros((N_interp,N_interp),dtype=np.complex128)
     slice[wfs<0.5]=np.exp(-1*p.k * p.beta_Ta * p.dz)*\
@@ -112,15 +107,15 @@ def create_slice(p: Params, N_interp: int)->np.array:
     return slice
 
 class Material():
-    params=None
+    mparams=None
     steps=None
     slice=None
     distance=None
-    def __init__(self,distance:float,params:Params,N:int):
-        self.params=params
-        self.distance=distance
-        self.steps=round(self.distance/self.params.dz)
-        self.slice = create_slice(self.params,N)
+    def __init__(self,mparams:MaterialParams,N:int):
+        self.mparams=mparams
+        self.distance=mparams.distance
+        self.steps=round(self.distance/self.mparams.dz)
+        self.slice = create_slice(self.mparams,N)
 
 
 class DataGenerator():
@@ -137,24 +132,7 @@ class DataGenerator():
             for m in range(n,-n-2,-2):
                 self.zernike_cvector.append(Zernike_C(m,n))
 
-
-        # define materials
-        # https://refractiveindex.info/?shelf=main&book=Cu&page=Johnson
-        # https://refractiveindex.info/?shelf=main&book=Si3N4&page=Luke
-        params_cu = Params()
-        params_cu.lam=633e-9
-        params_cu.dz=10e-9
-        params_cu.delta_Ta = 0.26965-1 # double check this
-        params_cu.beta_Ta = 3.4106
-        cu_material = Material(distance=150e-9,params=params_cu,N=N_interp)
-
-        params_Si = Params()
-        params_Si.delta_Ta = 2.0394-1
-        params_Si.beta_Ta = 0.0
-        params_Si.dz=10e-9
-        params_Si.lam=633e-9
-        si_material = Material(distance=50e-9,params=params_Si,N=N_interp)
-        materials = [si_material,cu_material]
+        materials = [Material(mparams=_p,N=N_interp) for _p in params.params.material_params]
         self.propagate_tf=PropagateTF(N_interp,materials)
 
     def buildgraph(self,x:tf.Tensor,scale:tf.Tensor)->(tf.Tensor,tf.Tensor):
@@ -223,7 +201,7 @@ class PropagateTF():
         wavefront_ref=wavefront
         for _material in self.materials:
             for _ in range(_material.steps):
-                wavefront_ref=forward_propagate(wavefront_ref,_material.slice,self.wf_f,_material.params)
+                wavefront_ref=forward_propagate(wavefront_ref,_material.slice,self.wf_f,_material.mparams)
         return wavefront_ref
 
 def forward_propagate(E,slice,f,p):
