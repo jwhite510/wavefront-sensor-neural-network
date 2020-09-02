@@ -111,6 +111,18 @@ def create_slice(p: Params, N_interp: int)->np.array:
     slice[wfs>=0.5]=1.0
     return slice
 
+class Material():
+    params=None
+    steps=None
+    slice=None
+    distance=None
+    def __init__(self,distance:float,params:Params,N:int):
+        self.params=params
+        self.distance=distance
+        self.steps=round(self.distance/self.params.dz)
+        self.slice = create_slice(self.params,N)
+
+
 class DataGenerator():
     def __init__(self,N_computational:int,N_interp:int):
         self.N_interp=N_interp
@@ -130,19 +142,20 @@ class DataGenerator():
         # https://refractiveindex.info/?shelf=main&book=Cu&page=Johnson
         # https://refractiveindex.info/?shelf=main&book=Si3N4&page=Luke
         params_cu = Params()
+        params_cu.lam=633e-9
+        params_cu.dz=10e-9
         params_cu.delta_Ta = 0.26965-1 # double check this
         params_cu.beta_Ta = 3.4106
+        cu_material = Material(distance=150e-9,params=params_cu,N=N_interp)
+
         params_Si = Params()
         params_Si.delta_Ta = 2.0394-1
         params_Si.beta_Ta = 0.0
-        slice_cu = create_slice(params_cu,N_interp)
-        slice_Si = create_slice(params_Si,N_interp)
-
-        Si_distance = 50e-9;
-        cu_distance = 150e-9;
-        steps_Si = round(Si_distance / params_Si.dz);
-        steps_cu = round(cu_distance / params_cu.dz);
-        self.propagate_tf=PropagateTF(N_interp,steps_Si,params_Si,slice_Si,steps_cu,params_cu,slice_cu)
+        params_Si.dz=10e-9
+        params_Si.lam=633e-9
+        si_material = Material(distance=50e-9,params=params_Si,N=N_interp)
+        materials = [si_material,cu_material]
+        self.propagate_tf=PropagateTF(N_interp,materials)
 
     def buildgraph(self,x:tf.Tensor,scale:tf.Tensor)->(tf.Tensor,tf.Tensor):
 
@@ -198,14 +211,9 @@ class DataGenerator():
         return prop, field_cropped
 
 class PropagateTF():
-    def __init__(self, N_interp:int, steps_Si:int, params_Si:Params, slice_Si:np.array, steps_cu:int, params_cu:Params, slice_cu:np.array):
+    def __init__(self, N_interp:int, materials:list):
 
-        self.steps_Si=steps_Si
-        self.steps_cu=steps_cu
-        self.params_Si=params_Si
-        self.params_cu=params_cu
-        self.slice_Si=slice_Si
-        self.slice_cu=slice_cu
+        self.materials=materials
 
         measured_axes, _ = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, N_interp//3)
         self.wf_f = measured_axes["diffraction_plane"]["f"]
@@ -213,10 +221,9 @@ class PropagateTF():
     def setup_graph_through_wfs(self, wavefront):
 
         wavefront_ref=wavefront
-        for _ in range(self.steps_Si):
-            wavefront_ref=forward_propagate(wavefront_ref,self.slice_Si,self.wf_f,self.params_Si)
-        for _ in range(self.steps_cu):
-            wavefront_ref=forward_propagate(wavefront_ref,self.slice_cu,self.wf_f,self.params_cu)
+        for _material in self.materials:
+            for _ in range(_material.steps):
+                wavefront_ref=forward_propagate(wavefront_ref,_material.slice,self.wf_f,_material.params)
         return wavefront_ref
 
 def forward_propagate(E,slice,f,p):
