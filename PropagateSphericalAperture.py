@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from zernike3.build import PropagateTF
 import diffraction_functions
 import tensorflow as tf
+import params
 
 def create_aperture_material(N,x,p):
 
@@ -30,7 +31,7 @@ if __name__ == "__main__":
     PropagateTF.loadparams("zernike3/build/params_cu.dat",params_cu)
 
     # get position axis of wavefront sensor
-    measured_axes, _=diffraction_functions.get_amplitude_mask_and_imagesize(N,int(N/3))
+    measured_axes, _=diffraction_functions.get_amplitude_mask_and_imagesize(N,int(params.params.wf_ratio*N))
     x=measured_axes["object"]["x"]
 
     # this is the same data contained in measured_axes, but im loading it from the dat file anyway

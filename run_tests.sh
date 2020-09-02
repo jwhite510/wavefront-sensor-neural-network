@@ -5,7 +5,7 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"_allwithlin_andscale_nrtest1_fixeccostf2" # name
+"xuvtesttf5" # name
 "36000" # train samples
 "50" # peak count
 "nr" # nr network

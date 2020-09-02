@@ -99,7 +99,7 @@ class Zernike_C():
         self.n=n
 
 def create_slice(p: MaterialParams, N_interp: int)->np.array:
-    _, wfs = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, N_interp//3)
+    _, wfs = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, int(params.params.wf_ratio*N_interp))
     slice = np.zeros((N_interp,N_interp),dtype=np.complex128)
     slice[wfs<0.5]=np.exp(-1*p.k * p.beta_Ta * p.dz)*\
                     np.exp(-1j*p.k*p.delta_Ta*p.dz)
@@ -171,7 +171,7 @@ class DataGenerator():
         field_cropped = field_cropped * tf.exp(tf.complex(real=0.0,imag=-1.0*tf.angle(z_center)))
 
         # normalize within wavefront sensor
-        _, wfs = diffraction_functions.get_amplitude_mask_and_imagesize(self.N_interp, self.N_interp//3)
+        _, wfs = diffraction_functions.get_amplitude_mask_and_imagesize(self.N_interp, int(params.params.wf_ratio*self.N_interp))
         wfs = np.expand_dims(wfs,0)
         wfs = np.expand_dims(wfs,-1)
         wfs = tf.constant(wfs,dtype=tf.float32)
@@ -193,7 +193,7 @@ class PropagateTF():
 
         self.materials=materials
 
-        measured_axes, _ = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, N_interp//3)
+        measured_axes, _ = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, int(params.params.wf_ratio*N_interp))
         self.wf_f = measured_axes["diffraction_plane"]["f"]
 
     def setup_graph_through_wfs(self, wavefront):

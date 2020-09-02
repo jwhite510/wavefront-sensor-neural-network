@@ -17,6 +17,7 @@ from scipy.misc import factorial
 from skimage.transform import resize
 from scipy import ndimage
 import scipy.io
+import params
 
 def fits_to_numpy(fits_file_name):
     thing = fits.open(fits_file_name)
@@ -37,7 +38,7 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
 
     # get axes for retrieved object and diffraction pattern
     N=np.shape(np.squeeze(retrieved_obj['measured_pattern']))[0]
-    simulation_axes, amplitude_mask = get_amplitude_mask_and_imagesize(N, int(N/3))
+    simulation_axes, amplitude_mask = get_amplitude_mask_and_imagesize(N, int(params.params.wf_ratio*N))
 
     # object
     x=simulation_axes['object']['x'] # meters
