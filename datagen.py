@@ -180,13 +180,10 @@ class DataGenerator():
         # return this as the field before wfs
 
         # propagator through wavefront sensor
-        prop=self.propagate_tf.setup_graph_through_wfs(field_cropped)
+        return field_cropped
 
-        # to just multiply
-        # self.prop = field_cropped * tf.complex(real=wfs,imag=tf.zeros_like(wfs))
-        # TODO
-        # check wavefront sensor image, up sampling problem
-        return prop, field_cropped
+    def propagate_through_wfs(self,field:tf.Tensor):
+        return self.propagate_tf.setup_graph_through_wfs(field)
 
 class PropagateTF():
     def __init__(self, N_interp:int, materials:list):
@@ -307,7 +304,8 @@ if __name__ == "__main__":
 
     x = tf.placeholder(tf.float32, shape=[None, len(datagenerator.zernike_cvector)])
     scale = tf.placeholder(tf.float32, shape=[None,1])
-    afterwf,beforewf=datagenerator.buildgraph(x,scale)
+    beforewf=datagenerator.buildgraph(x,scale)
+    afterwf=datagenerator.propagate_through_wfs(beforewf)
 
     create_dataset(filename=args.name,coefficients=len(datagenerator.zernike_cvector))
     with tf.Session() as sess:

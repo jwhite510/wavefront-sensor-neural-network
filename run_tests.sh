@@ -5,10 +5,10 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"xuvtesttf8" # name
+"xuvtesttf9_original" # name
 "36000" # train samples
 "50" # peak count
-"nr" # nr network
+"original" # nr network
 
 
 )
