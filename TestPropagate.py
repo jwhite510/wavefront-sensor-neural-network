@@ -60,7 +60,8 @@ def make_nice_figure(retrieved:dict):
         if _i == 0 or _i == 1:
             ax.set_xticks([])
         if _i == 2:
-            ax.set_xlabel(r"positon [um]")
+            ax.set_xlabel(r"position [um]")
+            ax.set_xticks([-5,-2.5,0,2.5,5])
         if _i == 0 or _i == 1:
             ax.text(0.2, 0.9,'retrieved',backgroundcolor='white',transform=ax.transAxes)
         if _i == 2:
@@ -89,7 +90,8 @@ def make_nice_figure(retrieved:dict):
         ax.set_yticks([])
         fig.colorbar(im,ax=ax)
         if _i == 2:
-            ax.set_xlabel(r"positon [um]")
+            ax.set_xlabel(r"position [um]")
+            ax.set_xticks([-5,-2.5,0,2.5,5])
         ax.text(1.3,0.5,'z='+str(_dist)+' [um]',transform=ax.transAxes,size=20)
     fig.savefig('xuv_experimental_results_1.png')
 
