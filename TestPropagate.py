@@ -127,6 +127,40 @@ def make_nice_figure(retrieved:dict):
     ax.axis('off')
     fig.savefig('xuv_experimental_results_2.png')
 
+    fig=plt.figure(figsize=(10,8))
+    fig.subplots_adjust(left=0.0,right=1.0,bottom=0.1)
+    gs = fig.add_gridspec(1,1)
+    ax = fig.add_subplot(gs[0,0])
+    im = Image.open('figure_images/data_nn_diagram/datagen_nn.png')
+    im = np.array(im)
+
+    ax.text(52,150,'Gaussian',size=15,ha='left',color='black')
+    ax.text(253,263,'Apply Phase',size=8,ha='left',color='black',backgroundcolor='white')
+
+    ax.text(445,313,r'+',size=14,ha='left',color='black')
+    ax.text(445,175,r'+',size=14,ha='left',color='black')
+
+    ax.text(424,472,r'$e^{i \phi}$',size=14,ha='left',color='black',backgroundcolor='white')
+
+    ax.text(560,263,'FFT',size=8,ha='left',color='black',backgroundcolor='white')
+    ax.text(724,150,'Object',size=15,ha='left',color='black')
+
+    ax.text(375,20,'Zernike\nCoefficients',size=15,ha='left',color='black')
+
+    ax.text(337,542,'Beam Propagation Method',size=8,ha='left',color='black',backgroundcolor='white')
+
+    ax.text(385,661,'FFT',size=8,ha='left',color='black',backgroundcolor='white')
+
+    ax.text(733,669,'Neural\nNetwork',size=8,ha='left',color='black',backgroundcolor='white')
+
+    ax.text(175,855,'Through\nWavefront\nSensor',size=15,ha='left',color='black')
+    ax.text(522,835,'Diffraction\nPattern',size=15,ha='left',color='black')
+
+    ax.text(883,835,'Retrieved\nObject',size=15,ha='left',color='black')
+
+    ax.imshow(im)
+    ax.axis('off')
+
     plt.show()
     print(retrieved.keys())
 
