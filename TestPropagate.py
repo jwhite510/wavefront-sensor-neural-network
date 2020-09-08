@@ -158,8 +158,18 @@ def make_nice_figure(retrieved:dict):
 
     ax.text(883,835,'Retrieved\nObject',size=15,ha='left',color='black')
 
+    # letters
+    ax.text(39,206,'a',color='black',backgroundcolor='white',weight='bold')
+    ax.text(387,59,'b',color='black',backgroundcolor='white',weight='bold')
+    ax.text(686,206,'c',color='black',backgroundcolor='white',weight='bold')
+    ax.text(155,607,'d',color='black',backgroundcolor='white',weight='bold')
+    ax.text(505,607,'e',color='black',backgroundcolor='white',weight='bold')
+    ax.text(858,607,'d',color='black',backgroundcolor='white',weight='bold')
+
+
     ax.imshow(im)
     ax.axis('off')
+    fig.savefig('data_gen_simulation_3.png')
 
     plt.show()
     print(retrieved.keys())
