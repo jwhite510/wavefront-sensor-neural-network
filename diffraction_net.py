@@ -1,5 +1,4 @@
 import tensorflow as tf
-import argparse
 import time
 import os
 import numpy as np
@@ -13,7 +12,6 @@ from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
 import datagen
 import subprocess
 from subprocess import PIPE
-import noise_resistant_net
 
 
 class GetData():
@@ -21,14 +19,13 @@ class GetData():
         self.batch_counter = 0
         self.batch_index = 0
         self.batch_size = batch_size
-        self.train_filename = net_name+"_train_noise.hdf5"
-        self.test_filename = net_name+"_test_noise.hdf5"
+        self.train_filename = "zernike3/build/9_6_2020_xuvresult_train.hdf5"
+        self.test_filename = "zernike3/build/9_6_2020_xuvresult_test.hdf5"
         self.hdf5_file_train = tables.open_file(self.train_filename, mode="r")
         self.hdf5_file_validation = tables.open_file(self.test_filename, mode="r")
         self.samples = self.hdf5_file_train.root.object_real.shape[0]
         # shape of the sample
         self.N = self.hdf5_file_train.root.N[0,0]
-        self.n_z_coefs = len(self.hdf5_file_train.root.coefficients[0])
         print("initializing GetData")
         print("self.N =>", self.N)
         print("self.samples =>", self.samples)
@@ -38,9 +35,7 @@ class GetData():
         samples = {}
         samples["object_real_samples"] = self.hdf5_file_train.root.object_real[self.batch_index:self.batch_index + self.batch_size, :]
         samples["object_imag_samples"] = self.hdf5_file_train.root.object_imag[self.batch_index:self.batch_index + self.batch_size, :]
-        samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction_noise[self.batch_index:self.batch_index + self.batch_size, :]
-        samples["coefficients_samples"] = self.hdf5_file_train.root.coefficients[self.batch_index:self.batch_index + self.batch_size, :]
-        samples["scale_samples"] = self.hdf5_file_train.root.scale[self.batch_index:self.batch_index + self.batch_size, :]
+        samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction[self.batch_index:self.batch_index + self.batch_size, :]
 
         self.batch_index += self.batch_size
 
@@ -50,10 +45,7 @@ class GetData():
         samples = {}
         samples["object_real_samples"] = self.hdf5_file_train.root.object_real[:n_samples, :]
         samples["object_imag_samples"] = self.hdf5_file_train.root.object_imag[:n_samples, :]
-        samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction_noise[:n_samples, :]
-        samples["diffraction_noisefree"] = self.hdf5_file_train.root.diffraction_noisefree[:n_samples, :]
-        samples["coefficients_samples"] = self.hdf5_file_train.root.coefficients[:n_samples, :]
-        samples["scale_samples"] = self.hdf5_file_train.root.scale[:n_samples, :]
+        samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction[:n_samples, :]
 
         return samples
 
@@ -61,10 +53,8 @@ class GetData():
         samples = {}
         samples["object_real_samples"] = self.hdf5_file_validation.root.object_real[:n_samples, :]
         samples["object_imag_samples"] = self.hdf5_file_validation.root.object_imag[:n_samples, :]
-        samples["diffraction_samples"] = self.hdf5_file_validation.root.diffraction_noise[:n_samples, :]
-        samples["diffraction_noisefree"] = self.hdf5_file_validation.root.diffraction_noisefree[:n_samples, :]
-        samples["coefficients_samples"] = self.hdf5_file_validation.root.coefficients[:n_samples, :]
-        samples["scale_samples"] = self.hdf5_file_validation.root.scale[:n_samples, :]
+        samples["diffraction_samples"] = self.hdf5_file_validation.root.diffraction[:n_samples, :]
+        # samples["imag_scalar_samples"] = self.hdf5_file_train.root.imag_norm_factor[:n_samples, :]
 
         return samples
 
@@ -72,9 +62,8 @@ class GetData():
         self.hdf5_file_train.close()
 
 class DiffractionNet():
-    def __init__(self, name:str, net_type:str):
+    def __init__(self, name):
         self.name = name
-        self.net_type=net_type
         print("initializing network")
         print(name)
 
@@ -89,57 +78,29 @@ class DiffractionNet():
         # self.imag_scalar_actual = tf.placeholder(tf.float32, shape=[None, 1])
         self.real_actual = tf.placeholder(tf.float32, shape=[None, self.get_data.N, self.get_data.N, 1])
 
-        self.scale_actual = tf.placeholder(tf.float32, shape=[None, 1])
-        self.zcoefs_actual = tf.placeholder(tf.float32, shape=[None, self.get_data.n_z_coefs])
+        # amplitude mask for generating the output
+        _, self.amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(self.get_data.N, int(self.get_data.N/2))
+        self.amplitude_mask = np.expand_dims(self.amplitude_mask, axis=-1)
+        self.amplitude_mask = np.expand_dims(self.amplitude_mask, axis=0)
 
         # real retrieval network
         self.nn_nodes = {}
+        self.setup_network_2(self.nn_nodes)
 
         self.datagenerator=datagen.DataGenerator(1024,128)
-        if self.net_type=='original':
-            print("building original network")
-            self.setup_network_2(self.nn_nodes)
-            # output coefs
-            # self.nn_nodes["out_scale"]
-            # self.nn_nodes["out_zcoefs"]
-            self.beforewf=tf.complex(real=self.nn_nodes["real_out"],imag=self.nn_nodes["imag_out"])
-            self.afterwf=self.datagenerator.propagate_through_wfs(self.beforewf)
-
-        elif self.net_type=='nr':
-            print("buiding nr network")
-            self.nn_nodes["out_zcoefs"], self.nn_nodes["out_scale"], self.hold_prob = noise_resistant_net.noise_resistant_phase_retrieval_net(self.x,self.get_data.n_z_coefs)
-
-            self.nn_nodes["out_zcoefs"] = tf.sigmoid(self.nn_nodes["out_zcoefs"])
-            self.nn_nodes["out_zcoefs"]*=12
-            self.nn_nodes["out_zcoefs"]-=6
-            self.nn_nodes["out_scale"] = 2*tf.sigmoid(self.nn_nodes["out_scale"])
-            # build reconstruction graph
-            self.beforewf=self.datagenerator.buildgraph(self.nn_nodes["out_zcoefs"],self.nn_nodes["out_scale"])
-            self.afterwf=self.datagenerator.propagate_through_wfs(self.beforewf)
-
-            self.nn_nodes["real_out"]=tf.real(self.beforewf)
-            self.nn_nodes["imag_out"]=tf.imag(self.beforewf)
-            # define loss function
-            self.nn_nodes["zcoef_loss"] = tf.losses.mean_squared_error(
-                    labels=self.zcoefs_actual,
-                    predictions=self.nn_nodes["out_zcoefs"]
-                    )
-            self.nn_nodes["scale_loss"] = tf.losses.mean_squared_error(
-                    labels=self.scale_actual,
-                    predictions=self.nn_nodes["out_scale"]
-                    )
-
-        else:
-            raise ValueError('choose type of network')
+        self.beforewf=tf.complex(real=self.nn_nodes["real_out"],imag=self.nn_nodes["imag_out"])
+        self.afterwf=self.datagenerator.propagate_through_wfs(self.beforewf)
 
         # learning rate
         self.s_LR = tf.placeholder(tf.float32, shape=[])
 
+        # define loss function
+
         #####################
         # mean squared error
         #####################
-        self.nn_nodes["real_loss"] = tf.losses.mean_squared_error(labels=self.real_actual, predictions=tf.real(self.beforewf))
-        self.nn_nodes["imag_loss"] = tf.losses.mean_squared_error(labels=self.imag_actual, predictions=tf.imag(self.beforewf))
+        self.nn_nodes["real_loss"] = tf.losses.mean_squared_error(labels=self.real_actual, predictions=self.nn_nodes["real_out"])
+        self.nn_nodes["imag_loss"] = tf.losses.mean_squared_error(labels=self.imag_actual, predictions=self.nn_nodes["imag_out"])
         # self.nn_nodes["imag_norm_factor_loss"] = tf.losses.mean_squared_error(labels=self.imag_scalar_actual, predictions=self.nn_nodes["imag_scalar_out"])
 
         #####################
@@ -151,23 +112,19 @@ class DiffractionNet():
         #####################
         # reconstruction loss
         #####################
-        # fft
+        # self.nn_nodes["recons_loss"] = TODO
         self.nn_nodes["recons_diffraction_pattern"] = tf.abs(diffraction_functions.tf_fft2(self.afterwf, dimmensions=[1,2]))**2
         self.nn_nodes["recons_diffraction_pattern"] = self.nn_nodes["recons_diffraction_pattern"] / tf.reduce_max(self.nn_nodes["recons_diffraction_pattern"], keepdims=True, axis=[1,2]) # normalize the diffraction pattern
         self.nn_nodes["reconstruction_loss"] = tf.losses.mean_squared_error(labels=self.x, predictions=self.nn_nodes["recons_diffraction_pattern"])
 
-
-        if self.net_type=='original':
-            self.nn_nodes["cost_function"] = self.nn_nodes["real_loss"] + self.nn_nodes["imag_loss"] + self.nn_nodes["reconstruction_loss"]
-        elif self.net_type=='nr':
-            self.nn_nodes["cost_function"] = self.nn_nodes["zcoef_loss"] + self.nn_nodes["scale_loss"]
+        self.nn_nodes["cost_function"] = self.nn_nodes["real_loss"] + self.nn_nodes["imag_loss"] + self.nn_nodes["reconstruction_loss"]
         # + self.nn_nodes["imag_norm_factor_loss"]
 
         optimizer = tf.train.AdamOptimizer(learning_rate=self.s_LR)
         self.nn_nodes["train"] = optimizer.minimize(self.nn_nodes["cost_function"])
 
         optimizer_u = tf.train.AdamOptimizer(learning_rate=self.s_LR)
-        # self.nn_nodes["u_train"] = optimizer_u.minimize(self.nn_nodes["reconstruction_loss"])
+        self.nn_nodes["u_train"] = optimizer_u.minimize(self.nn_nodes["reconstruction_loss"])
 
         # save file
         if not os.path.isdir('./models'):
@@ -197,7 +154,7 @@ class DiffractionNet():
         self.writer = tf.summary.FileWriter("./tensorboard_graph/" + self.name)
 
         # number of epochs to run
-        self.epochs = 50
+        self.epochs = 60
         self.i = 0
         self.epoch = None
         self.dots = None
@@ -235,7 +192,7 @@ class DiffractionNet():
         experimental_params = {}
         experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
         experimental_params['z_distance'] = 33e-3 # [meters] distance from camera
-        experimental_params['wavelength'] = 18.5e-9 #[meters] wavelength
+        experimental_params['wavelength'] = 13.5e-9 #[meters] wavelength
 
         filenames = [
                 "m3_scan_0000.fits",
@@ -261,8 +218,7 @@ class DiffractionNet():
                 ]
 
         getMeasuredDiffractionPattern=None
-        # orientations = [None, "lr", "ud", "lrud"]
-        orientations = ["ud"]
+        orientations = [None, "lr", "ud", "lrud"]
         scales = [1.0]
         for filename in filenames:
             s = diffraction_functions.fits_to_numpy(filename)
@@ -506,6 +462,10 @@ class DiffractionNet():
         _nodes["imag_out"] -=1
         # the output is now between -1 and 1
 
+        # constrain the output to the mask
+        # _nodes["real_out"] = _nodes["real_out"] * self.amplitude_mask
+        # _nodes["imag_out"] = _nodes["imag_out"] * self.amplitude_mask
+
     def setup_logging(self):
         self.tf_loggers["real_loss_training"] = tf.summary.scalar("real_loss_training", self.nn_nodes["real_loss"])
         self.tf_loggers["real_loss_validation"] = tf.summary.scalar("real_loss_validation", self.nn_nodes["real_loss"])
@@ -515,14 +475,10 @@ class DiffractionNet():
         # self.tf_loggers["imag_norm_factor_loss_validation"] = tf.summary.scalar("imag_norm_factor_loss_validation", self.nn_nodes["imag_norm_factor_loss"])
         self.tf_loggers["reconstruction_loss_training"] = tf.summary.scalar("reconstruction_loss_training", self.nn_nodes["reconstruction_loss"])
         self.tf_loggers["reconstruction_loss_validation"] = tf.summary.scalar("reconstruction_loss_validation", self.nn_nodes["reconstruction_loss"])
-        if self.net_type=='nr':
-            self.tf_loggers["zcoef_loss_training"] = tf.summary.scalar("zcoef_loss_training", self.nn_nodes["zcoef_loss"])
-            self.tf_loggers["zcoef_loss_validation"] = tf.summary.scalar("zcoef_loss_validation", self.nn_nodes["zcoef_loss"])
-            self.tf_loggers["scale_loss_training"] = tf.summary.scalar("scale_loss_training", self.nn_nodes["scale_loss"])
-            self.tf_loggers["scale_loss_validation"] = tf.summary.scalar("scale_loss_validation", self.nn_nodes["scale_loss"])
 
     def supervised_learn(self):
         while self.i < self.epochs:
+        # for self.i in range(self.epochs):
             self.epoch = self.i + 1
             print("Epoch : {}".format(self.epoch))
             self.dots = 0
@@ -539,51 +495,41 @@ class DiffractionNet():
                 diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
 
                 # train network
-                if self.net_type=='original':
-                    self.sess.run(self.nn_nodes["train"], feed_dict={self.x:diffraction_samples,
-                                                        self.real_actual:object_real_samples,
-                                                        self.imag_actual:object_imag_samples,
-                                                        # self.imag_scalar_actual:imag_scalar_samples,
-                                                        self.s_LR:self.lr_value})
-
-                elif self.net_type=='nr':
-                    self.sess.run(self.nn_nodes["train"], feed_dict={
-                        self.x:diffraction_samples,
-                        self.scale_actual:data["scale_samples"],
-                        self.s_LR:self.lr_value,
-                        self.zcoefs_actual:data["coefficients_samples"]})
+                self.sess.run(self.nn_nodes["train"], feed_dict={self.x:diffraction_samples,
+                                                    self.real_actual:object_real_samples,
+                                                    self.imag_actual:object_imag_samples,
+                                                    # self.imag_scalar_actual:imag_scalar_samples,
+                                                    self.s_LR:self.lr_value})
 
 
-            # # adjust learning rate dynamic
-            # data = self.get_data.evaluate_on_train_data(n_samples=50)
-            # object_real_samples = data["object_real_samples"].reshape(
-                    # -1,self.get_data.N, self.get_data.N, 1)
-            # object_imag_samples = data["object_imag_samples"].reshape(
-                    # -1,self.get_data.N, self.get_data.N, 1)
-            # diffraction_samples = data["diffraction_samples"].reshape(
-                    # -1,self.get_data.N, self.get_data.N, 1)
-            # current_cost = self.sess.run(self.nn_nodes["cost_function"], feed_dict={
-                # self.x:diffraction_samples,
-                # self.real_actual:object_real_samples,
-                # self.imag_actual:object_imag_samples,
-                # self.scale_actual:data["scale_samples"],
-                # self.zcoefs_actual:data["coefficients_samples"]
-                # })
-            # self.cost_function_vals.append(current_cost)
-
+            # adjust learning rate dynamic
+            data = self.get_data.evaluate_on_train_data(n_samples=50)
+            object_real_samples = data["object_real_samples"].reshape(
+                    -1,self.get_data.N, self.get_data.N, 1)
+            object_imag_samples = data["object_imag_samples"].reshape(
+                    -1,self.get_data.N, self.get_data.N, 1)
+            diffraction_samples = data["diffraction_samples"].reshape(
+                    -1,self.get_data.N, self.get_data.N, 1)
+            current_cost = self.sess.run(self.nn_nodes["cost_function"], feed_dict={
+                self.x:diffraction_samples,
+                self.real_actual:object_real_samples,
+                self.imag_actual:object_imag_samples
+                })
+            self.cost_function_vals.append(current_cost)
             # adjust the learning if the cost function is not decreasing in x iteraitons
-            # if len(self.cost_function_vals) >= 10:
+            if len(self.cost_function_vals) >= 10:
 
-                # # print statements for debugging
-                # print("length of cost_function_vals has reached 10")
-                # print("self.cost_function_vals =>", self.cost_function_vals)
-                # print("abs(self.cost_function_vals[-1] - self.cost_function_vals[0]) =>",
-                        # abs(self.cost_function_vals[-1] - self.cost_function_vals[0]))
+                # TODO make the state saved when the network is reloaded, if its trained in multiple sessions like this the result will be different
+                # print statements for debugging
+                print("length of cost_function_vals has reached 10")
+                print("self.cost_function_vals =>", self.cost_function_vals)
+                print("abs(self.cost_function_vals[-1] - self.cost_function_vals[0]) =>",
+                        abs(self.cost_function_vals[-1] - self.cost_function_vals[0]))
 
-                # if abs(self.cost_function_vals[-1] - self.cost_function_vals[0])<1e-4:
-                    # print("SETTING LEARNING RATE TO HALF")
-                    # self.lr_value *= 0.5
-                # self.cost_function_vals.clear()
+                if abs(self.cost_function_vals[-1] - self.cost_function_vals[0])<1e-4:
+                    print("SETTING LEARNING RATE TO HALF")
+                    self.lr_value *= 0.5
+                self.cost_function_vals.clear()
 
 
 
@@ -592,7 +538,7 @@ class DiffractionNet():
             print("add_tensorboard_values")
             self.add_tensorboard_values()
             self.update_error_plot_values()
-            if self.i % 10 == 0:
+            if self.i % 5 == 0:
 
                 # create directory if it doesnt exist
                 check_is_dir("nn_pictures")
@@ -600,7 +546,6 @@ class DiffractionNet():
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch))
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/training")
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/validation")
-                check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/validation_detail")
                 check_is_dir("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/measured")
 
                 data = self.get_data.evaluate_on_train_data(n_samples=50)
@@ -608,7 +553,6 @@ class DiffractionNet():
 
                 data = self.get_data.evaluate_on_validation_data(n_samples=50)
                 self.evaluate_performance(data, "validation")
-                self.evaluate_performance_detail(data,"validation_detail",10)
 
                 self.evaluate_performance_measureddata()
 
@@ -637,23 +581,15 @@ class DiffractionNet():
         object_real_samples = data["object_real_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         object_imag_samples = data["object_imag_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-        coefficients_samples = data["coefficients_samples"]
-        scale_samples = data["scale_samples"]
+        # imag_scalar_samples = data["imag_scalar_samples"].reshape(-1, 1)
 
         # real loss
         loss_value = self.sess.run(self.nn_nodes["real_loss"], feed_dict={self.x:diffraction_samples, self.real_actual:object_real_samples})
+        print("real training loss_value =>", loss_value)
 
         # imag loss
         loss_value = self.sess.run(self.nn_nodes["imag_loss"], feed_dict={self.x:diffraction_samples, self.imag_actual:object_imag_samples})
-
-        if self.net_type=='nr':
-            # coef loss
-            loss_value = self.sess.run(self.nn_nodes["zcoef_loss"], feed_dict={self.x:diffraction_samples, self.zcoefs_actual:coefficients_samples})
-            print("zcoef training loss_value =>", loss_value)
-
-            # scale loss
-            loss_value = self.sess.run(self.nn_nodes["scale_loss"], feed_dict={self.x:diffraction_samples, self.scale_actual:scale_samples})
-            print("scale training loss_value =>", loss_value)
+        print("imag training loss_value =>", loss_value)
 
         # write to log
         # real
@@ -672,14 +608,6 @@ class DiffractionNet():
         summ = self.sess.run(self.tf_loggers["reconstruction_loss_training"], feed_dict={self.x:diffraction_samples, self.imag_actual:object_imag_samples})
         self.writer.add_summary(summ, global_step=self.epoch)
 
-        if self.net_type=='nr':
-            # scale
-            summ = self.sess.run(self.tf_loggers["zcoef_loss_training"], feed_dict={self.x:diffraction_samples, self.zcoefs_actual:coefficients_samples})
-            self.writer.add_summary(summ, global_step=self.epoch)
-
-            summ = self.sess.run(self.tf_loggers["scale_loss_training"], feed_dict={self.x:diffraction_samples, self.scale_actual:scale_samples})
-            self.writer.add_summary(summ, global_step=self.epoch)
-
 
         # # # # # # # # # # # # # # # #
         # loss on the validation data #
@@ -688,23 +616,15 @@ class DiffractionNet():
         object_real_samples = data["object_real_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         object_imag_samples = data["object_imag_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
         diffraction_samples = data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-        coefficients_samples = data["coefficients_samples"]
-        scale_samples = data["scale_samples"]
+        # imag_scalar_samples = data["imag_scalar_samples"].reshape(-1, 1)
 
         # real loss
         loss_value = self.sess.run(self.nn_nodes["real_loss"], feed_dict={self.x:diffraction_samples, self.real_actual:object_real_samples})
+        print("real validation loss_value =>", loss_value)
 
         # imag loss
         loss_value = self.sess.run(self.nn_nodes["imag_loss"], feed_dict={self.x:diffraction_samples, self.imag_actual:object_imag_samples})
-
-        if self.net_type=='nr':
-            # coef loss
-            loss_value = self.sess.run(self.nn_nodes["zcoef_loss"], feed_dict={self.x:diffraction_samples, self.zcoefs_actual:coefficients_samples})
-            print("zcoef validation loss_value =>", loss_value)
-
-            # scale loss
-            loss_value = self.sess.run(self.nn_nodes["scale_loss"], feed_dict={self.x:diffraction_samples, self.scale_actual:scale_samples})
-            print("scale validation loss_value =>", loss_value)
+        print("imag validation loss_value =>", loss_value)
 
         # write to log
         summ = self.sess.run(self.tf_loggers["real_loss_validation"], feed_dict={self.x:diffraction_samples, self.real_actual:object_real_samples})
@@ -719,14 +639,6 @@ class DiffractionNet():
         # reconstruction
         summ = self.sess.run(self.tf_loggers["reconstruction_loss_validation"], feed_dict={self.x:diffraction_samples, self.imag_actual:object_imag_samples})
         self.writer.add_summary(summ, global_step=self.epoch)
-
-        if self.net_type=='nr':
-            # scale
-            summ = self.sess.run(self.tf_loggers["zcoef_loss_validation"], feed_dict={self.x:diffraction_samples, self.zcoefs_actual:coefficients_samples})
-            self.writer.add_summary(summ, global_step=self.epoch)
-
-            summ = self.sess.run(self.tf_loggers["scale_loss_validation"], feed_dict={self.x:diffraction_samples, self.scale_actual:scale_samples})
-            self.writer.add_summary(summ, global_step=self.epoch)
 
 
         # add tensorboard values for experimental trace
@@ -749,7 +661,7 @@ class DiffractionNet():
             print(".", end="", flush=True)
             self.dots += 1
 
-    def evaluate_performance(self, _data:dict, _set:str):
+    def evaluate_performance(self, _data, _set):
         """
             _data: the data set to input to the network
             _set: (validation or training)
@@ -793,7 +705,7 @@ class DiffractionNet():
 
         # imag_output = imag_output * real_output #TODO maybe remove this
 
-        for index in range(0,np.shape(diffraction_samples)[0]):
+        for index in range(0,50):
             print("evaluating sample: "+str(index))
             axes_obj = PlotAxes("sample "+str(index))
 
@@ -863,50 +775,6 @@ class DiffractionNet():
 
 
 
-    def evaluate_performance_detail(self, _data:dict, _set:str, nsamples:int=999):
-        print("evaluate detailed")
-        # save the 
-        object_real_samples = _data["object_real_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-        object_imag_samples = _data["object_imag_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-        diffraction_samples = _data["diffraction_samples"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-        diffraction_noisefree = _data["diffraction_noisefree"].reshape(-1,self.get_data.N, self.get_data.N, 1)
-
-        # plot the output
-        real_output = self.sess.run(self.nn_nodes["real_out"], feed_dict={self.x:diffraction_samples})
-        imag_output = self.sess.run(self.nn_nodes["imag_out"], feed_dict={self.x:diffraction_samples})
-        tf_reconstructed_diff = self.sess.run(self.nn_nodes["recons_diffraction_pattern"], feed_dict={self.x:diffraction_samples})
-        for index in range(0,min(nsamples,np.shape(diffraction_samples)[0])):
-            print("evaluating detailsample: "+str(index))
-
-            # object
-            diffraction_samples[index,:,:,0]
-            object_real_samples[index,:,:,0]
-            object_imag_samples[index,:,:,0]
-            diffraction_noisefree[index,:,:,0]
-
-            # retrieved from net
-            real_output[index,:,:,0]
-            imag_output[index,:,:,0]
-            tf_reconstructed_diff[index,:,:,0]
-
-            # save the actual object
-            actual_object = {}
-            actual_object["measured_pattern"] = diffraction_samples[index,:,:,0]
-            actual_object["tf_reconstructed_diff"] = diffraction_noisefree[index,:,:,0]
-            actual_object["real_output"] = object_real_samples[index,:,:,0]
-            actual_object["imag_output"] = object_imag_samples[index,:,:,0]
-            m_index=(64,64)
-            fig=diffraction_functions.plot_amplitude_phase_meas_retreival(actual_object,"actual_object_"+str(index),ACTUAL=True,m_index=m_index)
-            fig.savefig("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/"+str(index)+"_actual")
-
-            # save the retrieved object
-            nn_retrieved = {}
-            nn_retrieved["measured_pattern"] = diffraction_samples[index,:,:,0]
-            nn_retrieved["tf_reconstructed_diff"] = tf_reconstructed_diff[index,:,:,0]
-            nn_retrieved["real_output"] = real_output[index,:,:,0]
-            nn_retrieved["imag_output"] = imag_output[index,:,:,0]
-            fig=diffraction_functions.plot_amplitude_phase_meas_retreival(nn_retrieved,"nn_retrieved",m_index=m_index)
-            fig.savefig("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/"+str(index)+"_retrieved")
 def max_pooling_layer(input_x, pool_size_val,  stride_val, pad=False):
     if pad:
         return tf.layers.max_pooling2d(input_x, pool_size=[pool_size_val[0], pool_size_val[1]], strides=[stride_val[0], stride_val[1]], padding="SAME")
@@ -1010,12 +878,8 @@ if __name__ == "__main__":
     # getdata = GetData(batch_size=10)
     # getdata.next_batch()
     # del getdata
-    parser=argparse.ArgumentParser()
-    parser.add_argument('--name',type=str)
-    parser.add_argument('--net_type',type=str)
-    args=parser.parse_args()
 
-    diffraction_net = DiffractionNet(name=args.name,net_type=args.net_type)
+    diffraction_net = DiffractionNet(name=sys.argv[1])
     diffraction_net.supervised_learn()
     del diffraction_net
     # pass
