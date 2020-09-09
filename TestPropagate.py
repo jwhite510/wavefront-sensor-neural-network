@@ -31,7 +31,7 @@ def make_nice_figure(retrieved:dict):
     gs = fig.add_gridspec(3,3)
 
     figletter = 'a'
-    for _name, _i, _dist in zip(['-500','0','300_sim'],range(3),[-500,0,300]):
+    for _name, _i, _dist in zip(['-500','0','500_sim'],range(3),[-500,0,500]):
         complex_obj = np.squeeze(retrieved[_name]['real_output']+1j*retrieved[_name]['imag_output'])
 
         if _i == 0 or _i == 1:
@@ -102,7 +102,7 @@ def make_nice_figure(retrieved:dict):
     im = Image.open('figure_images/xuv_experimental_setup.png')
     im = np.array(im)
     ax.imshow(im)
-    ax.text(0.15,-0.1,r'z=300 [$\mu m$]',transform=ax.transAxes,size=20,ha='left')
+    ax.text(0.15,-0.1,r'z=500 [$\mu m$]',transform=ax.transAxes,size=20,ha='left')
     ax.text(0.45,-0.1,r'z=0 [$\mu m$]',transform=ax.transAxes,size=20,ha='left')
     ax.text(0.7,-0.1,r'z=-500 [$\mu m$]',transform=ax.transAxes,size=20,ha='left')
     ax.text(0.05,0.025,'z',transform=ax.transAxes,size=30,ha='left')
@@ -198,7 +198,7 @@ if __name__=="__main__":
     f_object=getMeasuredDiffractionPattern.simulation_axes['diffraction_plane']['f']
 
     # distance to focus
-    z = 800e-6
+    z = 1000e-6
     gamma=np.sqrt(
             1-
             (experimental_params['wavelength']*f_object.reshape(-1,1))**2-
@@ -226,7 +226,7 @@ if __name__=="__main__":
 
     # create dictionary for publication figure
     retrieved = {}
-    retrieved['300_sim'] = {
+    retrieved['500_sim'] = {
             "measured_pattern":np.zeros_like(np.abs(complex_beam_prop)),
             "tf_reconstructed_diff":np.zeros_like(np.abs(complex_beam_prop)),
             "real_output":np.real(complex_beam_prop),
