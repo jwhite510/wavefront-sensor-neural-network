@@ -194,8 +194,8 @@ class CompareNetworkIterative():
             N = file.root.N[0,0]
             object_real = file.root.object_real[index, :].reshape(N,N)
             object_imag = file.root.object_imag[index, :].reshape(N,N)
-            diffraction = file.root.diffraction_noise[index, :].reshape(N,N)
-            diffraction_noisefree = file.root.diffraction_noisefree[index, :].reshape(N,N)
+            diffraction = file.root.diffraction[index, :].reshape(N,N)
+            diffraction_noisefree = file.root.diffraction[index, :].reshape(N,N)
 
         obj={}
         obj["measured_pattern"]=diffraction
@@ -564,10 +564,10 @@ if __name__ == "__main__":
                 # m[m<0.007*np.max(m)]=0
                 m=np.squeeze(m)
 
-                # fig=plot_show_cm(a,"before processing",same_colorbar=False)
-                title=_name+"-measured_logscale_"+str(_scale).replace('.','_')+"_"+str(_orientation)
-                fig=plot_show_cm(m,title)
-                fig.savefig(os.path.join(DIR,title))
+                # # fig=plot_show_cm(a,"before processing",same_colorbar=False)
+                # title=_name+"-measured_logscale_"+str(_scale).replace('.','_')+"_"+str(_orientation)
+                # fig=plot_show_cm(m,title)
+                # fig.savefig(os.path.join(DIR,title))
 
                 # # # retrieve with neural network
                 # title=_name+"-NN-retrieved-measured_"+str(_scale).replace('.','_')+"_"+str(_orientation)
@@ -580,17 +580,17 @@ if __name__ == "__main__":
                 # fig.savefig(os.path.join(DIR,title))
 
     # # plot simulated sample
-    # sim=comparenetworkiterative.get_test_sample(0)
-    # fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
-    # fig.savefig(os.path.join(DIR,"validation_measured_center"))
+    for _i in range(20,30)[::2]:
+        sim=comparenetworkiterative.get_test_sample(_i)
+        # fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
+        # fig.savefig(os.path.join(DIR,"validation_measured_center"))
 
-    # # compare to training data set
-    # fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],"Validation, Predicted")
-    # fig.savefig(os.path.join(DIR,"validation_predicted"))
-    # # plot simulated retrieved and actual
-
-    # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True)
-    # fig.savefig(os.path.join(DIR,"validation_actual"))
+        # compare to training data set
+        fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],"Validation, Predicted")
+        fig.savefig(os.path.join(DIR,"validation_predicted"))
+        # plot simulated retrieved and actual
+        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True)
+        fig.savefig(os.path.join(DIR,"validation_actual"))
 
     # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True,mask=True)
     # fig.savefig(os.path.join(DIR,"validation_actual_WF"))

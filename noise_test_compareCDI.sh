@@ -11,6 +11,15 @@ rm -rf ./$DIR
 # cd zernike3/build/
 # python addnoise.py --infile ${network}_test.hdf5 --outfile ${network}_test_noise.hdf5 --peakcount 50 --cameraimage $camera_noise
 # cd ../..
+
+cd zernike3/build/
+make
+rm ./${network}*.hdf5
+# create samples
+mpirun -np 2 a.out --count 200 --name ${network}_test.hdf5 --buffersize 100
+mpirun -np 2 a.out --count 200 --name ${network}_train.hdf5 --buffersize 100
+cd ../..
+
 python CompareNN_MatlabBilinearInterp.py --network $network --pc 0 --DIR $DIR
 
 exit
