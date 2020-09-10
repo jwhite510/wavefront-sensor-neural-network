@@ -21,8 +21,8 @@ class GetData():
         self.batch_counter = 0
         self.batch_index = 0
         self.batch_size = batch_size
-        self.train_filename = "zernike3/build/9_9_2020_xuvresult_train.hdf5"
-        self.test_filename = "zernike3/build/9_9_2020_xuvresult_test.hdf5"
+        self.train_filename = net_name+"_train.hdf5"
+        self.test_filename = net_name+"_test.hdf5"
         self.hdf5_file_train = tables.open_file(self.train_filename, mode="r")
         self.hdf5_file_validation = tables.open_file(self.test_filename, mode="r")
         self.samples = self.hdf5_file_train.root.object_real.shape[0]
@@ -38,7 +38,7 @@ class GetData():
         samples = {}
         samples["object_real_samples"] = self.hdf5_file_train.root.object_real[self.batch_index:self.batch_index + self.batch_size, :]
         samples["object_imag_samples"] = self.hdf5_file_train.root.object_imag[self.batch_index:self.batch_index + self.batch_size, :]
-        samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction[self.batch_index:self.batch_index + self.batch_size, :]
+        samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction_noisefree[self.batch_index:self.batch_index + self.batch_size, :]
 
         self.batch_index += self.batch_size
 
@@ -48,7 +48,7 @@ class GetData():
         samples = {}
         samples["object_real_samples"] = self.hdf5_file_train.root.object_real[:n_samples, :]
         samples["object_imag_samples"] = self.hdf5_file_train.root.object_imag[:n_samples, :]
-        samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction[:n_samples, :]
+        samples["diffraction_samples"] = self.hdf5_file_train.root.diffraction_noisefree[:n_samples, :]
 
         return samples
 
@@ -56,7 +56,7 @@ class GetData():
         samples = {}
         samples["object_real_samples"] = self.hdf5_file_validation.root.object_real[:n_samples, :]
         samples["object_imag_samples"] = self.hdf5_file_validation.root.object_imag[:n_samples, :]
-        samples["diffraction_samples"] = self.hdf5_file_validation.root.diffraction[:n_samples, :]
+        samples["diffraction_samples"] = self.hdf5_file_validation.root.diffraction_noisefree[:n_samples, :]
         # samples["imag_scalar_samples"] = self.hdf5_file_train.root.imag_norm_factor[:n_samples, :]
 
         return samples
