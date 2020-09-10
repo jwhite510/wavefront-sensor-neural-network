@@ -12,6 +12,28 @@ import os
 from scipy import interpolate
 import argparse
 
+
+def make_nice_plot(samples:list)->None:
+
+    fig = plt.figure(figsize=(10,10))
+    gs = fig.add_gridspec(3,3)
+
+    for _s in range(3):
+        ax = fig.add_subplot(gs[_s,0])
+        ax.pcolormesh(samples[3]['actual']['measured_pattern'],cmap='jet')
+
+        ret_obj = samples[_s]['retrieved']['real_output']+1j*samples[_s]['retrieved']['imag_output']
+        actual_obj = samples[_s]['actual']['real_output']+1j*samples[_s]['actual']['imag_output']
+
+        # retrieved object
+        ax = fig.add_subplot(gs[_s,1])
+        ax.pcolormesh(np.abs(ret_obj)**2,cmap='jet')
+
+        ax = fig.add_subplot(gs[_s,2])
+        ax.pcolormesh(np.abs(actual_obj)**2,cmap='jet')
+
+    plt.show()
+
 def get_interpolation_points(amplitude_mask):
     """
         get the points for bilinear interp
@@ -169,15 +191,15 @@ class CompareNetworkIterative():
         N=128
         retrieved = {}
         retrieved["measured_pattern"] = measured
-        retrieved["tf_reconstructed_diff"] = self.network.sess.run(
-                self.network.nn_nodes["recons_diffraction_pattern"], feed_dict={self.network.x:measured.reshape(1,N,N,1)})
-        retrieved["real_output"] = self.network.sess.run(
-                self.network.nn_nodes["real_out"], feed_dict={self.network.x:measured.reshape(1,N,N,1)})
-        retrieved["imag_output"] = self.network.sess.run(
-                self.network.nn_nodes["imag_out"], feed_dict={self.network.x:measured.reshape(1,N,N,1)})
+        retrieved["tf_reconstructed_diff"] = np.squeeze(self.network.sess.run(
+                self.network.nn_nodes["recons_diffraction_pattern"], feed_dict={self.network.x:measured.reshape(1,N,N,1)}))
+        retrieved["real_output"] = np.squeeze(self.network.sess.run(
+                self.network.nn_nodes["real_out"], feed_dict={self.network.x:measured.reshape(1,N,N,1)}))
+        retrieved["imag_output"] = np.squeeze(self.network.sess.run(
+                self.network.nn_nodes["imag_out"], feed_dict={self.network.x:measured.reshape(1,N,N,1)}))
 
-        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
-        return fig
+        # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
+        return retrieved
 
     def matlab_cdi_retrieval(self,measured,figtitle,mask=False):
         measured=np.squeeze(measured)
@@ -580,17 +602,23 @@ if __name__ == "__main__":
                 # fig.savefig(os.path.join(DIR,title))
 
     # # plot simulated sample
+    samples=[]
     for _i in range(20,30)[::2]:
-        sim=comparenetworkiterative.get_test_sample(_i)
+
+        actual=comparenetworkiterative.get_test_sample(_i)
         # fig=plot_show_cm(sim['measured_pattern'],"validation (0)")
         # fig.savefig(os.path.join(DIR,"validation_measured_center"))
 
         # compare to training data set
-        fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],"Validation, Predicted")
-        fig.savefig(os.path.join(DIR,"validation_predicted"))
-        # plot simulated retrieved and actual
-        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True)
-        fig.savefig(os.path.join(DIR,"validation_actual"))
+        retrieved=comparenetworkiterative.retrieve_measured(actual['measured_pattern'],"Validation, Predicted")
+        samples.append({'actual':actual,'retrieved':retrieved})
+    with open("samples_retrieved.p",'wb') as file:
+        pickle.dump(samples,file)
+    with open("samples_retrieved.p",'rb') as file:
+        samples=pickle.load(file)
+    plt.close('all')
+    make_nice_plot(samples)
+
 
     # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,"Validation, Actual",ACTUAL=True,mask=True)
     # fig.savefig(os.path.join(DIR,"validation_actual_WF"))
