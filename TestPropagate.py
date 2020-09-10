@@ -199,20 +199,21 @@ def make_nice_figure(retrieved:dict):
     ax.text(1313, 805,'7',backgroundcolor='white',weight='bold')
 
     # real output
-    ax.text(1433, 685,'Real Object',backgroundcolor='white',weight='bold')
-    ax.text(1433, 85,'Imaginary Object',backgroundcolor='white',weight='bold')
-    ax.text(70, 365,'Diffraction Pattern',backgroundcolor='white',weight='bold')
+    ax.text(1433, 605,'Real Object (128x128)',backgroundcolor='white',weight='bold')
+    ax.text(1433, 5,'Imaginary Object (128x128)',backgroundcolor='white',weight='bold')
+    ax.text(70, 285,'Diffraction Pattern (128x128)',backgroundcolor='white',weight='bold')
 
     # layers
-    ax.text(400, -100,'Layers:\n \
-            1: something\n \
-            2: something\n \
-            4: something\n \
-            5: something\n \
-            6: something\n \
-            7: something\n \
+    ax.text(50, -75,'Layers:\n \
+            1: Convolutional Layer filters:128, kernel size: 8, stride: 2\n \
+            2: Convolutional Layer filters:256, kernel size: 8, stride: 2\n \
+            3: Convolutional Layer filters:512, kernel size: 8, stride: 2\n \
+            4: Convolutional Layer filters:1024, kernel size: 8, stride: 2\n \
+            5: Convolutional Transpose filters:512, kernel size: 8, stride: 2\n \
+            6: Convolutional Transpose filters:256, kernel size: 8, stride: 2\n \
+            7: Convolutional Transpose filters:128, kernel size: 8, stride: 2\n \
             '
-            ,backgroundcolor='white',size=15,ha='left',va='top')
+            ,backgroundcolor='white',size=10,ha='left',va='top',weight='bold')
 
     fig.savefig('nn_diagram_4.png')
 
