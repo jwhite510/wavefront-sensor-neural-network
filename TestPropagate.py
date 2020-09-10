@@ -171,6 +171,54 @@ def make_nice_figure(retrieved:dict):
     ax.axis('off')
     fig.savefig('data_gen_simulation_3.png')
 
+    fig=plt.figure(figsize=(10,8))
+    fig.subplots_adjust(left=0.0,right=1.0,bottom=0.1)
+    gs = fig.add_gridspec(1,1)
+    ax = fig.add_subplot(gs[0,0])
+    im = Image.open('figure_images/nn_diagram/nndiagram.png')
+    im = np.array(im)
+    print("np.shape(im)", np.shape(im))
+    ax.imshow(im)
+    ax.axis('off')
+
+    # encoder
+    ax.text(583, 485,'1',backgroundcolor='white',weight='bold')
+    ax.text(707, 485,'2',backgroundcolor='white',weight='bold')
+    ax.text(826, 485,'3',backgroundcolor='white',weight='bold')
+    ax.text(948, 485,'4',backgroundcolor='white',weight='bold')
+
+
+    # decoder
+    ax.text(1070, 385,'5',backgroundcolor='white',weight='bold')
+    ax.text(1194, 285,'6',backgroundcolor='white',weight='bold')
+    ax.text(1313, 185,'7',backgroundcolor='white',weight='bold')
+
+    # other side
+    ax.text(1070, 605,'5',backgroundcolor='white',weight='bold')
+    ax.text(1194, 705,'6',backgroundcolor='white',weight='bold')
+    ax.text(1313, 805,'7',backgroundcolor='white',weight='bold')
+
+    # real output
+    ax.text(1433, 685,'Real Object',backgroundcolor='white',weight='bold')
+    ax.text(1433, 85,'Imaginary Object',backgroundcolor='white',weight='bold')
+    ax.text(70, 365,'Diffraction Pattern',backgroundcolor='white',weight='bold')
+
+    # layers
+    ax.text(400, -100,'Layers:\n \
+            1: something\n \
+            2: something\n \
+            4: something\n \
+            5: something\n \
+            6: something\n \
+            7: something\n \
+            '
+            ,backgroundcolor='white',size=15,ha='left',va='top')
+
+    fig.savefig('nn_diagram_4.png')
+
+
+
+
     plt.show()
     print(retrieved.keys())
 
