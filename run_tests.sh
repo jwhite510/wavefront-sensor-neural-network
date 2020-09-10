@@ -26,7 +26,8 @@ do
 	# generate dataset
 	rm ./${network}*.hdf5
 	# create samples
-	python datagen.py --count ${training_samples} --name ${network}_train.hdf5 --batch_size 100 --seed 345678
+	python datagen.py --count ${training_samples} --name ${network}_train.hdf5 --batch_size 3 --seed 345678
+	exit
 	python datagen.py --count 200 --name ${network}_test.hdf5 --batch_size 100 --seed 8977
 
 	camera_noise="SquareWFtest/CameraNoise/1_1000/Bild_1.png"

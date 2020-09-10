@@ -332,6 +332,28 @@ if __name__ == "__main__":
                                 }
             _afterwf=sess.run(afterwf,feed_dict=f)
             _beforewf=sess.run(beforewf,feed_dict=f)
+
+            fig,ax=plt.subplots(1,2,figsize=(10,5))
+            im=ax[0].pcolormesh(np.real(_beforewf[0,:,:,0]),cmap='jet')
+            ax[0].axvline(x=64, color="yellow")
+            ax[0].axhline(y=64, color="yellow")
+            ax[0].set_title("real")
+            fig.colorbar(im,ax=ax[0])
+            ax[1].plot(np.real(_beforewf[0,:,:,0])[64,:])
+            ax[1].axvline(x=64,color="yellow")
+
+            fig,ax=plt.subplots(1,2,figsize=(10,5))
+            im=ax[0].pcolormesh(np.imag(_beforewf[0,:,:,0]),cmap='jet')
+            ax[0].axvline(x=64, color="yellow")
+            ax[0].axhline(y=64, color="yellow")
+            ax[0].set_title("imag")
+            fig.colorbar(im,ax=ax[0])
+            ax[1].plot(np.imag(_beforewf[0,:,:,0])[64,:])
+            ax[1].axvline(x=64,color="yellow")
+
+            plt.show()
+            exit()
+
             save_to_hdf5(
                     args.name,
                     np.squeeze(_afterwf),
