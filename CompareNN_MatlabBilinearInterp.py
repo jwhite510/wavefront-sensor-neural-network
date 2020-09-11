@@ -19,11 +19,16 @@ def make_nice_plot(samples:list)->None:
     measured_axes, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(N/2))
     fig = plt.figure(figsize=(10,10))
     fig.subplots_adjust(hspace=0.0, wspace=0.0, left=0.1,right=0.9)
+    fig.suptitle('Neural Network Retrieval on Validation Data')
     gs = fig.add_gridspec(5,5)
 
+    figletter = 'a'
     for _s in range(5):
         ax = fig.add_subplot(gs[_s,0])
-        im=ax.pcolormesh(measured_axes['diffraction_plane']['f']*1e-6,measured_axes['diffraction_plane']['f']*1e-6,samples[3]['actual']['measured_pattern'],cmap='jet')
+        im=ax.pcolormesh(measured_axes['diffraction_plane']['f']*1e-6,measured_axes['diffraction_plane']['f']*1e-6,samples[_s]['actual']['measured_pattern'],cmap='jet')
+        if _s==0:
+            ax.text(0.1, 0.85,figletter, fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="white",weight='bold')
+            figletter = chr(ord(figletter)+1)
         if _s!=4: ax.set_xticks([])
         if _s==0: ax.set_title('Input\nDiffraction Pattern')
         if _s==4: ax.set_xlabel(r"frequency [1/m]$\cdot 10^{6}$")
@@ -34,33 +39,52 @@ def make_nice_plot(samples:list)->None:
 
         # retrieved object
         ax = fig.add_subplot(gs[_s,1])
-        im=ax.pcolormesh(measured_axes['object']['x']*1e6,measured_axes['object']['x']*1e6,np.abs(ret_obj)**2,cmap='jet')
+        intensity=np.abs(ret_obj)**2
+        im=ax.pcolormesh(measured_axes['object']['x']*1e6,measured_axes['object']['x']*1e6,intensity,cmap='jet')
+        if _s==0:
+            ax.text(0.1, 0.85,figletter, fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="white",weight='bold')
+            figletter = chr(ord(figletter)+1)
         if _s!=4: ax.set_xticks([])
         if _s==0: ax.set_title('Retrieved\nIntensity')
         if _s==4: ax.set_xlabel(r'position [$\mu m$]')
         ax.set_yticks([])
 
         ax = fig.add_subplot(gs[_s,2])
-        im=ax.pcolormesh(measured_axes['object']['x']*1e6,measured_axes['object']['x']*1e6,np.angle(ret_obj),cmap='jet')
+        phase_angle=np.angle(ret_obj)
+        phase_angle[intensity<0.005*np.max(intensity)]=0
+        im=ax.pcolormesh(measured_axes['object']['x']*1e6,measured_axes['object']['x']*1e6,phase_angle,cmap='jet')
+        if _s==0:
+            ax.text(0.1, 0.85,figletter, fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="white",weight='bold')
+            figletter = chr(ord(figletter)+1)
         if _s!=4: ax.set_xticks([])
         if _s==0: ax.set_title('Retrieved\nPhase')
         if _s==4: ax.set_xlabel(r'position [$\mu m$]')
         ax.set_yticks([])
 
         ax = fig.add_subplot(gs[_s,3])
-        im=ax.pcolormesh(measured_axes['object']['x']*1e6,measured_axes['object']['x']*1e6,np.abs(actual_obj)**2,cmap='jet')
+        intensity=np.abs(actual_obj)**2
+        im=ax.pcolormesh(measured_axes['object']['x']*1e6,measured_axes['object']['x']*1e6,intensity,cmap='jet')
+        if _s==0:
+            ax.text(0.1, 0.85,figletter, fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="white",weight='bold')
+            figletter = chr(ord(figletter)+1)
         if _s==0: ax.set_title('Actual\nIntensity')
         if _s!=4: ax.set_xticks([])
         if _s==4: ax.set_xlabel(r'position [$\mu m$]')
         ax.set_yticks([])
 
         ax = fig.add_subplot(gs[_s,4])
-        im=ax.pcolormesh(measured_axes['object']['x']*1e6,measured_axes['object']['x']*1e6,np.angle(actual_obj),cmap='jet')
+        phase_angle=np.angle(actual_obj)
+        phase_angle[intensity<0.005*np.max(intensity)]=0
+        im=ax.pcolormesh(measured_axes['object']['x']*1e6,measured_axes['object']['x']*1e6,phase_angle,cmap='jet')
+        if _s==0:
+            ax.text(0.1, 0.85,figletter, fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="white",weight='bold')
+            figletter = chr(ord(figletter)+1)
         if _s==0: ax.set_title('Actual\nPhase')
         if _s!=4: ax.set_xticks([])
         if _s==4: ax.set_xlabel(r'position [$\mu m$]')
         ax.set_yticks([])
 
+    fig.savefig('validation_retrievals.png')
     # add colorbar
     # cbar_ax=fig.add_axes([0,85,0.15,0.05,0.7])
     # fig.colorbar(im,cax=cbar_ax)
