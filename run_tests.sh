@@ -5,9 +5,9 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"xuvtesttf12_original_cppdata_com_8" # name
+"xuvtesttf12_original_cppdata_com_9" # name
 "36000" # train samples
-"50" # peak count
+"0" # peak count
 "original" # nr network
 
 
@@ -29,13 +29,13 @@ do
 	python datagen.py --count ${training_samples} --name ${network}_train.hdf5 --batch_size 100 --seed 345678
 	python datagen.py --count 200 --name ${network}_test.hdf5 --batch_size 100 --seed 8977
 
-	# camera_noise="SquareWFtest/CameraNoise/1_1000/Bild_1.png"
-	# # add noise to samples
-	# python addnoise.py --infile ${network}_train.hdf5 --outfile ${network}_train_noise.hdf5 --peakcount $pc --cameraimage $camera_noise
-	# python addnoise.py --infile ${network}_test.hdf5 --outfile ${network}_test_noise.hdf5 --peakcount $pc --cameraimage $camera_noise
+	camera_noise="SquareWFtest/CameraNoise/1_1000/Bild_1.png"
+	# add noise to samples
+	python addnoise.py --infile ${network}_train.hdf5 --outfile ${network}_train_noise.hdf5 --peakcount $pc --cameraimage $camera_noise
+	python addnoise.py --infile ${network}_test.hdf5 --outfile ${network}_test_noise.hdf5 --peakcount $pc --cameraimage $camera_noise
 
 	echo ${network}
-	python diffraction_net.py --name ${network} --net_type original
+	python diffraction_net.py --name ${network} --net_type ${net_type}
 
 	i=$i+4
 done

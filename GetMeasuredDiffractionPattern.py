@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import diffraction_functions
 from  astropy.io import fits
+import params
 
 class GetMeasuredDiffractionPattern():
     """
@@ -21,7 +22,7 @@ class GetMeasuredDiffractionPattern():
         self.N_sim = N_sim # size of the measured simulated pattern
         self.experimental_params = experimental_params
         self.N_meas = N_meas
-        self.simulation_axes, _ = diffraction_functions.get_amplitude_mask_and_imagesize(self.N_sim, int(self.N_sim/2))
+        self.simulation_axes, _ = diffraction_functions.get_amplitude_mask_and_imagesize(self.N_sim, int(params.params.wf_ratio*N_sim))
 
         # parameters for the input measured diffraction pattern
         self.measured_axes = {}

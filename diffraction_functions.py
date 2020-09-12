@@ -1,4 +1,5 @@
 import numpy as np
+import params
 from numpy import unravel_index
 import os
 import math
@@ -16,6 +17,7 @@ from scipy.misc import factorial
 from skimage.transform import resize
 from scipy import ndimage
 import scipy.io
+import params
 
 def fits_to_numpy(fits_file_name):
     thing = fits.open(fits_file_name)
@@ -36,7 +38,7 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
 
     # get axes for retrieved object and diffraction pattern
     N=np.shape(np.squeeze(retrieved_obj['measured_pattern']))[0]
-    simulation_axes, amplitude_mask = get_amplitude_mask_and_imagesize(N, int(N/2))
+    simulation_axes, amplitude_mask = get_amplitude_mask_and_imagesize(N, int(params.params.wf_ratio*N))
 
     # object
     x=simulation_axes['object']['x'] # meters
@@ -90,9 +92,9 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     # obj_phase[:, -30:-20] = np.max(obj_phase)
 
     if mask:
-        im = axes["phase"].pcolormesh(x,x,amplitude_mask*obj_phase,cmap='jet')
+        im = axes["phase"].pcolormesh(x,x,amplitude_mask*obj_phase)
     else:
-        im = axes["phase"].pcolormesh(x,x,obj_phase,cmap='jet')
+        im = axes["phase"].pcolormesh(x,x,obj_phase)
 
     axes["phase"].text(0.2, 0.9,"phase("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["phase"])
@@ -107,9 +109,9 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
 
 
     if mask:
-        im = axes["intensity"].pcolormesh(x,x,amplitude_mask*I,cmap='jet')
+        im = axes["intensity"].pcolormesh(x,x,amplitude_mask*I)
     else:
-        im = axes["intensity"].pcolormesh(x,x,I,cmap='jet')
+        im = axes["intensity"].pcolormesh(x,x,I)
 
     # plot the spherical aperture
     if plot_spherical_aperture:
@@ -122,12 +124,12 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     axes["intensity"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["intensity"])
 
-    im = axes["measured"].pcolormesh(f,f,np.squeeze(retrieved_obj["measured_pattern"]),cmap='jet')
+    im = axes["measured"].pcolormesh(f,f,np.squeeze(retrieved_obj["measured_pattern"]))
     axes["measured"].set_ylabel(r"frequency [1/m]$\cdot 10^{6}$")
     axes["measured"].text(0.2, 0.9,"measured", fontsize=10, ha='center', transform=axes["measured"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["measured"])
 
-    im = axes["reconstructed"].pcolormesh(f,f,np.squeeze(retrieved_obj["tf_reconstructed_diff"]),cmap='jet')
+    im = axes["reconstructed"].pcolormesh(f,f,np.squeeze(retrieved_obj["tf_reconstructed_diff"]))
     axes["reconstructed"].text(0.2, 0.9,RECONSTRUCTED, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
 
     # calc mse
@@ -140,17 +142,17 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     fig.colorbar(im, ax=axes["reconstructed"])
 
     if mask:
-        im = axes["real"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["real_output"]),cmap='jet')
+        im = axes["real"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["real_output"]))
     else:
-        im = axes["real"].pcolormesh(x,x,np.squeeze(retrieved_obj["real_output"]),cmap='jet')
+        im = axes["real"].pcolormesh(x,x,np.squeeze(retrieved_obj["real_output"]))
     axes["real"].text(0.2, 0.9,"real("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["real"].transAxes, backgroundcolor="cyan")
     axes["real"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["real"])
 
     if mask:
-        im = axes["imag"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["imag_output"]),cmap='jet')
+        im = axes["imag"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["imag_output"]))
     else:
-        im = axes["imag"].pcolormesh(x,x,np.squeeze(retrieved_obj["imag_output"]),cmap='jet')
+        im = axes["imag"].pcolormesh(x,x,np.squeeze(retrieved_obj["imag_output"]))
     axes["imag"].text(0.2, 0.9,"imag("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["imag"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["imag"])
 
@@ -188,13 +190,41 @@ def format_experimental_trace(N, df_ratio, measured_diffraction_pattern, rotatio
     # divide scale the measured trace by this amount
     new_size = np.shape(measured_diffraction_pattern)[0] * df_ratio
     new_size = int(new_size)
+
+    # if the image is not square, make it square
+    # print("shape before ",np.shape(measured_diffraction_pattern))
+    s=np.shape(measured_diffraction_pattern)
+    if s[0]>s[1]:
+        # less rows than cols
+        _s=s[1] # number of cols
+        measured_diffraction_pattern=measured_diffraction_pattern[(s[0]//2)-(_s//2):(s[0]//2)+(_s//2),:]
+    elif s[0]<s[1]:
+        # more cols than rows
+        _s=s[0] # number of rows
+        measured_diffraction_pattern=measured_diffraction_pattern[:,(s[1]//2)-(_s//2):(s[1]//2)+(_s//2)]
+    # print("shape after ",np.shape(measured_diffraction_pattern))
+
     measured_diffraction_pattern = resize(measured_diffraction_pattern, (new_size, new_size))
 
     # rotate the image by eye
     measured_diffraction_pattern = ndimage.rotate(measured_diffraction_pattern, rotation_angle, reshape=False)
     measured_diffraction_pattern = center_image_at_centroid(measured_diffraction_pattern)
     # crop the edges off the image
-    measured_diffraction_pattern = measured_diffraction_pattern[int((new_size/2) - (N/2)):int((new_size/2) + (N/2)) , int((new_size/2) - (N/2)):int((new_size/2) + (N/2))]
+
+    if new_size>N:
+        measured_diffraction_pattern = measured_diffraction_pattern[int((new_size/2) - (N/2)):int((new_size/2) + (N/2)) ,
+                int((new_size/2) - (N/2)):int((new_size/2) + (N/2))]
+    elif new_size<N:
+        _measured_diffraction_pattern=np.zeros((N,N),dtype=measured_diffraction_pattern.dtype)
+        _shape=measured_diffraction_pattern.shape
+        if _shape[0]%2==1:
+            _measured_diffraction_pattern[(N//2 - _shape[0]//2):(N//2 + _shape[0]//2),
+                    (N//2 - _shape[1]//2):(N//2 + _shape[1]//2)] = measured_diffraction_pattern[:-1,:-1]
+        else:
+            _measured_diffraction_pattern[(N//2 - _shape[0]//2):(N//2 + _shape[0]//2),
+                    (N//2 - _shape[1]//2):(N//2 + _shape[1]//2)] = measured_diffraction_pattern
+
+        measured_diffraction_pattern=_measured_diffraction_pattern
 
     # plot_image_show_centroid_distance(measured_diffraction_pattern, "measured_diffraction_pattern", 454)
     # trim = 30
@@ -343,12 +373,10 @@ def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
         # image_dimmension must be divisible by 4
         assert image_dimmension/4 == int(image_dimmension/4)
         # get the png image for amplitude
-        im = Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")
+        im = params.params.wavefront_sensor
         im = PIL.ImageOps.invert(im)
-
         size1 = im.size[0]
-        im_size_nm = 5*im.size[0] * 1e-9 # meters
-        # print("im_size_nm =>", im_size_nm)
+        im_size_nm = params.params.wavefron_sensor_size_nm
 
         # scale down the image
         im = im.resize((desired_mask_width,desired_mask_width)).convert("L")
@@ -841,68 +869,6 @@ def create_phase(N):
 
     # from - pi to + pi
     return np.real(phase)
-
-def get_and_format_experimental_trace(N, transform):
-    # get the measured trace
-    # open the object with known dimmensions
-    obj_calculated_measured_axes, _ = get_amplitude_mask_and_imagesize(N, int(N/2))
-    diffraction_calculated_measured_axes, measured_pattern = get_measured_diffraction_pattern_grid()
-
-    measured_pattern = measured_pattern.astype(np.float64)
-    # measured_pattern = measured_pattern.T
-
-
-    df_ratio = diffraction_calculated_measured_axes['diffraction_plane']['df'] / obj_calculated_measured_axes['diffraction_plane']['df']
-    # multiply by scale adjustment
-    df_ratio *= transform["scale"]
-
-    measured_pattern = format_experimental_trace(
-            N=N,
-            df_ratio=df_ratio,
-            measured_diffraction_pattern=measured_pattern,
-            rotation_angle=3,
-            trim=1) # if transposed (measured_pattern.T) , flip the rotation
-            # use 30 to block outer maxima
-
-    # diffraction_functions.plot_image_show_centroid_distance(
-            # measured_pattern,
-            # "before flip",
-            # 10)
-
-    if transform["flip"] == "lr":
-        measured_pattern = np.flip(measured_pattern, axis=1)
-
-    elif transform["flip"] == "ud":
-        measured_pattern = np.flip(measured_pattern, axis=0)
-
-    elif transform["flip"] == "lrud":
-        measured_pattern = np.flip(measured_pattern, axis=0)
-        measured_pattern = np.flip(measured_pattern, axis=1)
-
-    elif transform["flip"] == None:
-        pass
-
-    else:
-        raise ValueError("invalid flip specified")
-
-    # diffraction_functions.plot_image_show_centroid_distance(
-            # measured_pattern,
-            # "after flip",
-            # 11)
-
-    measured_pattern = center_image_at_centroid(measured_pattern)
-
-    # diffraction_functions.plot_image_show_centroid_distance(
-            # measured_pattern,
-            # "after flip,  center_image_at_centroid",
-            # 12)
-
-    measured_pattern = np.expand_dims(measured_pattern, axis=0)
-    measured_pattern = np.expand_dims(measured_pattern, axis=-1)
-    # print("np.max(measured_pattern[0,:,:,0]) =>", np.max(measured_pattern[0,:,:,0]))
-    measured_pattern *= (1/np.max(measured_pattern))
-
-    return measured_pattern
 
 def matlab_cdi_retrieval(diffraction_pattern, support, interpolate=True,noise_reduction=False):
 
