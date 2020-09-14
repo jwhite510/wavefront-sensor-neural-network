@@ -546,18 +546,21 @@ class DiffractionNet():
                                                         # self.imag_scalar_actual:imag_scalar_samples,
                                                         self.s_LR:self.lr_value})
 
+                elif self.net_type=='nr':
+                    self.sess.run(self.nn_nodes["train"], feed_dict={
+                        self.x:diffraction_samples,
+                        self.scale_actual:data["scale_samples"],
+                        self.s_LR:self.lr_value,
+                        self.zcoefs_actual:data["coefficients_samples"]})
+
             # adjust learning rate dynamic
             data = self.get_data.evaluate_on_train_data(n_samples=50)
-            object_real_samples = data["object_real_samples"].reshape(
-                    -1,self.get_data.N, self.get_data.N, 1)
-            object_imag_samples = data["object_imag_samples"].reshape(
-                    -1,self.get_data.N, self.get_data.N, 1)
-            diffraction_samples = data["diffraction_samples"].reshape(
-                    -1,self.get_data.N, self.get_data.N, 1)
             current_cost = self.sess.run(self.nn_nodes["cost_function"], feed_dict={
-                self.x:diffraction_samples,
-                self.real_actual:object_real_samples,
-                self.imag_actual:object_imag_samples
+                self.x:data["diffraction_samples"].reshape(-1,self.get_data.N,self.get_data.N,1),
+                self.real_actual:data["object_real_samples"].reshape(-1,self.get_data.N,self.get_data.N,1),
+                self.imag_actual:data["object_imag_samples"].reshape(-1,self.get_data.N,self.get_data.N,1),
+                self.scale_actual:data["scale_samples"],
+                self.zcoefs_actual:data["coefficients_samples"]
                 })
             self.cost_function_vals.append(current_cost)
             # adjust the learning if the cost function is not decreasing in x iteraitons
