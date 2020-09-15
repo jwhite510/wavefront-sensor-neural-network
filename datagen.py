@@ -16,12 +16,12 @@ def tf_make_zernike(m:int, n:int, N_computational:int, scale:tf.Tensor, amp:tf.T
     _scale = tf.expand_dims(scale,axis=-1)
     x = np.linspace(-7,7,N_computational).reshape(1,-1,1)
     y = np.linspace(-7,7,N_computational).reshape(1,1,-1)
+    phi=tf.constant(np.arctan2(x,y),dtype=tf.float32)
     x = (1/_scale)*tf.constant(x,dtype=tf.float32)
     y = (1/_scale)*tf.constant(y,dtype=tf.float32)
     # x = scale * x
     # y = scale * y
     rho = tf.sqrt(x**2 + y**2)
-    phi = tf.atan2(x,y)
 
     positive_m = False
     if m >= 0:
