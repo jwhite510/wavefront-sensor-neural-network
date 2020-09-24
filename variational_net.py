@@ -25,5 +25,5 @@ def encoder(X_in, n_coefs):
     z = _mean + _sigma*noise
     _scale = tf.reshape(z[:,0],[-1,1])
     _coefs = z[:,1:]
-    latent_loss = -0.5 * tf.reduce_sum(1.0 + 2.0 * _gamma - tf.square(_mean) - tf.exp(2.0 * _gamma), 1)
+    latent_loss = -0.5 * tf.reduce_sum(1.0 + 2.0 * _gamma - tf.square(_mean) - tf.exp(2.0 * _gamma))
     return _coefs, _scale, keep_prob, latent_loss

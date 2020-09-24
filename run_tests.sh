@@ -5,7 +5,7 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"variational_net_test_1" # name
+"variational_net_test_5" # name
 "36000" # train samples
 "0" # peak count
 "variational" # nr network
