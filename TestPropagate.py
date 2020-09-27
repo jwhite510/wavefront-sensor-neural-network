@@ -92,7 +92,7 @@ def make_nice_figure(retrieved:dict):
         if _i == 2:
             ax.set_xlabel(r"position [um]")
             ax.set_xticks([-5,-2.5,0,2.5,5])
-        ax.text(1.3,0.5,'z='+str(_dist)+' [um]',transform=ax.transAxes,size=20)
+        ax.text(1.3,0.5,'z='+str(_dist)+r' $[\mu m]$',transform=ax.transAxes,size=20)
     fig.savefig('xuv_experimental_results_1.png')
 
     fig=plt.figure(figsize=(10,8))
@@ -121,8 +121,8 @@ def make_nice_figure(retrieved:dict):
     ax.text(385,378,r'2.7 [$\mu m$]',size=15,ha='left')
 
     # label wavelength
-    ax.text(105,365,r'18 [$nm$]',size=20,ha='left',color='black')
-    ax.text(65,365,r'$\lambda$',size=20,ha='left',color='red')
+    ax.text(65,365,r'13.5 [$nm$]',size=20,ha='left',color='black')
+    ax.text(25,365,r'$\lambda$',size=20,ha='left',color='red')
 
     ax.axis('off')
     fig.savefig('xuv_experimental_results_2.png')
