@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.ndimage import shift as sc_im_shift
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
 import tables
@@ -76,6 +77,11 @@ if __name__ == "__main__":
                     # normalize
                     diffraction_pattern_with_noise_poisson_and_camera=diffraction_pattern_with_noise_poisson_and_camera/np.max(diffraction_pattern_with_noise_poisson_and_camera)
 
+                    # apply random position shift by sub pixel
+                    dis_y, dis_x = np.random.rand()*2 -1, np.random.rand()*2 -1
+                    diffraction_pattern_with_noise_poisson_and_camera = sc_im_shift(diffraction_pattern_with_noise_poisson_and_camera,(dis_y,dis_x))
+                    diffraction_pattern_with_noise_poisson_and_camera = diffraction_functions.center_image_at_centroid(diffraction_pattern_with_noise_poisson_and_camera)
+
                     newhd5file.root.object_real.append(object_real.reshape(1,-1))
                     newhd5file.root.object_imag.append(object_imag.reshape(1,-1))
                     newhd5file.root.diffraction_noise.append(diffraction_pattern_with_noise_poisson_and_camera.reshape(1,-1))
@@ -86,8 +92,14 @@ if __name__ == "__main__":
                 else:
                     newhd5file.root.object_real.append(object_real.reshape(1,-1))
                     newhd5file.root.object_imag.append(object_imag.reshape(1,-1))
-                    newhd5file.root.diffraction_noise.append(diffraction.reshape(1,-1))
                     newhd5file.root.diffraction_noisefree.append(diffraction.reshape(1,-1))
+
+                    # apply random position shift by sub pixel
+                    dis_y, dis_x = np.random.rand()*2 -1, np.random.rand()*2 -1
+                    diffraction = sc_im_shift(diffraction,(dis_y,dis_x))
+                    diffraction = diffraction_functions.center_image_at_centroid(diffraction)
+
+                    newhd5file.root.diffraction_noise.append(diffraction.reshape(1,-1))
                     newhd5file.root.coefficients.append(_z_coefs.reshape(1,-1))
                     newhd5file.root.scale.append(_scales.reshape(1,-1))
 
