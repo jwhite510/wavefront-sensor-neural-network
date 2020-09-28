@@ -164,7 +164,7 @@ def make_nice_figure(retrieved:dict):
     ax.text(686,206,'c',color='black',backgroundcolor='white',weight='bold')
     ax.text(155,607,'d',color='black',backgroundcolor='white',weight='bold')
     ax.text(505,607,'e',color='black',backgroundcolor='white',weight='bold')
-    ax.text(858,607,'d',color='black',backgroundcolor='white',weight='bold')
+    ax.text(858,607,'f',color='black',backgroundcolor='white',weight='bold')
 
 
     ax.imshow(im)
