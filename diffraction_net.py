@@ -233,39 +233,25 @@ class DiffractionNet():
 
         print("self.get_data.N =>", self.get_data.N)
         experimental_params = {}
-        experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
-        experimental_params['z_distance'] = 33e-3 # [meters] distance from camera
-        experimental_params['wavelength'] = 13.5e-9 #[meters] wavelength
+        experimental_params['pixel_size'] = 4.8e-6 # [meters] with 2x2 binning
+        experimental_params['z_distance'] = 16.5e-3 # [meters] distance from camera
+        experimental_params['wavelength'] = 633e-9 #[meters] wavelength
 
         filenames = [
-                "m3_scan_0000.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0000.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0001.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0002.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0003.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0004.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0005.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0006.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0007.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0008.fits",
-                "Data_for_Jonathon/multiple_measurements/m3_scan_0009.fits",
-                "Data_for_Jonathon/z0/1.fits",
-                "Data_for_Jonathon/z0/2.fits",
-                "Data_for_Jonathon/z0/3.fits",
-                "Data_for_Jonathon/z-500/1.fits",
-                "Data_for_Jonathon/z-500/2.fits",
-                "Data_for_Jonathon/z-500/3.fits",
-                "Data_for_Jonathon/z-1000/1.fits",
-                "Data_for_Jonathon/z-1000/2.fits",
-                "Data_for_Jonathon/z-1000/3.fits"
+            '9_02_20_data/0812_focus.npy',
+            '9_02_20_data/0812_focus_f3.npy',
+            '9_02_20_data/0812_focus_f7.npy',
+            '9_02_20_data/0812_focus_n3.npy',
+            '9_02_20_data/0812_focus_n7.npy',
                 ]
 
         getMeasuredDiffractionPattern=None
         # orientations = [None, "lr", "ud", "lrud"]
-        orientations = ["ud"]
+        orientations = [None]
         scales = [1.0]
         for filename in filenames:
-            s = diffraction_functions.fits_to_numpy(filename)
+            s = np.load(filename)
+            s[s<0]=0
 
             if not getMeasuredDiffractionPattern:
 
@@ -276,12 +262,13 @@ class DiffractionNet():
             for _orientation in orientations:
                 for _scale in scales:
                     transform={}
-                    transform["rotation_angle"]=3
+                    transform["rotation_angle"]=0
                     transform["scale"]=_scale
                     # transform["flip"]="lr"
                     transform["flip"]=_orientation
                     sample_name = filename.replace("/","_").replace(".","-")+"_"+str(_orientation)+"_"+str(_scale).replace(".","-")
                     m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(s, transform)
+                    m[m<0.003*np.max(m)]=0
                     self.experimental_traces[sample_name] = m
 
         # getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=self.get_data.N,

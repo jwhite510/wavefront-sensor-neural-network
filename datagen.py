@@ -280,6 +280,7 @@ def save_to_hdf5(filename:str, afterwf:np.array, beforewf:np.array, z_coefs:np.a
             # normalize
             diffraction_pattern_noisefree = diffraction_pattern_noisefree / np.max(diffraction_pattern_noisefree)
             diffraction_pattern_noisefree = diffraction_functions.center_image_at_centroid(diffraction_pattern_noisefree)
+            diffraction_pattern_noisefree[diffraction_pattern_noisefree<0]=0
             hd5file.root.object_real.append(object_real.reshape(1,-1))
             hd5file.root.object_imag.append(object_imag.reshape(1,-1))
             hd5file.root.diffraction_noisefree.append(diffraction_pattern_noisefree.reshape(1,-1))
