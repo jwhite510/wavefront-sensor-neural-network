@@ -5,7 +5,7 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"8_20_2020_xuvresult"
+"8_20_2020_xuvresult_13nmprop"
 "36000"
 )
 i=0
