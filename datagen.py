@@ -297,9 +297,8 @@ if __name__ == "__main__":
     parser.add_argument('--seed',type=int)
     parser.add_argument('--name',type=str)
     parser.add_argument('--batch_size',type=int)
+    parser.add_argument('--samplesf',type=str)
     args=parser.parse_args()
-    if args.count % args.batch_size != 0:
-        raise ValueError('batch size and count divide with remainder')
 
     datagenerator = DataGenerator(1024,128)
 
@@ -309,45 +308,70 @@ if __name__ == "__main__":
     afterwf=datagenerator.propagate_through_wfs(beforewf)
 
     create_dataset(filename=args.name,coefficients=len(datagenerator.zernike_cvector))
-    with tf.Session() as sess:
-        np.random.seed(args.seed)
-        _count = 0
-        while _count<args.count:
-            print("_count =>", _count)
-            # make random numbers
+    if args.samplesf:
+        print("make specific samples")
+        with tf.Session() as sess:
+            print("args.samplesf =>", args.samplesf)
+            samplesf=np.loadtxt(args.samplesf)
+            if(np.shape(samplesf)[1]!=len(datagenerator.zernike_cvector)+1):
+                raise ValueError('incorrect dimmensions in samples file: z coefs:'+str(len(datagenerator.zernike_cvector)) + "   + 1 (scale)")
+            with tf.Session() as sess:
+                for _s in samplesf:
+                    print(" generating sample: _s =>", _s)
+                    z_coefs=_s[1:].reshape(1,-1)
+                    scales=_s[0].reshape(1,-1)
+                    f={x:z_coefs,scale:scales}
+                    _afterwf=sess.run(afterwf,feed_dict=f)
+                    _beforewf=sess.run(beforewf,feed_dict=f)
+                    save_to_hdf5(
+                            args.name,
+                            np.expand_dims(np.squeeze(_afterwf),0),
+                            np.expand_dims(np.squeeze(_beforewf),0),
+                            np.expand_dims(np.squeeze(z_coefs),0),
+                            np.expand_dims(np.squeeze(scales),0)
+                            )
+    else:
+        if args.count % args.batch_size != 0:
+            raise ValueError('batch size and count divide with remainder')
+        with tf.Session() as sess:
+            np.random.seed(args.seed)
+            _count = 0
+            while _count<args.count:
+                print("_count =>", _count)
+                # make random numbers
 
-            # for the zernike coefs
-            n_z_coefs=len(datagenerator.zernike_cvector)* args.batch_size
-            # for the scales
-            n_scales=args.batch_size
+                # for the zernike coefs
+                n_z_coefs=len(datagenerator.zernike_cvector)* args.batch_size
+                # for the scales
+                n_scales=args.batch_size
 
-            z_coefs = 12*(np.random.rand(n_z_coefs)-0.5)
-            z_coefs=z_coefs.reshape(args.batch_size,-1)
-            scales = 1+1*(np.random.rand(n_scales)-0.5)
-            scales = scales.reshape(args.batch_size,1)
-            # z_coefs[:,0:3]=0
-            # z_coefs[:,9:]=0 # doesnt work
-            # z_coefs[:,8:]=0 # works
-            f={x: z_coefs,
-               scale:scales
-                                }
-            _afterwf=sess.run(afterwf,feed_dict=f)
-            _beforewf=sess.run(beforewf,feed_dict=f)
-            save_to_hdf5(
-                    args.name,
-                    np.squeeze(_afterwf),
-                    np.squeeze(_beforewf),
-                    np.squeeze(z_coefs),
-                    np.squeeze(scales)
-                    )
-            # plot data
-            # for i in range(2):
-                # fig,ax=plt.subplots(1,2,figsize=(10,5))
-                # im=ax[0].imshow(np.abs(_beforewf[i,:,:,0])**2,cmap='jet')
-                # ax[0].set_title("intensity")
-                # fig.colorbar(im,ax=ax[0])
-                # im=ax[1].imshow(np.angle(_beforewf[i,:,:,0]),cmap='jet')
-                # ax[1].set_title("angle")
-                # fig.colorbar(im,ax=ax[1])
-            # plt.show()
-            _count += args.batch_size
+                z_coefs = 12*(np.random.rand(n_z_coefs)-0.5)
+                z_coefs=z_coefs.reshape(args.batch_size,-1)
+                scales = 1+1*(np.random.rand(n_scales)-0.5)
+                scales = scales.reshape(args.batch_size,1)
+                # z_coefs[:,0:3]=0
+                # z_coefs[:,9:]=0 # doesnt work
+                # z_coefs[:,8:]=0 # works
+                f={x: z_coefs,
+                   scale:scales
+                                    }
+                _afterwf=sess.run(afterwf,feed_dict=f)
+                _beforewf=sess.run(beforewf,feed_dict=f)
+                save_to_hdf5(
+                        args.name,
+                        np.squeeze(_afterwf),
+                        np.squeeze(_beforewf),
+                        np.squeeze(z_coefs),
+                        np.squeeze(scales)
+                        )
+                # plot data
+                # for i in range(2):
+                    # fig,ax=plt.subplots(1,2,figsize=(10,5))
+                    # im=ax[0].imshow(np.abs(_beforewf[i,:,:,0])**2,cmap='jet')
+                    # ax[0].set_title("intensity")
+                    # fig.colorbar(im,ax=ax[0])
+                    # im=ax[1].imshow(np.angle(_beforewf[i,:,:,0]),cmap='jet')
+                    # ax[1].set_title("angle")
+                    # fig.colorbar(im,ax=ax[1])
+                # plt.show()
+                _count += args.batch_size

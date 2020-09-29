@@ -6,7 +6,7 @@
 
 declare -a runs=(
 "visible_test_nr2" # name
-"36000" # train samples
+"200" # train samples
 "50" # peak count
 "nr" # nr network
 
@@ -33,6 +33,7 @@ do
 	# add noise to samples
 	python addnoise.py --infile ${network}_train.hdf5 --outfile ${network}_train_noise.hdf5 --peakcount $pc --cameraimage $camera_noise
 	python addnoise.py --infile ${network}_test.hdf5 --outfile ${network}_test_noise.hdf5 --peakcount $pc --cameraimage $camera_noise
+	exit
 
 	echo ${network}
 	python diffraction_net.py --name ${network} --net_type ${net_type}
