@@ -483,6 +483,7 @@ if __name__ == "__main__":
     parser.add_argument('--net_type',type=str)
     parser.add_argument('--pc',type=str)
     parser.add_argument('--DIR',type=str)
+    parser.add_argument('--outfile',type=str)
     args=parser.parse_args()
     comparenetworkiterative = CompareNetworkIterative(args)
     # run test on simulated validation data
@@ -578,7 +579,7 @@ if __name__ == "__main__":
             image_combined=np.append(image_ret,image_actual,axis=1)
             gif_frames.append(image_combined)
             # plot simulated retrieved and actual
-        imageio.mimsave('./image_nonoise.gif',gif_frames,fps=10)
+        imageio.mimsave('./'+args.outfile,gif_frames,fps=10)
         exit()
         from pudb import set_trace; set_trace() # BREAKPOINT
         print("BREAKPOINT")
