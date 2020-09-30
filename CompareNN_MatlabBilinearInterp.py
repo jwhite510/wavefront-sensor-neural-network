@@ -12,6 +12,7 @@ import os
 from scipy import interpolate
 import argparse
 import params
+import imageio
 
 def get_interpolation_points(amplitude_mask):
     """
@@ -554,6 +555,7 @@ if __name__ == "__main__":
     with tables.open_file("specific_samples_noise.hdf5",mode="r") as file:
         N = file.root.N[0,0]
         n_samples=file.root.object_real.shape[0]
+        gif_frames=[]
         for _i in range(n_samples):
             obj_acutal={}
             obj_acutal["real_output"] = file.root.object_real[_i, :].reshape(N,N)
@@ -562,14 +564,22 @@ if __name__ == "__main__":
             obj_acutal["tf_reconstructed_diff"] = file.root.diffraction_noisefree[_i, :].reshape(N,N)
 
             fig=diffraction_functions.plot_amplitude_phase_meas_retreival(obj_acutal,"specific: "+str(_i),ACTUAL=True)
-            fig.savefig(os.path.join(DIR,"specific: "+str(_i)))
+            # fig.savefig(os.path.join(DIR,"specific: "+str(_i)))
+            fig.canvas.draw()
+            image_actual=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
+            image_actual=image_actual.reshape(fig.canvas.get_width_height()[::-1] + (3,))
 
             # compare to training data set
             fig=comparenetworkiterative.retrieve_measured(obj_acutal['measured_pattern'],"specific: "+str(_i)+" predicted")
-            fig.savefig(os.path.join(DIR,"specific: "+str(_i)+" predicted"))
+            # fig.savefig(os.path.join(DIR,"specific: "+str(_i)+" predicted"))
+            fig.canvas.draw()
+            image_ret=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
+            image_ret=image_ret.reshape(fig.canvas.get_width_height()[::-1]+(3,))
+            image_combined=np.append(image_ret,image_actual,axis=1)
+            gif_frames.append(image_combined)
             # plot simulated retrieved and actual
-
-        plt.show()
+        imageio.mimsave('./image_nonoise.gif',gif_frames,fps=10)
+        exit()
         from pudb import set_trace; set_trace() # BREAKPOINT
         print("BREAKPOINT")
 
