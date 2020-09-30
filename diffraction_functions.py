@@ -18,6 +18,7 @@ from skimage.transform import resize
 from scipy import ndimage
 import scipy.io
 import params
+import datagen
 
 def fits_to_numpy(fits_file_name):
     thing = fits.open(fits_file_name)
@@ -35,6 +36,11 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
         RETRIEVED="retrieved"
         RECONSTRUCTED="reconstructed"
 
+    # coefficients and scale
+    retrieved_obj['coefficients'] = np.squeeze(retrieved_obj['coefficients'])
+    assert len(np.shape(retrieved_obj['coefficients']))==1
+    retrieved_obj['scale'] = np.squeeze(retrieved_obj['scale'])
+    assert len(np.shape(retrieved_obj['scale']))==0
 
     # get axes for retrieved object and diffraction pattern
     N=np.shape(np.squeeze(retrieved_obj['measured_pattern']))[0]
@@ -47,8 +53,23 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     f*=1e-6
 
     fig = plt.figure(figsize=(10,10))
+    # fig.subplots_adjust(wspace=0.5, left=0.5, top=0.95, bottom=0.10)
+    fig.subplots_adjust(wspace=0.1, left=0.3)
     gs = fig.add_gridspec(4,2)
     fig.text(0.5, 0.95, title, ha="center", size=30)
+
+    # run the constructor to get z n, m vector
+    datagenerator = datagen.DataGenerator(1024,128)
+    fig.text(0.05,0.9,'Zernike Coefficients:',size=20,color='red')
+    c_str=""
+    for _c, _z in zip(retrieved_obj['coefficients'],datagenerator.zernike_cvector):
+        c_str += r"$Z^{"+str(_z.m)+"}_{"+str(_z.n)+"}$"
+        c_str+="    "
+        c_str+="%.2f"%_c+'\n'
+    fig.text(0.03,0.85,c_str,ha='left',va='top',size=20)
+    fig.text(0.05,0.15,'Scale:',size=20,color='red')
+    fig.text(0.03,0.10,'S:'+"%.2f"%retrieved_obj['scale'],ha='left',va='top',size=20)
+
 
     axes = {}
     axes["measured"] = fig.add_subplot(gs[0,0])

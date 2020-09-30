@@ -171,12 +171,25 @@ class CompareNetworkIterative():
         retrieved = {}
         retrieved["measured_pattern"] = measured
         retrieved["tf_reconstructed_diff"] = self.network.sess.run(
-                self.network.nn_nodes["recons_diffraction_pattern"], feed_dict={self.network.x:measured.reshape(1,N,N,1)})
+                self.network.nn_nodes["recons_diffraction_pattern"],
+                feed_dict={self.network.x:measured.reshape(1,N,N,1)}
+                )
         retrieved["real_output"] = self.network.sess.run(
-                self.network.nn_nodes["real_out"], feed_dict={self.network.x:measured.reshape(1,N,N,1)})
+                self.network.nn_nodes["real_out"],
+                feed_dict={self.network.x:measured.reshape(1,N,N,1)}
+                )
         retrieved["imag_output"] = self.network.sess.run(
-                self.network.nn_nodes["imag_out"], feed_dict={self.network.x:measured.reshape(1,N,N,1)})
-
+                self.network.nn_nodes["imag_out"],
+                feed_dict={self.network.x:measured.reshape(1,N,N,1)}
+                )
+        retrieved["coefficients"]=self.network.sess.run(
+                self.network.nn_nodes["out_zcoefs"],
+                feed_dict={self.network.x:measured.reshape(1,N,N,1)}
+                )
+        retrieved["scale"]=self.network.sess.run(
+                self.network.nn_nodes["out_scale"],
+                feed_dict={self.network.x:measured.reshape(1,N,N,1)}
+                )
         fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
         return fig
 
@@ -563,8 +576,9 @@ if __name__ == "__main__":
             obj_acutal["imag_output"] = file.root.object_imag[_i, :].reshape(N,N)
             obj_acutal["measured_pattern"] = file.root.diffraction_noise[_i, :].reshape(N,N)
             obj_acutal["tf_reconstructed_diff"] = file.root.diffraction_noisefree[_i, :].reshape(N,N)
-
-            fig=diffraction_functions.plot_amplitude_phase_meas_retreival(obj_acutal,"specific: "+str(_i),ACTUAL=True,mask=True)
+            obj_acutal["coefficients"]=file.root.coefficients[_i,:]
+            obj_acutal["scale"]=file.root.scale[_i,:]
+            fig=diffraction_functions.plot_amplitude_phase_meas_retreival(obj_acutal,"specific: "+str(_i)+" actual",ACTUAL=True,mask=True)
             # fig.savefig(os.path.join(DIR,"specific: "+str(_i)))
             fig.canvas.draw()
             image_actual=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
