@@ -92,7 +92,9 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     # obj_phase[:, -30:-20] = np.max(obj_phase)
 
     if mask:
-        im = axes["phase"].pcolormesh(x,x,amplitude_mask*obj_phase)
+        obj_phase_softmask=np.array(obj_phase)
+        obj_phase_softmask[amplitude_mask>0]*=0.5
+        im = axes["phase"].pcolormesh(x,x,obj_phase_softmask)
     else:
         im = axes["phase"].pcolormesh(x,x,obj_phase)
 
@@ -109,7 +111,9 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
 
 
     if mask:
-        im = axes["intensity"].pcolormesh(x,x,amplitude_mask*I)
+        I_softmask = np.array(I)
+        I_softmask[amplitude_mask>0]*=0.5
+        im = axes["intensity"].pcolormesh(x,x,I_softmask)
     else:
         im = axes["intensity"].pcolormesh(x,x,I)
 
@@ -142,7 +146,9 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     fig.colorbar(im, ax=axes["reconstructed"])
 
     if mask:
-        im = axes["real"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["real_output"]))
+        real_output_softmask=np.array(np.squeeze(retrieved_obj["real_output"]))
+        real_output_softmask[amplitude_mask>0]*=0.5
+        im = axes["real"].pcolormesh(x,x,real_output_softmask)
     else:
         im = axes["real"].pcolormesh(x,x,np.squeeze(retrieved_obj["real_output"]))
     axes["real"].text(0.2, 0.9,"real("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["real"].transAxes, backgroundcolor="cyan")
@@ -150,7 +156,9 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     fig.colorbar(im, ax=axes["real"])
 
     if mask:
-        im = axes["imag"].pcolormesh(x,x,amplitude_mask*np.squeeze(retrieved_obj["imag_output"]))
+        imag_output_softmask=np.array(np.squeeze(retrieved_obj["imag_output"]))
+        imag_output_softmask[amplitude_mask>0]*=0.5
+        im = axes["imag"].pcolormesh(x,x,imag_output_softmask)
     else:
         im = axes["imag"].pcolormesh(x,x,np.squeeze(retrieved_obj["imag_output"]))
     axes["imag"].text(0.2, 0.9,"imag("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["imag"].transAxes, backgroundcolor="cyan")

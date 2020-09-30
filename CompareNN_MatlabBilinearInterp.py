@@ -563,14 +563,14 @@ if __name__ == "__main__":
             obj_acutal["measured_pattern"] = file.root.diffraction_noise[_i, :].reshape(N,N)
             obj_acutal["tf_reconstructed_diff"] = file.root.diffraction_noisefree[_i, :].reshape(N,N)
 
-            fig=diffraction_functions.plot_amplitude_phase_meas_retreival(obj_acutal,"specific: "+str(_i),ACTUAL=True)
+            fig=diffraction_functions.plot_amplitude_phase_meas_retreival(obj_acutal,"specific: "+str(_i),ACTUAL=True,mask=True)
             # fig.savefig(os.path.join(DIR,"specific: "+str(_i)))
             fig.canvas.draw()
             image_actual=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
             image_actual=image_actual.reshape(fig.canvas.get_width_height()[::-1] + (3,))
 
             # compare to training data set
-            fig=comparenetworkiterative.retrieve_measured(obj_acutal['measured_pattern'],"specific: "+str(_i)+" predicted")
+            fig=comparenetworkiterative.retrieve_measured(obj_acutal['measured_pattern'],"specific: "+str(_i)+" predicted",mask=True)
             # fig.savefig(os.path.join(DIR,"specific: "+str(_i)+" predicted"))
             fig.canvas.draw()
             image_ret=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
