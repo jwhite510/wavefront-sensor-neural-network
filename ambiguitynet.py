@@ -54,7 +54,8 @@ if __name__ == "__main__":
     diffraction_pattern_actual,actual_obj=make_dif_pattern(datagenerator,coefs_actual,scale_actual)
 
     # generate another diffraction pattern with variable
-    coefs_guess = tf.Variable(tf.truncated_normal((1,14),stddev=0.1,dtype=tf.float32))
+    # coefs_guess = tf.Variable(tf.truncated_normal((1,14),stddev=0.1,dtype=tf.float32))
+    coefs_guess = tf.Variable(np.array([14*[1]],dtype=np.float32))
     coefs_guess = tf.sigmoid(coefs_guess)
     coefs_guess*=12
     coefs_guess-=6
@@ -85,11 +86,11 @@ if __name__ == "__main__":
         sess.run(init)
 
         f = {
-            coefs_actual:np.array([[0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]]),
+            coefs_actual:np.array([[0.0, 0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]]),
             scale_actual:np.array([[1.0]]),
                 }
         gif_frames=[]
-        for i in range(15):
+        for i in range(100):
             print(i)
 
             # add logs
@@ -125,7 +126,7 @@ if __name__ == "__main__":
             # train
             sess.run(train, feed_dict=f)
 
-        imageio.mimsave('./'+'file.gif',gif_frames,fps=1)
+        imageio.mimsave('./'+'file.gif',gif_frames,fps=10)
 
 
 
