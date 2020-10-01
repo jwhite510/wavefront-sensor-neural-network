@@ -140,6 +140,7 @@ if __name__ == "__main__":
             ax.plot(error_vals['scale_error'],label='scale_error')
             ax.plot(error_vals['cost_function'],label='cost_function')
             ax.set_xlim(0,i_max)
+            ax.text(0.5,-0.1,"Cost Function:"+"%.4f"%sess.run(cost_function,feed_dict=f),ha='center',transform=ax.transAxes,backgroundcolor='red')
             ax.legend()
             fig.canvas.draw()
             im_plot=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
@@ -156,7 +157,7 @@ if __name__ == "__main__":
             # train
             sess.run(train, feed_dict=f)
 
-        imageio.mimsave('./'+'file.gif',gif_frames,fps=10)
+        imageio.mimsave('./'+'file_large.gif',gif_frames,fps=10)
 
 
 
