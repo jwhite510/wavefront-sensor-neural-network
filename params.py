@@ -23,22 +23,22 @@ params = Parameters()
 
 # wavefront sensor as PIL image
 
-# im = Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")
-# params.wavefront_sensor=im
+im = Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")
+params.wavefront_sensor=im
 # params.wavefron_sensor_size_nm=5*im.size[0]*1e-9
 
-# for the 6x6 image in same format as the 600nm
-# im2 = Image.open("10x10.png")
-im2 = Image.open("6x6.png")
-im2=im2.resize((1200,1200))
-im3=np.zeros((1200,1200,3),dtype=np.array(im2).dtype)
-im3[:,:,0]=np.array(im2)[:,:,3]
-im3[:,:,1]=np.array(im2)[:,:,3]
-im3[:,:,2]=np.array(im2)[:,:,3]
-im3=Image.fromarray(im3)
-im3=PIL.ImageOps.invert(im3)
-im=im3
-params.wavefront_sensor=im
+# # for the 6x6 image in same format as the 600nm
+# # im2 = Image.open("10x10.png")
+# im2 = Image.open("6x6.png")
+# im2=im2.resize((1200,1200))
+# im3=np.zeros((1200,1200,3),dtype=np.array(im2).dtype)
+# im3[:,:,0]=np.array(im2)[:,:,3]
+# im3[:,:,1]=np.array(im2)[:,:,3]
+# im3[:,:,2]=np.array(im2)[:,:,3]
+# im3=Image.fromarray(im3)
+# im3=PIL.ImageOps.invert(im3)
+# im=im3
+# params.wavefront_sensor=im
 params.wavefron_sensor_size_nm=60e-6
 
 # define materials

@@ -157,7 +157,7 @@ if __name__ == "__main__":
             # train
             sess.run(train, feed_dict=f)
 
-        imageio.mimsave('./'+'file_large.gif',gif_frames,fps=10)
+        imageio.mimsave('./'+'file_smaller_2.gif',gif_frames,fps=10)
 
 
 
