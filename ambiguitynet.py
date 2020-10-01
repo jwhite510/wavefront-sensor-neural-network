@@ -90,7 +90,14 @@ if __name__ == "__main__":
             scale_actual:np.array([[1.0]]),
                 }
         gif_frames=[]
-        for i in range(100):
+        error_vals={
+                "diffraction_p_error":[],
+                "coefs_error":[],
+                "scale_error":[],
+                "cost_function":[],
+                }
+        i_max=250
+        for i in range(i_max):
             print(i)
 
             # add logs
@@ -103,6 +110,10 @@ if __name__ == "__main__":
             summ = sess.run(tf_loggers["cost_function"], feed_dict=f)
             writer.add_summary(summ, global_step=i)
             writer.flush()
+            error_vals['diffraction_p_error'].append(sess.run(diffraction_p_error,feed_dict=f))
+            error_vals['coefs_error'].append(sess.run(coefs_error,feed_dict=f))
+            error_vals['scale_error'].append(sess.run(scale_error,feed_dict=f))
+            error_vals['cost_function'].append(sess.run(cost_function,feed_dict=f))
 
             # get actual diffraction pattern
             _diffraction_pattern_actual=sess.run(diffraction_pattern_actual,feed_dict=f)
@@ -119,9 +130,28 @@ if __name__ == "__main__":
             image_actual=image_actual.reshape(fig.canvas.get_width_height()[::-1]+(3,))
             plt.close(fig)
 
+
+            # draw plot
+            fig = plt.figure(figsize=(20,3))
+            gs = fig.add_gridspec(1,1)
+            ax=fig.add_subplot(gs[0,0])
+            ax.plot(error_vals['diffraction_p_error'],label='diffraction_p_error')
+            ax.plot(error_vals['coefs_error'],label='coefs_error')
+            ax.plot(error_vals['scale_error'],label='scale_error')
+            ax.plot(error_vals['cost_function'],label='cost_function')
+            ax.set_xlim(0,i_max)
+            ax.legend()
+            fig.canvas.draw()
+            im_plot=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
+            im_plot=im_plot.reshape(fig.canvas.get_width_height()[::-1]+(3,))
+            plt.close(fig)
+
             # draw the actual object
             image_both=np.append(image_actual,image_guess,axis=1)
+            image_both = np.append(im_plot,image_both,axis=0)
             gif_frames.append(image_both)
+
+            # append the plots
 
             # train
             sess.run(train, feed_dict=f)
