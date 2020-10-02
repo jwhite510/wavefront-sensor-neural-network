@@ -149,6 +149,10 @@ class DataGenerator():
         # propagate through gaussian
         x = np.linspace(1,-1,self.N_computational).reshape(1,-1,1)
         y = np.linspace(1,-1,self.N_computational).reshape(1,1,-1)
+        # avoid linear phase shift
+        dx = x[0,1,0]-x[0,0,0]
+        x-=0.5*dx
+        y-=0.5*dx
         _scale = tf.expand_dims(scale,axis=-1)
         x = (1/_scale)*tf.constant(x,dtype=tf.float32)
         y = (1/_scale)*tf.constant(y,dtype=tf.float32)
