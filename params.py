@@ -22,7 +22,7 @@ class Parameters():
 params = Parameters()
 
 # wavefront sensor as PIL image
-largewfs=False
+largewfs=True
 if largewfs:
     # the smaller round holes sensor
     im = Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")

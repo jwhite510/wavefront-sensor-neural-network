@@ -88,7 +88,7 @@ if __name__ == "__main__":
         sess.run(init)
 
         f = {
-            coefs_actual:np.array([[0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]]),
+            coefs_actual:np.array([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]]),
             scale_actual:np.array([[1.0]]),
                 }
         gif_frames=[]
@@ -99,6 +99,7 @@ if __name__ == "__main__":
                 "cost_function":[],
                 }
         i_max=250
+        i_skip=5
         for i in range(i_max):
             print(i)
 
@@ -118,48 +119,50 @@ if __name__ == "__main__":
             error_vals['cost_function'].append(sess.run(cost_function,feed_dict=f))
 
             # get actual diffraction pattern
-            _diffraction_pattern_actual=sess.run(diffraction_pattern_actual,feed_dict=f)
+            if i % i_skip == 0:
+                print("saving image")
+                _diffraction_pattern_actual=sess.run(diffraction_pattern_actual,feed_dict=f)
 
-            fig=draw_figure(sess,_diffraction_pattern_actual,coefs_guess,scale_guess,diffraction_pattern_guess,guess_obj,f,"GUESS "+str(i),plot_type='guess')
-            fig.canvas.draw()
-            image_guess=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
-            image_guess=image_guess.reshape(fig.canvas.get_width_height()[::-1]+(3,))
-            plt.close(fig)
+                fig=draw_figure(sess,_diffraction_pattern_actual,coefs_guess,scale_guess,diffraction_pattern_guess,guess_obj,f,"GUESS "+str(i),plot_type='guess')
+                fig.canvas.draw()
+                image_guess=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
+                image_guess=image_guess.reshape(fig.canvas.get_width_height()[::-1]+(3,))
+                plt.close(fig)
 
-            fig=draw_figure(sess,_diffraction_pattern_actual,coefs_actual,scale_actual,diffraction_pattern_actual,actual_obj,f,"ACTUAL",plot_type='original')
-            fig.canvas.draw()
-            image_actual=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
-            image_actual=image_actual.reshape(fig.canvas.get_width_height()[::-1]+(3,))
-            plt.close(fig)
+                fig=draw_figure(sess,_diffraction_pattern_actual,coefs_actual,scale_actual,diffraction_pattern_actual,actual_obj,f,"ACTUAL",plot_type='original')
+                fig.canvas.draw()
+                image_actual=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
+                image_actual=image_actual.reshape(fig.canvas.get_width_height()[::-1]+(3,))
+                plt.close(fig)
 
 
-            # draw plot
-            fig = plt.figure(figsize=(20,3))
-            gs = fig.add_gridspec(1,1)
-            ax=fig.add_subplot(gs[0,0])
-            ax.plot(error_vals['diffraction_p_error'],label='Diffraction Pattern Error')
-            ax.plot(error_vals['coefs_error'],label='Zernike Coefs Error')
-            ax.plot(error_vals['scale_error'],label='Scale Error')
-            ax.plot(error_vals['cost_function'],label='Cost Function')
-            ax.set_xlim(0,i_max)
-            ax.text(0.5,-0.1,"Cost Function:"+"%.4f"%sess.run(cost_function,feed_dict=f),ha='center',transform=ax.transAxes,backgroundcolor='red')
-            ax.legend()
-            fig.canvas.draw()
-            im_plot=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
-            im_plot=im_plot.reshape(fig.canvas.get_width_height()[::-1]+(3,))
-            plt.close(fig)
+                # draw plot
+                fig = plt.figure(figsize=(20,3))
+                gs = fig.add_gridspec(1,1)
+                ax=fig.add_subplot(gs[0,0])
+                ax.plot(error_vals['diffraction_p_error'],label='Diffraction Pattern Error')
+                ax.plot(error_vals['coefs_error'],label='Zernike Coefs Error')
+                ax.plot(error_vals['scale_error'],label='Scale Error')
+                ax.plot(error_vals['cost_function'],label='Cost Function')
+                ax.set_xlim(0,i_max)
+                ax.text(0.5,-0.1,"Cost Function:"+"%.4f"%sess.run(cost_function,feed_dict=f),ha='center',transform=ax.transAxes,backgroundcolor='red')
+                ax.legend()
+                fig.canvas.draw()
+                im_plot=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
+                im_plot=im_plot.reshape(fig.canvas.get_width_height()[::-1]+(3,))
+                plt.close(fig)
 
-            # draw the actual object
-            image_both=np.append(image_actual,image_guess,axis=1)
-            image_both = np.append(im_plot,image_both,axis=0)
-            gif_frames.append(image_both)
+                # draw the actual object
+                image_both=np.append(image_actual,image_guess,axis=1)
+                image_both = np.append(im_plot,image_both,axis=0)
+                gif_frames.append(image_both)
 
             # append the plots
 
             # train
             sess.run(train, feed_dict=f)
 
-        imageio.mimsave('./'+'test_z5_wf1.gif',gif_frames,fps=10)
+        imageio.mimsave('./'+'test_z5_wf2.gif',gif_frames,fps=3)
 
 
 
