@@ -27,9 +27,14 @@ def fits_to_numpy(fits_file_name):
     return nparr
 
 
-def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_aperture=False,ACTUAL=False,m_index=None,mask=False):
+def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_aperture=False,ACTUAL=False,m_index=None,mask=False,original=False,plot_type=None):
 
-    if ACTUAL:
+    TXT_BG_COLOR='orange'
+    if plot_type and plot_type=='guess':
+        TXT_BG_COLOR='cyan'
+        RETRIEVED="GUESS"
+        RECONSTRUCTED="GUESS"
+    elif ACTUAL:
         RETRIEVED="ACTUAL"
         RECONSTRUCTED="ACTUAL"
     else:
@@ -72,7 +77,8 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
 
 
     axes = {}
-    axes["measured"] = fig.add_subplot(gs[0,0])
+    if plot_type=='guess':
+        axes["measured"] = fig.add_subplot(gs[0,0])
     axes["reconstructed"] = fig.add_subplot(gs[0,1])
 
     axes["real"] = fig.add_subplot(gs[1,0])
@@ -119,7 +125,7 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     else:
         im = axes["phase"].pcolormesh(x,x,obj_phase)
 
-    axes["phase"].text(0.2, 0.9,"phase("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor="cyan")
+    axes["phase"].text(0.2, 0.9,"phase("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["phase"].transAxes, backgroundcolor=TXT_BG_COLOR)
     fig.colorbar(im, ax=axes["phase"])
     axes["phase"].axvline(x=x[m_index[1]], color="red", alpha=0.8)
     axes["phase"].axhline(y=x[m_index[0]], color="blue", alpha=0.8)
@@ -145,24 +151,26 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
         axes["intensity"].add_artist(circle)
         axes["intensity"].text(0.8, 0.7,"Spherical\nAperture\n2.7 um", fontsize=10, ha='center', transform=axes["intensity"].transAxes,color="red")
 
-    axes["intensity"].text(0.2, 0.9,"intensity("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["intensity"].transAxes, backgroundcolor="cyan")
+    axes["intensity"].text(0.2, 0.9,"intensity("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["intensity"].transAxes, backgroundcolor=TXT_BG_COLOR)
     axes["intensity"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["intensity"])
 
-    im = axes["measured"].pcolormesh(f,f,np.squeeze(retrieved_obj["measured_pattern"]))
-    axes["measured"].set_ylabel(r"frequency [1/m]$\cdot 10^{6}$")
-    axes["measured"].text(0.2, 0.9,"measured", fontsize=10, ha='center', transform=axes["measured"].transAxes, backgroundcolor="cyan")
-    fig.colorbar(im, ax=axes["measured"])
+    if plot_type=='guess':
+        im = axes["measured"].pcolormesh(f,f,np.squeeze(retrieved_obj["measured_pattern"]))
+        axes["measured"].set_ylabel(r"frequency [1/m]$\cdot 10^{6}$")
+        axes["measured"].text(0.2, 0.9,"ACTUAL", fontsize=10, ha='center', transform=axes["measured"].transAxes, backgroundcolor="orange")
+        fig.colorbar(im, ax=axes["measured"])
 
     im = axes["reconstructed"].pcolormesh(f,f,np.squeeze(retrieved_obj["tf_reconstructed_diff"]))
-    axes["reconstructed"].text(0.2, 0.9,RECONSTRUCTED, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
+    axes["reconstructed"].text(0.2, 0.9,RECONSTRUCTED, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor=TXT_BG_COLOR)
 
     # calc mse
     A = retrieved_obj["measured_pattern"].reshape(-1)
     B = retrieved_obj["tf_reconstructed_diff"].reshape(-1)
     mse = (np.square(A-B)).mean()
     mse = str(mse)
-    axes["reconstructed"].text(0.2, 1.1,"mse("+RECONSTRUCTED+", measured): "+mse, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
+    if plot_type and plot_type=='guess':
+        axes["reconstructed"].text(0.2, 1.1,"mse("+"ACTUAL"+", GUESS): "+mse, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor=TXT_BG_COLOR)
 
     fig.colorbar(im, ax=axes["reconstructed"])
 
@@ -172,7 +180,7 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
         im = axes["real"].pcolormesh(x,x,real_output_softmask)
     else:
         im = axes["real"].pcolormesh(x,x,np.squeeze(retrieved_obj["real_output"]))
-    axes["real"].text(0.2, 0.9,"real("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["real"].transAxes, backgroundcolor="cyan")
+    axes["real"].text(0.2, 0.9,"real("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["real"].transAxes, backgroundcolor=TXT_BG_COLOR)
     axes["real"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["real"])
 
@@ -182,7 +190,7 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
         im = axes["imag"].pcolormesh(x,x,imag_output_softmask)
     else:
         im = axes["imag"].pcolormesh(x,x,np.squeeze(retrieved_obj["imag_output"]))
-    axes["imag"].text(0.2, 0.9,"imag("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["imag"].transAxes, backgroundcolor="cyan")
+    axes["imag"].text(0.2, 0.9,"imag("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["imag"].transAxes, backgroundcolor=TXT_BG_COLOR)
     fig.colorbar(im, ax=axes["imag"])
 
     return fig
