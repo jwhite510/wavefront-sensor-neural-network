@@ -30,38 +30,45 @@ def draw_figure(
     _obj=sess.run(obj,feed_dict=f)
 
     # draw the guess object
-    fig=diffraction_functions.plot_amplitude_phase_meas_retreival(
-            {
-                "measured_pattern":np.squeeze(diffraction_pattern_actual),
-                "tf_reconstructed_diff":np.squeeze(_diffraction_pattern),
-                "real_output":np.real(np.squeeze(_obj['beforewf'])),
-                "imag_output":np.imag(np.squeeze(_obj['beforewf'])),
-                "coefficients":_coefs,
-                "scale":_scale,
-                },
-            title,
-            ACTUAL=True,
-            mask=True,
-            plot_type=plot_type
-            )
-    return fig
+    figures=[]
+    for _j in range(np.shape(diffraction_pattern_actual)[0]):
+        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(
+                {
+                    "measured_pattern":np.squeeze(diffraction_pattern_actual[_j]),
+                    "tf_reconstructed_diff":np.squeeze(_diffraction_pattern[_j]),
+                    "real_output":np.real(np.squeeze(_obj['beforewf'][_j])),
+                    "imag_output":np.imag(np.squeeze(_obj['beforewf'][_j])),
+                    "coefficients":_coefs[_j],
+                    "scale":_scale[_j],
+                    },
+                title,
+                ACTUAL=True,
+                mask=True,
+                plot_type=plot_type
+                )
+        figures.append(fig)
+    return figures
 
 
 
 if __name__ == "__main__":
     N=128
     datagenerator = datagen.DataGenerator(1024,N)
-    coefs_actual = tf.placeholder(tf.float32, shape=[1, len(datagenerator.zernike_cvector)])
-    scale_actual = tf.placeholder(tf.float32, shape=[1,1])
+    coefs_actual = tf.placeholder(tf.float32, shape=[2, len(datagenerator.zernike_cvector)])
+    scale_actual = tf.placeholder(tf.float32, shape=[2,1])
     diffraction_pattern_actual,actual_obj=make_dif_pattern(datagenerator,coefs_actual,scale_actual)
 
     # generate another diffraction pattern with variable
     # coefs_guess = tf.Variable(tf.truncated_normal((1,14),stddev=0.1,dtype=tf.float32))
-    coefs_guess = tf.Variable(np.array([14*[1]],dtype=np.float32))
+
+    # start at 0
+    coefs_guess = tf.Variable(np.array([14*[0],
+                                        14*[0]],
+                                        dtype=np.float32))
     coefs_guess = tf.sigmoid(coefs_guess)
     coefs_guess*=12
     coefs_guess-=6
-    scale_guess = tf.Variable(tf.truncated_normal((1,1),stddev=0.1,dtype=tf.float32))
+    scale_guess = tf.Variable(np.array([[0],[0]],dtype=np.float32))
     scale_guess = tf.sigmoid(scale_guess)
     scale_guess+=0.5 # max 1.5, min 0.5
     diffraction_pattern_guess,guess_obj=make_dif_pattern(datagenerator,coefs_guess,scale_guess)
@@ -88,10 +95,12 @@ if __name__ == "__main__":
         sess.run(init)
 
         f = {
-            coefs_actual:np.array([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]]),
-            scale_actual:np.array([[1.0]]),
+            coefs_actual:np.array([[0.0, 0.0, 0.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]]),
+            scale_actual:np.array([[1.0],
+                                    [1.0]]),
                 }
-        gif_frames=[]
+        gif_frames=[[],[]]
         error_vals={
                 "diffraction_p_error":[],
                 "coefs_error":[],
@@ -123,18 +132,23 @@ if __name__ == "__main__":
                 print("saving image")
                 _diffraction_pattern_actual=sess.run(diffraction_pattern_actual,feed_dict=f)
 
-                fig=draw_figure(sess,_diffraction_pattern_actual,coefs_guess,scale_guess,diffraction_pattern_guess,guess_obj,f,"GUESS "+str(i),plot_type='guess')
-                fig.canvas.draw()
-                image_guess=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
-                image_guess=image_guess.reshape(fig.canvas.get_width_height()[::-1]+(3,))
-                plt.close(fig)
+                figures_guess=draw_figure(sess,_diffraction_pattern_actual,coefs_guess,scale_guess,diffraction_pattern_guess,guess_obj,f,"GUESS "+str(i),plot_type='guess')
+                image_guess=[]
+                for fig in figures_guess:
+                    fig.canvas.draw()
+                    _image_guess=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
+                    _image_guess=_image_guess.reshape(fig.canvas.get_width_height()[::-1]+(3,))
+                    plt.close(fig)
+                    image_guess.append(_image_guess)
 
-                fig=draw_figure(sess,_diffraction_pattern_actual,coefs_actual,scale_actual,diffraction_pattern_actual,actual_obj,f,"ACTUAL",plot_type='original')
-                fig.canvas.draw()
-                image_actual=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
-                image_actual=image_actual.reshape(fig.canvas.get_width_height()[::-1]+(3,))
-                plt.close(fig)
-
+                figures_actual=draw_figure(sess,_diffraction_pattern_actual,coefs_actual,scale_actual,diffraction_pattern_actual,actual_obj,f,"ACTUAL",plot_type='original')
+                image_actual=[]
+                for fig in figures_actual:
+                    fig.canvas.draw()
+                    _image_actual=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
+                    _image_actual=_image_actual.reshape(fig.canvas.get_width_height()[::-1]+(3,))
+                    plt.close(fig)
+                    image_actual.append(_image_actual)
 
                 # draw plot
                 fig = plt.figure(figsize=(20,3))
@@ -151,18 +165,19 @@ if __name__ == "__main__":
                 im_plot=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
                 im_plot=im_plot.reshape(fig.canvas.get_width_height()[::-1]+(3,))
                 plt.close(fig)
-
-                # draw the actual object
-                image_both=np.append(image_actual,image_guess,axis=1)
-                image_both = np.append(im_plot,image_both,axis=0)
-                gif_frames.append(image_both)
+                for _gif_frames,_image_actual,_image_guess in zip(gif_frames,image_actual,image_guess):
+                    image_both=np.append(_image_actual,_image_guess,axis=1)
+                    image_both=np.append(im_plot,image_both,axis=0)
+                    _gif_frames.append(image_both)
 
             # append the plots
 
             # train
             sess.run(train, feed_dict=f)
 
-        imageio.mimsave('./'+'test_z5_wf2.gif',gif_frames,fps=3)
+        for i,_gif_frames in enumerate(gif_frames):
+            print('generating gif %i'%i)
+            imageio.mimsave('./'+'test_multiple_'+str(i)+'.gif',_gif_frames,fps=3)
 
 
 
