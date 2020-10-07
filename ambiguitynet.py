@@ -52,23 +52,23 @@ def draw_figure(
 
 
 if __name__ == "__main__":
+    N_TESTS=28
     N=128
     datagenerator = datagen.DataGenerator(1024,N)
-    coefs_actual = tf.placeholder(tf.float32, shape=[2, len(datagenerator.zernike_cvector)])
-    scale_actual = tf.placeholder(tf.float32, shape=[2,1])
+    coefs_actual = tf.placeholder(tf.float32, shape=[N_TESTS, len(datagenerator.zernike_cvector)])
+    scale_actual = tf.placeholder(tf.float32, shape=[N_TESTS,1])
     diffraction_pattern_actual,actual_obj=make_dif_pattern(datagenerator,coefs_actual,scale_actual)
 
     # generate another diffraction pattern with variable
     # coefs_guess = tf.Variable(tf.truncated_normal((1,14),stddev=0.1,dtype=tf.float32))
 
     # start at 0
-    coefs_guess = tf.Variable(np.array([14*[0],
-                                        14*[0]],
-                                        dtype=np.float32))
+    gif_frames = [[] for _ in range(N_TESTS)]
+    coefs_guess = tf.Variable(np.array(N_TESTS*[14*[0]],dtype=np.float32))
     coefs_guess = tf.sigmoid(coefs_guess)
     coefs_guess*=12
     coefs_guess-=6
-    scale_guess = tf.Variable(np.array([[0],[0]],dtype=np.float32))
+    scale_guess = tf.Variable(np.array(N_TESTS*[[0]],dtype=np.float32))
     scale_guess = tf.sigmoid(scale_guess)
     scale_guess+=0.5 # max 1.5, min 0.5
     diffraction_pattern_guess,guess_obj=make_dif_pattern(datagenerator,coefs_guess,scale_guess)
@@ -95,22 +95,77 @@ if __name__ == "__main__":
         sess.run(init)
 
         f = {
-            coefs_actual:np.array([[0.0, 0.0, 0.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
-                                    [0.0, 0.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]]),
-            scale_actual:np.array([[1.0],
-                                    [1.0]]),
+            coefs_actual:np.array([
+                                    [-6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -6.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -6.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6.0, 0.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -6.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6.0, 0.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -6.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6.0, 0.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -6.0 ],
+                                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6.0 ],
+                                    ]), # 28 total: 2 for each aberration
+            scale_actual:np.array([
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    [1.0],
+                                    ]),
                 }
-        gif_frames=[[],[]]
         error_vals={
                 "diffraction_p_error":[],
                 "coefs_error":[],
                 "scale_error":[],
                 "cost_function":[],
                 }
-        i_max=250
+        i_max=600
         i_skip=5
         for i in range(i_max):
-            print(i)
+            print(i,' ',end='')
 
             # add logs
             summ = sess.run(tf_loggers["diffraction_p_error"], feed_dict=f)
@@ -177,7 +232,7 @@ if __name__ == "__main__":
 
         for i,_gif_frames in enumerate(gif_frames):
             print('generating gif %i'%i)
-            imageio.mimsave('./'+'test_multiple_'+str(i)+'.gif',_gif_frames,fps=3)
+            imageio.mimsave('./'+'C_test_multiple_'+str(i)+'.gif',_gif_frames,fps=3)
 
 
 
