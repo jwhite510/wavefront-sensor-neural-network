@@ -74,10 +74,10 @@ if __name__ == "__main__":
     diffraction_pattern_guess,guess_obj=make_dif_pattern(datagenerator,coefs_guess,scale_guess)
     # cost function
     # diffraction patterns should be similar
-    diffraction_p_error=1000000*tf.losses.mean_squared_error(labels=diffraction_pattern_actual,predictions=diffraction_pattern_guess)
+    diffraction_p_error=400*tf.losses.mean_squared_error(labels=diffraction_pattern_actual,predictions=diffraction_pattern_guess)
     coefs_error = tf.losses.mean_squared_error(labels=coefs_actual,predictions=coefs_guess)
     scale_error = tf.losses.mean_squared_error(labels=scale_actual,predictions=scale_guess)
-    cost_function =  diffraction_p_error + -1*(coefs_error+scale_error)
+    cost_function =  diffraction_p_error + 1*(coefs_error+scale_error)
     optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
     train=optimizer.minimize(cost_function)
 
@@ -232,7 +232,7 @@ if __name__ == "__main__":
 
         for i,_gif_frames in enumerate(gif_frames):
             print('generating gif %i'%i)
-            imageio.mimsave('./'+'C_test_multiple_'+str(i)+'.gif',_gif_frames,fps=3)
+            imageio.mimsave('./'+'D_Zshouldconvergetoactual_test_multiple_'+str(i)+'.gif',_gif_frames,fps=3)
 
 
 
