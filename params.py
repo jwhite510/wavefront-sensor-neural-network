@@ -3,7 +3,7 @@ import PIL.ImageOps
 import PIL
 import numpy as np
 
-def wfs_square_6x6():
+def wfs_square_6x6_upright():
     # for the 6x6 image in same format as the 600nm
     im2 = Image.open("6x6.png")
     im2=im2.resize((1200,1200))
@@ -16,7 +16,7 @@ def wfs_square_6x6():
     im=im3
     return im
 
-def wfs_square_10x10():
+def wfs_square_10x10_upright():
     # for the 6x6 image in same format as the 600nm
     im2 = Image.open("10x10.png")
     im2=im2.resize((1200,1200))
@@ -29,8 +29,11 @@ def wfs_square_10x10():
     im=im3
     return im
 
-def wfs_round_10x10():
+def wfs_round_10x10_downleft():
     return Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")
+
+def wfs_round_10x10_upright():
+    return Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm_up_left.png")
 
 class MaterialParams():
   def __init__(self,beta_Ta,delta_Ta,distance,dz,lam):
@@ -51,9 +54,12 @@ params = Parameters()
 
 # # used in XUV experiment
 # params.wavefront_sensor=wfs_round_10x10_downleft()
-
+# 
 # # used in visible light experiment
 # params.wavefront_sensor=wfs_square_6x6_upright()
+
+# # the modified wavefront sensor that matches the up / right part of the square ones
+# params.wavefront_sensor=wfs_round_10x10_upright()
 
 params.wavefront_sensor=wfs_square_10x10_upright()
 
