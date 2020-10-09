@@ -64,10 +64,10 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     fig.text(0.5, 0.95, title, ha="center", size=30)
 
     # run the constructor to get z n, m vector
-    datagenerator = datagen.DataGenerator(1024,128)
+    zernike_cvector = datagen.generate_zernike_coefs()
     fig.text(0.05,0.9,'Zernike Coefficients:',size=20,color='red')
     c_str=""
-    for _c, _z in zip(retrieved_obj['coefficients'],datagenerator.zernike_cvector):
+    for _c, _z in zip(retrieved_obj['coefficients'],zernike_cvector):
         c_str += r"$Z^{"+str(_z.m)+"}_{"+str(_z.n)+"}$"
         c_str+="    "
         c_str+="%.2f"%_c+'\n'

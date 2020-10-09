@@ -118,6 +118,16 @@ class Material():
         self.slice = create_slice(self.mparams,N,wavefront_sensor)
 
 
+def generate_zernike_coefs():
+    start_n=1
+    max_n=4
+    zernike_cvector = []
+
+    for n in range(start_n,max_n+1):
+        for m in range(n,-n-2,-2):
+            zernike_cvector.append(Zernike_C(m,n))
+    return zernike_cvector
+
 class DataGenerator():
     def __init__(self,N_computational:int,N_interp:int,wavefront_sensor:tf.Tensor):
         self.N_interp=N_interp
@@ -125,13 +135,7 @@ class DataGenerator():
         self.wavefront_sensor=wavefront_sensor
         # generate zernike coefficients
         self.batch_size=4
-        start_n=1
-        max_n=4
-        self.zernike_cvector = []
-
-        for n in range(start_n,max_n+1):
-            for m in range(n,-n-2,-2):
-                self.zernike_cvector.append(Zernike_C(m,n))
+        self.zernike_cvector=generate_zernike_coefs()
 
         materials = [Material(mparams=_p,N=N_interp,wavefront_sensor=wavefront_sensor) for _p in params.params.material_params]
         self.propagate_tf=PropagateTF(N_interp,materials)
