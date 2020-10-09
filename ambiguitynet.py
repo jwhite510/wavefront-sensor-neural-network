@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import diffraction_functions
 import datagen
+import params
 
 def make_dif_pattern(datagenerator:datagen.DataGenerator,coefs:tf.Tensor,scale:tf.Tensor)->(tf.Tensor,dict):
     beforewf=datagenerator.buildgraph(coefs,scale)
@@ -207,8 +208,8 @@ if __name__ == "__main__":
 
                 # draw plot
                 fig = plt.figure(figsize=(20,3))
-                gs = fig.add_gridspec(1,1)
-                ax=fig.add_subplot(gs[0,0])
+                gs = fig.add_gridspec(1,4)
+                ax=fig.add_subplot(gs[0,1:4])
                 ax.plot(error_vals['diffraction_p_error'],label='Diffraction Pattern Error')
                 ax.plot(error_vals['coefs_error'],label='Zernike Coefs Error')
                 ax.plot(error_vals['scale_error'],label='Scale Error')
@@ -216,6 +217,17 @@ if __name__ == "__main__":
                 ax.set_xlim(0,i_max)
                 ax.text(0.5,-0.1,"Cost Function:"+"%.4f"%sess.run(cost_function,feed_dict=f),ha='center',transform=ax.transAxes,backgroundcolor='red')
                 ax.legend()
+
+                ax = fig.add_subplot(gs[0,0])
+                simulation_axes,amplitude_mask=diffraction_functions.get_amplitude_mask_and_imagesize(
+                        datagenerator.N_interp,
+                        int(params.params.wf_ratio*datagenerator.N_interp)
+                        )
+                x=simulation_axes['object']['x'] # meters
+                x*=1e6
+                ax.pcolormesh(x,x,amplitude_mask,cmap='gray')
+                ax.set_ylabel('position [um]')
+
                 fig.canvas.draw()
                 im_plot=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
                 im_plot=im_plot.reshape(fig.canvas.get_width_height()[::-1]+(3,))
