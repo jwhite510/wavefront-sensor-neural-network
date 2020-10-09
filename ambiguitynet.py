@@ -55,7 +55,14 @@ def draw_figure(
 if __name__ == "__main__":
     N_TESTS=28
     N=128
-    datagenerator = datagen.DataGenerator(1024,N)
+
+    simulation_axes,amplitude_mask=diffraction_functions.get_amplitude_mask_and_imagesize(
+            N,
+            int(params.params.wf_ratio*N)
+            )
+    wavefront_sensor=tf.Variable(amplitude_mask,dtype=tf.float32)
+
+    datagenerator = datagen.DataGenerator(1024,N,wavefront_sensor)
     coefs_actual = tf.placeholder(tf.float32, shape=[N_TESTS, len(datagenerator.zernike_cvector)])
     scale_actual = tf.placeholder(tf.float32, shape=[N_TESTS,1])
     diffraction_pattern_actual,actual_obj=make_dif_pattern(datagenerator,coefs_actual,scale_actual)
@@ -219,13 +226,14 @@ if __name__ == "__main__":
                 ax.legend()
 
                 ax = fig.add_subplot(gs[0,0])
-                simulation_axes,amplitude_mask=diffraction_functions.get_amplitude_mask_and_imagesize(
+                simulation_axes,_=diffraction_functions.get_amplitude_mask_and_imagesize(
                         datagenerator.N_interp,
                         int(params.params.wf_ratio*datagenerator.N_interp)
                         )
                 x=simulation_axes['object']['x'] # meters
                 x*=1e6
-                ax.pcolormesh(x,x,amplitude_mask,cmap='gray')
+                _wavefront_sensor=sess.run(wavefront_sensor)
+                ax.pcolormesh(x,x,_wavefront_sensor,cmap='gray')
                 ax.set_ylabel('position [um]')
 
                 fig.canvas.draw()

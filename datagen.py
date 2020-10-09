@@ -98,30 +98,31 @@ class Zernike_C():
         self.m=m
         self.n=n
 
-def create_slice(p: MaterialParams, N_interp: int)->np.array:
-    _, wfs = diffraction_functions.get_amplitude_mask_and_imagesize(N_interp, int(params.params.wf_ratio*N_interp))
-    slice = np.zeros((N_interp,N_interp),dtype=np.complex128)
-    slice[wfs<0.5]=np.exp(-1*p.k * p.beta_Ta * p.dz)*\
-                    np.exp(-1j*p.k*p.delta_Ta*p.dz)
-    slice[wfs>=0.5]=1.0
-    return slice
+def create_slice(p: MaterialParams, N_interp: int,wavefront_sensor:tf.Tensor)->tf.Tensor:
+
+    slice_t=tf.cast(tf.math.less(wavefront_sensor,0.5),dtype=tf.complex64)
+    slice_t*=np.exp(-1*p.k * p.beta_Ta * p.dz)*np.exp(-1j*p.k*p.delta_Ta*p.dz) # beta, delta values outside the holes
+    slice_t+=tf.cast(tf.math.greater_equal(wavefront_sensor,0.5),dtype=tf.complex64) # 1 in the holes
+
+    return slice_t
 
 class Material():
     mparams=None
     steps=None
     slice=None
     distance=None
-    def __init__(self,mparams:MaterialParams,N:int):
+    def __init__(self,mparams:MaterialParams,N:int,wavefront_sensor:tf.Tensor):
         self.mparams=mparams
         self.distance=mparams.distance
         self.steps=round(self.distance/self.mparams.dz)
-        self.slice = create_slice(self.mparams,N)
+        self.slice = create_slice(self.mparams,N,wavefront_sensor)
 
 
 class DataGenerator():
-    def __init__(self,N_computational:int,N_interp:int):
+    def __init__(self,N_computational:int,N_interp:int,wavefront_sensor:tf.Tensor):
         self.N_interp=N_interp
         self.N_computational=N_computational
+        self.wavefront_sensor=wavefront_sensor
         # generate zernike coefficients
         self.batch_size=4
         start_n=1
@@ -132,10 +133,10 @@ class DataGenerator():
             for m in range(n,-n-2,-2):
                 self.zernike_cvector.append(Zernike_C(m,n))
 
-        materials = [Material(mparams=_p,N=N_interp) for _p in params.params.material_params]
+        materials = [Material(mparams=_p,N=N_interp,wavefront_sensor=wavefront_sensor) for _p in params.params.material_params]
         self.propagate_tf=PropagateTF(N_interp,materials)
 
-    def buildgraph(self,x:tf.Tensor,scale:tf.Tensor)->(tf.Tensor,tf.Tensor):
+    def buildgraph(self,x:tf.Tensor,scale:tf.Tensor)->tf.Tensor:
 
         # generate polynomials
         zernikes=[]
@@ -175,10 +176,9 @@ class DataGenerator():
         field_cropped = field_cropped * tf.exp(tf.complex(real=0.0,imag=-1.0*tf.angle(z_center)))
 
         # normalize within wavefront sensor
-        _, wfs = diffraction_functions.get_amplitude_mask_and_imagesize(self.N_interp, int(params.params.wf_ratio*self.N_interp))
-        wfs = np.expand_dims(wfs,0)
-        wfs = np.expand_dims(wfs,-1)
-        wfs = tf.constant(wfs,dtype=tf.float32)
+        wfs=self.wavefront_sensor
+        wfs = tf.expand_dims(wfs,axis=0)
+        wfs = tf.expand_dims(wfs,axis=-1)
         norm_factor = tf.reduce_max(wfs*tf.abs(field_cropped),keepdims=True,axis=[1,2])
         field_cropped = field_cropped / tf.complex(real=norm_factor,imag=tf.zeros_like(norm_factor))
         # return this as the field before wfs
@@ -205,9 +205,9 @@ class PropagateTF():
                 wavefront_ref=forward_propagate(wavefront_ref,_material.slice,self.wf_f,_material.mparams)
         return wavefront_ref
 
-def forward_propagate(E,slice,f,p):
-    slice=np.expand_dims(slice,0)
-    slice=np.expand_dims(slice,3)
+def forward_propagate(E,slice:tf.Tensor,f,p):
+    slice=tf.expand_dims(slice,axis=0)
+    slice=tf.expand_dims(slice,axis=3)
 
     E*=slice
     E=diffraction_functions.tf_fft2(E,dimmensions=[1,2])
