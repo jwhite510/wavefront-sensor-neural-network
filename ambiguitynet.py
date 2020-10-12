@@ -51,15 +51,80 @@ def draw_figure(
     return figures
 
 
+def lrelu(x, alpha=0.3):
+    return tf.maximum(x, tf.multiply(x, alpha))
+
+def wavefront_sensor_network(OUT_SHAPE:(int,int) )->tf.Tensor:
+    with tf.variable_scope("wavefront_generator"):
+        a = tf.constant(np.array([[1]]),dtype=tf.float32)
+        a=tf.keras.layers.Dense(7,activation=lrelu)(a)
+        a=tf.keras.layers.Dense(7*7,activation=lrelu)(a)
+        a=tf.reshape(a,[-1,7,7,1])
+        a=tf.keras.layers.Conv2DTranspose(filters=64,kernel_size=6,strides=2,padding='same',activation=tf.nn.relu)(a)
+        a=tf.keras.layers.Conv2DTranspose(filters=64,kernel_size=6,strides=1,padding='same',activation=tf.nn.relu)(a)
+        a=tf.keras.layers.Conv2DTranspose(filters=64,kernel_size=6,strides=1,padding='same',activation=tf.nn.relu)(a)
+        a=tf.contrib.layers.flatten(a)
+        a=tf.keras.layers.Dense(OUT_SHAPE[0]*OUT_SHAPE[1],activation=tf.nn.sigmoid)(a)
+        a=tf.reshape(a,OUT_SHAPE)
+        return a
 
 if __name__ == "__main__":
     N_TESTS=28
     N=128
-
+    MASK_WIDTH=int(params.params.wf_ratio*N)
+    PAD_AMOUNT=N-MASK_WIDTH
     simulation_axes,amplitude_mask=diffraction_functions.get_amplitude_mask_and_imagesize(
             N,
-            int(params.params.wf_ratio*N)
+            MASK_WIDTH
             )
+    # amplitude_mask[amplitude_mask<0.5]=0.45
+    # amplitude_mask[amplitude_mask>=0.5]=0.55
+    # create mask as tensor
+    wavefront_sensor=wavefront_sensor_network((MASK_WIDTH,MASK_WIDTH))
+    PAD_AMOUNT=(N-MASK_WIDTH)//2
+
+    wavefront_sensor=tf.pad(
+            wavefront_sensor,
+            tf.constant([[PAD_AMOUNT,PAD_AMOUNT],[PAD_AMOUNT,PAD_AMOUNT]]),
+            mode='CONSTANT'
+            )
+
+    test=np.ones((MASK_WIDTH,MASK_WIDTH))
+    test = np.pad(test,pad_width=(N-MASK_WIDTH)//2,mode='constant',constant_values=0.0)
+
+    plt.figure(1)
+    plt.imshow(test)
+
+    plt.figure(2)
+    plt.imshow(amplitude_mask)
+
+    print("wavefront_sensor =>", wavefront_sensor)
+    print("np.shape(amplitude_mask)", np.shape(amplitude_mask))
+    print("np.shape(test)", np.shape(test))
+    init = tf.global_variables_initializer()
+    # initially train the network to make the wavefront sensor
+    premade_wf_error=tf.losses.mean_squared_error(wavefront_sensor,tf.constant(amplitude_mask,dtype=tf.float32))
+
+    tvars = tf.trainable_variables()
+    wavefront_network_vars = [var for var in tvars if "wavefront_generator" in var.name]
+    optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
+    start_as_premade_wf = optimizer.minimize(premade_wf_error,var_list=wavefront_network_vars)
+    init = tf.global_variables_initializer()
+    # run the optimizer to make the initial guess for the wavefront sensor look like the manufactured wfs
+    with tf.Session() as sess:
+        sess.run(init)
+        for i in range(100):
+            print(i)
+            print("error:",sess.run(premade_wf_error))
+            sess.run(start_as_premade_wf)
+            out=sess.run(wavefront_sensor)
+            plt.figure(99)
+            plt.clf()
+            plt.imshow(out)
+            plt.pause(0.1)
+
+    exit()
+    # train network to start output at these values
     wavefront_sensor=tf.Variable(amplitude_mask,dtype=tf.float32)
 
     datagenerator = datagen.DataGenerator(1024,N,wavefront_sensor)
