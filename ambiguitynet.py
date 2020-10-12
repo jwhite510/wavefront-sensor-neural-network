@@ -89,43 +89,14 @@ if __name__ == "__main__":
             mode='CONSTANT'
             )
 
-    test=np.ones((MASK_WIDTH,MASK_WIDTH))
-    test = np.pad(test,pad_width=(N-MASK_WIDTH)//2,mode='constant',constant_values=0.0)
-
-    plt.figure(1)
-    plt.imshow(test)
-
-    plt.figure(2)
-    plt.imshow(amplitude_mask)
-
-    print("wavefront_sensor =>", wavefront_sensor)
-    print("np.shape(amplitude_mask)", np.shape(amplitude_mask))
-    print("np.shape(test)", np.shape(test))
     init = tf.global_variables_initializer()
     # initially train the network to make the wavefront sensor
     premade_wf_error=tf.losses.mean_squared_error(wavefront_sensor,tf.constant(amplitude_mask,dtype=tf.float32))
-
     tvars = tf.trainable_variables()
     wavefront_network_vars = [var for var in tvars if "wavefront_generator" in var.name]
-    optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
-    start_as_premade_wf = optimizer.minimize(premade_wf_error,var_list=wavefront_network_vars)
-    init = tf.global_variables_initializer()
-    # run the optimizer to make the initial guess for the wavefront sensor look like the manufactured wfs
-    with tf.Session() as sess:
-        sess.run(init)
-        for i in range(100):
-            print(i)
-            print("error:",sess.run(premade_wf_error))
-            sess.run(start_as_premade_wf)
-            out=sess.run(wavefront_sensor)
-            plt.figure(99)
-            plt.clf()
-            plt.imshow(out)
-            plt.pause(0.1)
+    optimizer_make_like_wfsensor = tf.train.AdamOptimizer(learning_rate=0.001)
+    start_as_premade_wf = optimizer_make_like_wfsensor.minimize(premade_wf_error,var_list=wavefront_network_vars)
 
-    exit()
-    # train network to start output at these values
-    wavefront_sensor=tf.Variable(amplitude_mask,dtype=tf.float32)
 
     datagenerator = datagen.DataGenerator(1024,N,wavefront_sensor)
     coefs_actual = tf.placeholder(tf.float32, shape=[N_TESTS, len(datagenerator.zernike_cvector)])
@@ -137,13 +108,14 @@ if __name__ == "__main__":
 
     # start at 0
     gif_frames = [[] for _ in range(N_TESTS)]
-    coefs_guess = tf.Variable(np.array(N_TESTS*[14*[0]],dtype=np.float32))
-    coefs_guess = tf.sigmoid(coefs_guess)
-    coefs_guess*=12
-    coefs_guess-=6
-    scale_guess = tf.Variable(np.array(N_TESTS*[[0]],dtype=np.float32))
-    scale_guess = tf.sigmoid(scale_guess)
-    scale_guess+=0.5 # max 1.5, min 0.5
+    with tf.variable_scope("zernike"):
+        coefs_guess = tf.Variable(np.array(N_TESTS*[14*[0]],dtype=np.float32))
+        coefs_guess = tf.sigmoid(coefs_guess)
+        coefs_guess*=12
+        coefs_guess-=6
+        scale_guess = tf.Variable(np.array(N_TESTS*[[0]],dtype=np.float32))
+        scale_guess = tf.sigmoid(scale_guess)
+        scale_guess+=0.5 # max 1.5, min 0.5
     diffraction_pattern_guess,guess_obj=make_dif_pattern(datagenerator,coefs_guess,scale_guess)
     # cost function
     # diffraction patterns should be similar
@@ -151,8 +123,19 @@ if __name__ == "__main__":
     coefs_error = tf.losses.mean_squared_error(labels=coefs_actual,predictions=coefs_guess)
     scale_error = tf.losses.mean_squared_error(labels=scale_actual,predictions=scale_guess)
     cost_function =  diffraction_p_error + -1*(coefs_error+scale_error)
-    optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
-    train=optimizer.minimize(cost_function)
+
+    # optimizer for making ambiguities
+    tvars = tf.trainable_variables()
+    zernike_ceofs = [var for var in tvars if "zernike" in var.name]
+    optimizer_make_ambiguty = tf.train.AdamOptimizer(learning_rate=0.01)
+    decrease_costfunction=optimizer_make_ambiguty.minimize(cost_function,var_list=zernike_ceofs)
+
+    # optimizer for reducing ambiguities
+    tvars = tf.trainable_variables()
+    wavefront_network_vars = [var for var in tvars if "wavefront_generator" in var.name]
+    optimizer_reduce_ambiguity = tf.train.AdamOptimizer(learning_rate=0.001)
+    increase_costfunction = optimizer_reduce_ambiguity.minimize(-1*cost_function,var_list=wavefront_network_vars)
+
 
     # logging
     tf_loggers={}
@@ -166,6 +149,17 @@ if __name__ == "__main__":
     init = tf.global_variables_initializer()
     with tf.Session() as sess:
         sess.run(init)
+        # run the optimizer to make the initial guess for the wavefront sensor look like the manufactured wfs
+        for i in range(100):
+            print(i)
+            print("error:",sess.run(premade_wf_error))
+            sess.run(start_as_premade_wf)
+            out=sess.run(wavefront_sensor)
+            plt.figure(99)
+            plt.clf()
+            plt.imshow(out)
+            plt.pause(0.1)
+        plt.close(99)
 
         f = {
             coefs_actual:np.array([
@@ -237,6 +231,7 @@ if __name__ == "__main__":
                 }
         i_max=600
         i_skip=5
+        _switch=False
         for i in range(i_max):
             print(i,' ',end='')
 
@@ -312,8 +307,15 @@ if __name__ == "__main__":
 
             # append the plots
 
-            # train
-            sess.run(train, feed_dict=f)
+            if _switch:
+                sess.run(decrease_costfunction, feed_dict=f)
+            else:
+                sess.run(increase_costfunction, feed_dict=f)
+            if i%50==0: # switch every 50 iterations
+                _switch=not _switch
+                if not _switch: print('increase cost function')
+                elif _switch: print('run decrease cost function')
+
 
         for i,_gif_frames in enumerate(gif_frames):
             print('generating gif %i'%i)
