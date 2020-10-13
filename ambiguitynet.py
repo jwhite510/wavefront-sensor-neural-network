@@ -76,17 +76,18 @@ if __name__ == "__main__":
     # cost function
     # diffraction patterns should be similar
     diffraction_p_error=1000000*tf.losses.mean_squared_error(labels=diffraction_pattern_actual,predictions=diffraction_pattern_guess)
-    coefs_error = tf.losses.mean_squared_error(labels=coefs_actual,predictions=coefs_guess)
-    scale_error = tf.losses.mean_squared_error(labels=scale_actual,predictions=scale_guess)
-    cost_function =  diffraction_p_error + -1*(coefs_error+scale_error)
+    object_error = tf.losses.mean_squared_error(
+            labels=actual_obj['beforewf'],
+            predictions=guess_obj['beforewf']
+            )
+    cost_function =  diffraction_p_error + -1*(object_error)
     optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
     train=optimizer.minimize(cost_function)
 
     # logging
     tf_loggers={}
     tf_loggers["diffraction_p_error"] = tf.summary.scalar("diffraction_p_error", diffraction_p_error)
-    tf_loggers["coefs_error"] = tf.summary.scalar("coefs_error", coefs_error)
-    tf_loggers["scale_error"] = tf.summary.scalar("scale_error", scale_error)
+    tf_loggers["object_error"] = tf.summary.scalar("object_error", object_error)
     tf_loggers["cost_function"] = tf.summary.scalar("cost_function", cost_function)
 
     writer = tf.summary.FileWriter("./tensorboard_graph/" + "run10")
@@ -159,8 +160,7 @@ if __name__ == "__main__":
                 }
         error_vals={
                 "diffraction_p_error":[],
-                "coefs_error":[],
-                "scale_error":[],
+                "object_error":[],
                 "cost_function":[],
                 }
         i_max=600
@@ -171,16 +171,13 @@ if __name__ == "__main__":
             # add logs
             summ = sess.run(tf_loggers["diffraction_p_error"], feed_dict=f)
             writer.add_summary(summ, global_step=i)
-            summ = sess.run(tf_loggers["coefs_error"], feed_dict=f)
-            writer.add_summary(summ, global_step=i)
-            summ = sess.run(tf_loggers["scale_error"], feed_dict=f)
+            summ = sess.run(tf_loggers["object_error"], feed_dict=f)
             writer.add_summary(summ, global_step=i)
             summ = sess.run(tf_loggers["cost_function"], feed_dict=f)
             writer.add_summary(summ, global_step=i)
             writer.flush()
             error_vals['diffraction_p_error'].append(sess.run(diffraction_p_error,feed_dict=f))
-            error_vals['coefs_error'].append(sess.run(coefs_error,feed_dict=f))
-            error_vals['scale_error'].append(sess.run(scale_error,feed_dict=f))
+            error_vals['object_error'].append(sess.run(object_error,feed_dict=f))
             error_vals['cost_function'].append(sess.run(cost_function,feed_dict=f))
 
             # get actual diffraction pattern
@@ -211,8 +208,7 @@ if __name__ == "__main__":
                 gs = fig.add_gridspec(1,4)
                 ax=fig.add_subplot(gs[0,1:4])
                 ax.plot(error_vals['diffraction_p_error'],label='Diffraction Pattern Error')
-                ax.plot(error_vals['coefs_error'],label='Zernike Coefs Error')
-                ax.plot(error_vals['scale_error'],label='Scale Error')
+                ax.plot(error_vals['object_error'],label='Object Coefs Error')
                 ax.plot(error_vals['cost_function'],label='Cost Function')
                 ax.set_xlim(0,i_max)
                 ax.text(0.5,-0.1,"Cost Function:"+"%.4f"%sess.run(cost_function,feed_dict=f),ha='center',transform=ax.transAxes,backgroundcolor='red')
