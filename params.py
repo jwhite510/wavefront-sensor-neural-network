@@ -3,6 +3,19 @@ import PIL.ImageOps
 import PIL
 import numpy as np
 
+def custom_round(coordinates:list,radius:float,size:tuple)->np.array:
+    image = 255*np.ones((size[0],size[1],3),dtype=np.uint8)
+    row=np.arange(0,size[0]).reshape(-1,1)
+    col=np.arange(0,size[1]).reshape(1,-1)
+    for _c in coordinates:
+        # radius
+        # draw distance
+        dist = np.sqrt((row-_c[0])**2 + (col-_c[1])**2)
+        image[dist<radius,:]=0
+
+    return Image.fromarray(image)
+
+
 def wfs_square_6x6_upright():
     # for the 6x6 image in same format as the 600nm
     im2 = Image.open("6x6.png")
@@ -54,6 +67,24 @@ params = Parameters()
 
 # # used in XUV experiment
 # params.wavefront_sensor=wfs_round_10x10_downleft()
+
+# make square shape
+coordinates,side_offset,size= [],60,(1200,1200)
+np.random.seed(5678)
+random_offset_scale=40.0 # set this to and it will be exactly the same as 10x10 downleft wfs
+for _r in np.linspace(0+side_offset,size[0]-side_offset,10):
+    for _c in np.linspace(0+side_offset,size[1]-side_offset,10):
+        random_r_offset=(np.random.rand()-0.5)*random_offset_scale
+        random_c_offset=(np.random.rand()-0.5)*random_offset_scale
+        if _r < size[0]//2 and _c > size[1]//2:
+            coordinates.append((_r+25+random_r_offset,_c-25+random_c_offset))
+        else: coordinates.append((_r+random_r_offset,_c+random_c_offset))
+params.wavefront_sensor=custom_round(
+        coordinates,
+        radius=30,
+        size=size
+        )
+
 # 
 # # used in visible light experiment
 # params.wavefront_sensor=wfs_square_6x6_upright()
@@ -61,7 +92,7 @@ params = Parameters()
 # # the modified wavefront sensor that matches the up / right part of the square ones
 # params.wavefront_sensor=wfs_round_10x10_upright()
 
-params.wavefront_sensor=wfs_square_10x10_upright()
+# params.wavefront_sensor=wfs_square_10x10_upright()
 
 # size used in XUV
 # params.wavefron_sensor_size_nm=5*im.size[0]*1e-9
@@ -109,4 +140,4 @@ params.material_params.append(params_Si)
 # params.material_params.append(params_cu)
 
 
-params.wf_ratio=1/3
+params.wf_ratio=1/2
