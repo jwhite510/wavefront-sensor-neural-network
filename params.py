@@ -2,6 +2,7 @@ from PIL import Image, ImageDraw
 import PIL.ImageOps
 import PIL
 import numpy as np
+import argparse
 
 def custom_round(coordinates:list,radius:float,size:tuple)->np.array:
     image = 255*np.ones((size[0],size[1],3),dtype=np.uint8)
@@ -65,34 +66,43 @@ class Parameters():
 
 params = Parameters()
 
+parser=argparse.ArgumentParser()
+parser.add_argument('--wfsensor',type=int)
+parser.add_argument('--filename',type=str)
+args=parser.parse_args()
+
 # # used in XUV experiment
-# params.wavefront_sensor=wfs_round_10x10_downleft()
+if args.wfsensor==0:
+    params.wavefront_sensor=wfs_round_10x10_downleft()
 
-# make square shape
-coordinates,side_offset,size= [],60,(1200,1200)
-np.random.seed(5678)
-random_offset_scale=40.0 # set this to and it will be exactly the same as 10x10 downleft wfs
-for _r in np.linspace(0+side_offset,size[0]-side_offset,10):
-    for _c in np.linspace(0+side_offset,size[1]-side_offset,10):
-        random_r_offset=(np.random.rand()-0.5)*random_offset_scale
-        random_c_offset=(np.random.rand()-0.5)*random_offset_scale
-        if _r < size[0]//2 and _c > size[1]//2:
-            coordinates.append((_r+25+random_r_offset,_c-25+random_c_offset))
-        else: coordinates.append((_r+random_r_offset,_c+random_c_offset))
-params.wavefront_sensor=custom_round(
-        coordinates,
-        radius=30,
-        size=size
-        )
+elif args.wfsensor==1:
+    # make square shape
+    coordinates,side_offset,size= [],60,(1200,1200)
+    np.random.seed(5678)
+    random_offset_scale=40.0 # set this to and it will be exactly the same as 10x10 downleft wfs
+    for _r in np.linspace(0+side_offset,size[0]-side_offset,10):
+        for _c in np.linspace(0+side_offset,size[1]-side_offset,10):
+            random_r_offset=(np.random.rand()-0.5)*random_offset_scale
+            random_c_offset=(np.random.rand()-0.5)*random_offset_scale
+            if _r < size[0]//2 and _c > size[1]//2:
+                coordinates.append((_r+25+random_r_offset,_c-25+random_c_offset))
+            else: coordinates.append((_r+random_r_offset,_c+random_c_offset))
+    params.wavefront_sensor=custom_round(
+            coordinates,
+            radius=30,
+            size=size
+            )
 
-# 
-# # used in visible light experiment
-# params.wavefront_sensor=wfs_square_6x6_upright()
+elif args.wfsensor==2:
+    # used in visible light experiment
+    params.wavefront_sensor=wfs_square_6x6_upright()
 
-# # the modified wavefront sensor that matches the up / right part of the square ones
-# params.wavefront_sensor=wfs_round_10x10_upright()
+elif args.wfsensor==3:
+    # the modified wavefront sensor that matches the up / right part of the square ones
+    params.wavefront_sensor=wfs_round_10x10_upright()
 
-# params.wavefront_sensor=wfs_square_10x10_upright()
+elif args.wfsensor==4:
+    params.wavefront_sensor=wfs_square_10x10_upright()
 
 # size used in XUV
 # params.wavefron_sensor_size_nm=5*im.size[0]*1e-9

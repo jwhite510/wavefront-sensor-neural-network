@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import diffraction_functions
 import datagen
 import params
+import argparse
 
 def make_dif_pattern(datagenerator:datagen.DataGenerator,coefs:tf.Tensor,scale:tf.Tensor)->(tf.Tensor,dict):
     beforewf=datagenerator.buildgraph(coefs,scale)
@@ -53,6 +54,10 @@ def draw_figure(
 
 
 if __name__ == "__main__":
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--wfsensor',type=int)
+    parser.add_argument('--filename',type=str)
+    args=parser.parse_args()
     N_TESTS=28
     N=128
     datagenerator = datagen.DataGenerator(1024,N)
@@ -75,7 +80,7 @@ if __name__ == "__main__":
     diffraction_pattern_guess,guess_obj=make_dif_pattern(datagenerator,coefs_guess,scale_guess)
     # cost function
     # diffraction patterns should be similar
-    diffraction_p_error=1000000*tf.losses.mean_squared_error(labels=diffraction_pattern_actual,predictions=diffraction_pattern_guess)
+    diffraction_p_error=1000*tf.losses.mean_squared_error(labels=diffraction_pattern_actual,predictions=diffraction_pattern_guess)
     object_error = tf.losses.mean_squared_error(
             labels=actual_obj['beforewf'],
             predictions=guess_obj['beforewf']
@@ -164,9 +169,9 @@ if __name__ == "__main__":
                 "cost_function":[],
                 }
         i_max=600
-        i_skip=5
+        i_skip=20
         for i in range(i_max):
-            print(i,' ',end='')
+            print(i)
 
             # add logs
             summ = sess.run(tf_loggers["diffraction_p_error"], feed_dict=f)
@@ -179,9 +184,14 @@ if __name__ == "__main__":
             error_vals['diffraction_p_error'].append(sess.run(diffraction_p_error,feed_dict=f))
             error_vals['object_error'].append(sess.run(object_error,feed_dict=f))
             error_vals['cost_function'].append(sess.run(cost_function,feed_dict=f))
+            print(
+                    'diffraction_p_error:',error_vals['diffraction_p_error'][-1],
+                    'object_error:',error_vals['object_error'][-1],
+                    'cost_function:',error_vals['cost_function'][-1]
+                    )
 
             # get actual diffraction pattern
-            if i % i_skip == 0:
+            if i % i_skip == 0 or i==i_max-1:
                 print("saving image")
                 _diffraction_pattern_actual=sess.run(diffraction_pattern_actual,feed_dict=f)
 
@@ -208,7 +218,7 @@ if __name__ == "__main__":
                 gs = fig.add_gridspec(1,4)
                 ax=fig.add_subplot(gs[0,1:4])
                 ax.plot(error_vals['diffraction_p_error'],label='Diffraction Pattern Error')
-                ax.plot(error_vals['object_error'],label='Object Coefs Error')
+                ax.plot(error_vals['object_error'],label='Complex Object Error')
                 ax.plot(error_vals['cost_function'],label='Cost Function')
                 ax.set_xlim(0,i_max)
                 ax.text(0.5,-0.1,"Cost Function:"+"%.4f"%sess.run(cost_function,feed_dict=f),ha='center',transform=ax.transAxes,backgroundcolor='red')
@@ -240,7 +250,7 @@ if __name__ == "__main__":
 
         for i,_gif_frames in enumerate(gif_frames):
             print('generating gif %i'%i)
-            imageio.mimsave('./'+'C_test_multiple_'+str(i)+'.gif',_gif_frames,fps=3)
+            imageio.mimsave('./'+args.filename+str(i)+'.gif',_gif_frames,fps=3)
 
 
 
