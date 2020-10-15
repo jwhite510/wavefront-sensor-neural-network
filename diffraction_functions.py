@@ -37,10 +37,11 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
         RECONSTRUCTED="reconstructed"
 
     # coefficients and scale
-    retrieved_obj['coefficients'] = np.squeeze(retrieved_obj['coefficients'])
-    assert len(np.shape(retrieved_obj['coefficients']))==1
-    retrieved_obj['scale'] = np.squeeze(retrieved_obj['scale'])
-    assert len(np.shape(retrieved_obj['scale']))==0
+    if 'coefficients' in retrieved_obj.keys():
+        retrieved_obj['coefficients'] = np.squeeze(retrieved_obj['coefficients'])
+        assert len(np.shape(retrieved_obj['coefficients']))==1
+        retrieved_obj['scale'] = np.squeeze(retrieved_obj['scale'])
+        assert len(np.shape(retrieved_obj['scale']))==0
 
     # get axes for retrieved object and diffraction pattern
     N=np.shape(np.squeeze(retrieved_obj['measured_pattern']))[0]
@@ -60,15 +61,16 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
 
     # run the constructor to get z n, m vector
     datagenerator = datagen.DataGenerator(1024,128)
-    fig.text(0.05,0.9,'Zernike Coefficients:',size=20,color='red')
-    c_str=""
-    for _c, _z in zip(retrieved_obj['coefficients'],datagenerator.zernike_cvector):
-        c_str += r"$Z^{"+str(_z.m)+"}_{"+str(_z.n)+"}$"
-        c_str+="    "
-        c_str+="%.2f"%_c+'\n'
-    fig.text(0.03,0.85,c_str,ha='left',va='top',size=20)
-    fig.text(0.05,0.15,'Scale:',size=20,color='red')
-    fig.text(0.03,0.10,'S:'+"%.2f"%retrieved_obj['scale'],ha='left',va='top',size=20)
+    if 'coefficients' in retrieved_obj.keys():
+        fig.text(0.05,0.9,'Zernike Coefficients:',size=20,color='red')
+        c_str=""
+        for _c, _z in zip(retrieved_obj['coefficients'],datagenerator.zernike_cvector):
+            c_str += r"$Z^{"+str(_z.m)+"}_{"+str(_z.n)+"}$"
+            c_str+="    "
+            c_str+="%.2f"%_c+'\n'
+        fig.text(0.03,0.85,c_str,ha='left',va='top',size=20)
+        fig.text(0.05,0.15,'Scale:',size=20,color='red')
+        fig.text(0.03,0.10,'S:'+"%.2f"%retrieved_obj['scale'],ha='left',va='top',size=20)
 
 
     axes = {}

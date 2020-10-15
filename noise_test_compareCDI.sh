@@ -27,7 +27,7 @@ do
 	# for the infinity counts comparison case, use the network trained with 50 counts
 	camera_noise="SquareWFtest/CameraNoise/1_1000/Bild_1.png"
 	DIR="data_9_30_linear"
-	network="visible_test_nr2"
+	network="visible_test_nr6"
 	pc=0
 
 	rm -rf ./$DIR
@@ -37,7 +37,7 @@ do
 	# generate a dataset with specific objects
 	python datagen.py --samplesf datagen.dat --name specific_samples.hdf5
 	python addnoise.py --infile specific_samples.hdf5 --outfile specific_samples_noise.hdf5 --peakcount $pc --cameraimage $camera_noise
-	python CompareNN_MatlabBilinearInterp.py --network $network --net_type nr --pc $pc --DIR $DIR --outfile $outfile
+	python CompareNN_MatlabBilinearInterp.py --network $network --net_type original --pc $pc --DIR $DIR --outfile $outfile
 done
 
 exit
