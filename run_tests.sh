@@ -6,8 +6,8 @@
 
 declare -a runs=(
 "visible_test_nr6" # name
-"200" # train samples
-"36000" # peak count
+"36000" # train samples
+"50" # peak count
 "original" # nr network
 
 

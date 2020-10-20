@@ -58,6 +58,7 @@ class CompareNetworkIterative():
         # retrieve image with neural network
         self.network=diffraction_net.DiffractionNet(args.network,args.net_type) # load a pre trained network
         self.args=args
+        self.net_type=args.net_type
 
     def test(self,index,folder):
         m_index=(64,64)
@@ -182,14 +183,15 @@ class CompareNetworkIterative():
                 self.network.nn_nodes["imag_out"],
                 feed_dict={self.network.x:measured.reshape(1,N,N,1)}
                 )
-        retrieved["coefficients"]=self.network.sess.run(
-                self.network.nn_nodes["out_zcoefs"],
-                feed_dict={self.network.x:measured.reshape(1,N,N,1)}
-                )
-        retrieved["scale"]=self.network.sess.run(
-                self.network.nn_nodes["out_scale"],
-                feed_dict={self.network.x:measured.reshape(1,N,N,1)}
-                )
+        if self.net_type=='nr':
+            retrieved["coefficients"]=self.network.sess.run(
+                    self.network.nn_nodes["out_zcoefs"],
+                    feed_dict={self.network.x:measured.reshape(1,N,N,1)}
+                    )
+            retrieved["scale"]=self.network.sess.run(
+                    self.network.nn_nodes["out_scale"],
+                    feed_dict={self.network.x:measured.reshape(1,N,N,1)}
+                    )
         fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
         return fig
 
