@@ -5,11 +5,35 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"visible_test_nr6" # name
+"wfstest_0" # name
 "36000" # train samples
 "50" # peak count
 "original" # nr network
+"0" # wavefront sensor
 
+"wfstest_1" # name
+"36000" # train samples
+"50" # peak count
+"original" # nr network
+"1" # wavefront sensor
+
+"wfstest_2" # name
+"36000" # train samples
+"50" # peak count
+"original" # nr network
+"2" # wavefront sensor
+
+"wfstest_3" # name
+"36000" # train samples
+"50" # peak count
+"original" # nr network
+"3" # wavefront sensor
+
+"wfstest_4" # name
+"36000" # train samples
+"50" # peak count
+"original" # nr network
+"4" # wavefront sensor
 
 )
 i=0
@@ -19,6 +43,7 @@ do
 	training_samples=${runs[$i+1]}
 	pc=${runs[$i+2]}
 	net_type=${runs[$i+3]}
+	wfsensor=${runs[$i+4]}
 
 	echo $network
 	echo $training_samples
@@ -26,17 +51,17 @@ do
 	# generate dataset
 	rm ./${network}*.hdf5
 	# create samples
-	python datagen.py --count ${training_samples} --name ${network}_train.hdf5 --batch_size 100 --seed 345678 --wfsensor 0
-	python datagen.py --count 200 --name ${network}_test.hdf5 --batch_size 100 --seed 8977 --wfsensor 0
+	python datagen.py --count ${training_samples} --name ${network}_train.hdf5 --batch_size 100 --seed 345678 --wfsensor $wfsensor
+	python datagen.py --count 200 --name ${network}_test.hdf5 --batch_size 100 --seed 8977 --wfsensor $wfsensor
 
 	camera_noise="SquareWFtest/CameraNoise/1_1000/Bild_1.png"
 	# add noise to samples
-	python addnoise.py --infile ${network}_train.hdf5 --outfile ${network}_train_noise.hdf5 --peakcount $pc --cameraimage $camera_noise --wfsensor 0
-	python addnoise.py --infile ${network}_test.hdf5 --outfile ${network}_test_noise.hdf5 --peakcount $pc --cameraimage $camera_noise --wfsensor 0
+	python addnoise.py --infile ${network}_train.hdf5 --outfile ${network}_train_noise.hdf5 --peakcount $pc --cameraimage $camera_noise --wfsensor $wfsensor
+	python addnoise.py --infile ${network}_test.hdf5 --outfile ${network}_test_noise.hdf5 --peakcount $pc --cameraimage $camera_noise --wfsensor $wfsensor
 
 	echo ${network}
-	python diffraction_net.py --name ${network} --net_type ${net_type} --wfsensor 0
+	python diffraction_net.py --name ${network} --net_type ${net_type} --wfsensor $wfsensor
 
-	i=$i+4
+	i=$i+5
 done
 

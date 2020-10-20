@@ -3,8 +3,14 @@
 
 for k in $(seq 1 14)
 do
+	# for the infinity counts comparison case, use the network trained with 50 counts
+	camera_noise="SquareWFtest/CameraNoise/1_1000/Bild_1.png"
+	DIR="data_9_30_linear"
+	network="wfstest_0"
+	pc=0
+	wfsensor="0"
 	echo $k
-	outfile="test_"$k".gif"
+	outfile=$network"test_"$k".gif"
 	rm ./tmp.py
 	# write to the .dat file the parameters
 	echo "import numpy as np" >> tmp.py
@@ -24,20 +30,16 @@ do
 	echo "np.savetxt('datagen.dat',s)" >> tmp.py
 	python tmp.py
 
-	# for the infinity counts comparison case, use the network trained with 50 counts
-	camera_noise="SquareWFtest/CameraNoise/1_1000/Bild_1.png"
-	DIR="data_9_30_linear"
-	network="visible_test_nr6"
-	pc=0
+
 
 	rm -rf ./$DIR
 	# make .dat file
 
 
 	# generate a dataset with specific objects
-	python datagen.py --samplesf datagen.dat --name specific_samples.hdf5 --wfsensor 0
-	python addnoise.py --infile specific_samples.hdf5 --outfile specific_samples_noise.hdf5 --peakcount $pc --cameraimage $camera_noise --wfsensor 0
-	python CompareNN_MatlabBilinearInterp.py --network $network --net_type original --pc $pc --DIR $DIR --outfile $outfile --wfsensor 0
+	python datagen.py --samplesf datagen.dat --name specific_samples.hdf5 --wfsensor $wfsensor
+	python addnoise.py --infile specific_samples.hdf5 --outfile specific_samples_noise.hdf5 --peakcount $pc --cameraimage $camera_noise --wfsensor $wfsensor
+	python CompareNN_MatlabBilinearInterp.py --network $network --net_type original --pc $pc --DIR $DIR --outfile $outfile --wfsensor $wfsensor
 done
 
 exit
