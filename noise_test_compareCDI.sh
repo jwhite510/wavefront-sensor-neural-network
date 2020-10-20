@@ -35,9 +35,9 @@ do
 
 
 	# generate a dataset with specific objects
-	python datagen.py --samplesf datagen.dat --name specific_samples.hdf5
-	python addnoise.py --infile specific_samples.hdf5 --outfile specific_samples_noise.hdf5 --peakcount $pc --cameraimage $camera_noise
-	python CompareNN_MatlabBilinearInterp.py --network $network --net_type original --pc $pc --DIR $DIR --outfile $outfile
+	python datagen.py --samplesf datagen.dat --name specific_samples.hdf5 --wfsensor 0
+	python addnoise.py --infile specific_samples.hdf5 --outfile specific_samples_noise.hdf5 --peakcount $pc --cameraimage $camera_noise --wfsensor 0
+	python CompareNN_MatlabBilinearInterp.py --network $network --net_type original --pc $pc --DIR $DIR --outfile $outfile --wfsensor 0
 done
 
 exit

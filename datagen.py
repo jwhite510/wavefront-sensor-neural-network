@@ -298,7 +298,7 @@ if __name__ == "__main__":
     parser.add_argument('--name',type=str)
     parser.add_argument('--batch_size',type=int)
     parser.add_argument('--samplesf',type=str)
-    args=parser.parse_args()
+    args,_=parser.parse_known_args()
 
     datagenerator = DataGenerator(1024,128)
 

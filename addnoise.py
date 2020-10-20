@@ -27,7 +27,7 @@ if __name__ == "__main__":
     parser.add_argument('--outfile',type=str)
     parser.add_argument('--peakcount',type=int)
     parser.add_argument('--cameraimage',type=str)
-    args=parser.parse_args()
+    args,_=parser.parse_known_args()
 
     ocameraNoise=CameraNoise(args.cameraimage)
 

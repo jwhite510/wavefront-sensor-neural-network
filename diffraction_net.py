@@ -993,7 +993,7 @@ if __name__ == "__main__":
     parser=argparse.ArgumentParser()
     parser.add_argument('--name',type=str)
     parser.add_argument('--net_type',type=str)
-    args=parser.parse_args()
+    args,_=parser.parse_known_args()
 
     diffraction_net = DiffractionNet(name=args.name,net_type=args.net_type)
     diffraction_net.supervised_learn()

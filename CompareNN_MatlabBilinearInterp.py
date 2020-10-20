@@ -499,7 +499,7 @@ if __name__ == "__main__":
     parser.add_argument('--pc',type=str)
     parser.add_argument('--DIR',type=str)
     parser.add_argument('--outfile',type=str)
-    args=parser.parse_args()
+    args,_=parser.parse_known_args()
     comparenetworkiterative = CompareNetworkIterative(args)
     # run test on simulated validation data
     # comparenetworkiterative.simulated_test(100)
