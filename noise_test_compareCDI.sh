@@ -6,11 +6,12 @@ do
 	# for the infinity counts comparison case, use the network trained with 50 counts
 	camera_noise="SquareWFtest/CameraNoise/1_1000/Bild_1.png"
 	DIR="data_9_30_linear"
-	network="wfstest_0"
 	pc=0
-	wfsensor="0"
+	wfsensor="0" # wavefront sensor
+
+	network="wfstest_""$wfsensor"
 	echo $k
-	outfile=$network"test_"$k".gif"
+	outfile=$network"test_"$k"_"$pc"cts.gif"
 	rm ./tmp.py
 	# write to the .dat file the parameters
 	echo "import numpy as np" >> tmp.py
