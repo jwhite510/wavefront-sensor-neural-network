@@ -76,6 +76,10 @@ if __name__ == "__main__":
                     # normalize
                     diffraction_pattern_with_noise_poisson_and_camera=diffraction_pattern_with_noise_poisson_and_camera/np.max(diffraction_pattern_with_noise_poisson_and_camera)
 
+                    # center it again
+                    diffraction_pattern_with_noise_poisson_and_camera = diffraction_functions.center_image_at_centroid(diffraction_pattern_with_noise_poisson_and_camera)
+                    diffraction_pattern_with_noise_poisson_and_camera[diffraction_pattern_with_noise_poisson_and_camera<0]=0
+
                     newhd5file.root.object_real.append(object_real.reshape(1,-1))
                     newhd5file.root.object_imag.append(object_imag.reshape(1,-1))
                     newhd5file.root.diffraction_noise.append(diffraction_pattern_with_noise_poisson_and_camera.reshape(1,-1))

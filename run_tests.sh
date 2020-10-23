@@ -5,35 +5,35 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"wfstest_0" # name
-"36000" # train samples
-"50" # peak count
-"original" # nr network
-"0" # wavefront sensor
+# "wfstest_0" # name
+# "36000" # train samples
+# "50" # peak count
+# "original" # nr network
+# "0" # wavefront sensor
 
-"wfstest_1" # name
-"36000" # train samples
-"50" # peak count
-"original" # nr network
-"1" # wavefront sensor
+# "wfstest_1" # name
+# "36000" # train samples
+# "50" # peak count
+# "original" # nr network
+# "1" # wavefront sensor
 
-"wfstest_2" # name
+"wfstest_2_centered_after_noise" # name
 "36000" # train samples
 "50" # peak count
 "original" # nr network
 "2" # wavefront sensor
 
-"wfstest_3" # name
-"36000" # train samples
-"50" # peak count
-"original" # nr network
-"3" # wavefront sensor
+# "wfstest_3" # name
+# "36000" # train samples
+# "50" # peak count
+# "original" # nr network
+# "3" # wavefront sensor
 
-"wfstest_4" # name
-"36000" # train samples
-"50" # peak count
-"original" # nr network
-"4" # wavefront sensor
+# "wfstest_4" # name
+# "36000" # train samples
+# "50" # peak count
+# "original" # nr network
+# "4" # wavefront sensor
 
 )
 i=0
