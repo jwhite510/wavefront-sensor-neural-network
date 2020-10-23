@@ -497,8 +497,6 @@ if __name__ == "__main__":
     parser.add_argument('--network',type=str)
     parser.add_argument('--net_type',type=str)
     parser.add_argument('--pc',type=str)
-    parser.add_argument('--DIR',type=str)
-    parser.add_argument('--outfile',type=str)
     args,_=parser.parse_known_args()
     comparenetworkiterative = CompareNetworkIterative(args)
     # run test on simulated validation data
@@ -565,13 +563,9 @@ if __name__ == "__main__":
     # orientations = [None]
     scales = [1.0]
 
-    DIR=args.DIR
-    if not os.path.isdir(DIR):
-        os.mkdir(DIR)
     with tables.open_file("specific_samples_noise.hdf5",mode="r") as file:
         N = file.root.N[0,0]
         n_samples=file.root.object_real.shape[0]
-        gif_frames=[]
         for _i in range(n_samples):
             obj_acutal={}
             obj_acutal["real_output"] = file.root.object_real[_i, :].reshape(N,N)
@@ -586,16 +580,21 @@ if __name__ == "__main__":
             image_actual=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
             image_actual=image_actual.reshape(fig.canvas.get_width_height()[::-1] + (3,))
 
-            # compare to training data set
-            fig=comparenetworkiterative.retrieve_measured(obj_acutal['measured_pattern'],"specific: "+str(_i)+" predicted",mask=True)
-            # fig.savefig(os.path.join(DIR,"specific: "+str(_i)+" predicted"))
-            fig.canvas.draw()
-            image_ret=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
-            image_ret=image_ret.reshape(fig.canvas.get_width_height()[::-1]+(3,))
-            image_combined=np.append(image_ret,image_actual,axis=1)
-            gif_frames.append(image_combined)
+            for _f,_name in zip(
+                    [comparenetworkiterative.retrieve_measured, comparenetworkiterative.matlab_cdi_retrieval],
+                    ['retrieved_nn','retrieved_iterative']
+                    ):
+                # compare to training data set
+                fig=_f(obj_acutal['measured_pattern'],"specific: "+str(_i)+" "+_name+"predicted",mask=True)
+                fig.canvas.draw()
+                image_ret=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
+                image_ret=image_ret.reshape(fig.canvas.get_width_height()[::-1]+(3,))
+                image_combined=np.append(image_ret,image_actual,axis=1)
+                # save this as an image with PIL
+                im=Image.fromarray(image_combined)
+                im.save(_name+str(_i)+'.png')
+
             # plot simulated retrieved and actual
-        imageio.mimsave('./'+args.outfile,gif_frames,fps=10)
         exit()
         from pudb import set_trace; set_trace() # BREAKPOINT
         print("BREAKPOINT")
