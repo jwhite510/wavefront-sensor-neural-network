@@ -193,7 +193,7 @@ class CompareNetworkIterative():
                     feed_dict={self.network.x:measured.reshape(1,N,N,1)}
                     )
         fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
-        return fig
+        return retrieved,fig
 
     def matlab_cdi_retrieval(self,measured,figtitle,mask=False):
         measured=np.squeeze(measured)
@@ -202,7 +202,7 @@ class CompareNetworkIterative():
         retrieved=diffraction_functions.matlab_cdi_retrieval(measured,amplitude_mask,interpolate=True)
 
         fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
-        return fig
+        return retrieved,fig
 
 
     def get_train_sample(self,index):
@@ -497,6 +497,7 @@ if __name__ == "__main__":
     parser.add_argument('--network',type=str)
     parser.add_argument('--net_type',type=str)
     parser.add_argument('--pc',type=str)
+    parser.add_argument('--outfile',type=str)
     args,_=parser.parse_known_args()
     comparenetworkiterative = CompareNetworkIterative(args)
     # run test on simulated validation data
@@ -580,12 +581,15 @@ if __name__ == "__main__":
             image_actual=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
             image_actual=image_actual.reshape(fig.canvas.get_width_height()[::-1] + (3,))
 
+            outfile={}
+            outfile['actual']=obj_acutal
             for _f,_name in zip(
                     [comparenetworkiterative.retrieve_measured, comparenetworkiterative.matlab_cdi_retrieval],
                     ['retrieved_nn','retrieved_iterative']
                     ):
                 # compare to training data set
-                fig=_f(obj_acutal['measured_pattern'],"specific: "+str(_i)+" "+_name+"predicted",mask=True)
+                retrieved,fig=_f(obj_acutal['measured_pattern'],"specific: "+str(_i)+" "+_name+"predicted",mask=True)
+                outfile[_name]=retrieved
                 fig.canvas.draw()
                 image_ret=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
                 image_ret=image_ret.reshape(fig.canvas.get_width_height()[::-1]+(3,))
@@ -594,6 +598,8 @@ if __name__ == "__main__":
                 im=Image.fromarray(image_combined)
                 im.save(_name+str(_i)+'.png')
 
+            with open(args.outfile,'wb') as file:
+                pickle.dump(outfile,file)
             # plot simulated retrieved and actual
         exit()
         from pudb import set_trace; set_trace() # BREAKPOINT

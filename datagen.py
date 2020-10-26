@@ -313,6 +313,7 @@ if __name__ == "__main__":
         with tf.Session() as sess:
             print("args.samplesf =>", args.samplesf)
             samplesf=np.loadtxt(args.samplesf)
+            if len(np.shape(samplesf))==1: samplesf=samplesf.reshape(1,-1)
             if(np.shape(samplesf)[1]!=len(datagenerator.zernike_cvector)+1):
                 raise ValueError('incorrect dimmensions in samples file: z coefs:'+str(len(datagenerator.zernike_cvector)) + "   + 1 (scale)")
             with tf.Session() as sess:
