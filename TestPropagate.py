@@ -5,6 +5,7 @@ import pickle
 from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
 from PIL import Image, ImageDraw
 import os
+from scipy.ndimage.filters import gaussian_filter
 
 
 # def plot_beam(complex_b,title):
@@ -30,7 +31,8 @@ def make_nice_figure(retrieved:dict):
     # fig.subplots_adjust(hspace=0.0, left=0.2)
     gs = fig.add_gridspec(3,5)
 
-    figletter = 'a'
+    figletter = 'a'; _figl_i=0
+    figletters=['a','b','c','f','g','h','k','l']
     for _name, _i, _dist in zip(['-500','0','500_sim'],range(3),[-500,0,500]):
         complex_obj = np.squeeze(retrieved[_name]['real_output']+1j*retrieved[_name]['imag_output'])
 
@@ -39,8 +41,8 @@ def make_nice_figure(retrieved:dict):
             if _i==0:
                 ax.set_title("Diffraction Pattern")
             ax.pcolormesh(f,f,np.squeeze(retrieved[_name]['measured_pattern']),cmap='jet')
-            ax.text(0.04,0.9,figletter,transform=ax.transAxes,backgroundcolor='white',weight='bold')
-            figletter = chr(ord(figletter)+1)
+            ax.text(0.04,0.9,figletters[_figl_i],transform=ax.transAxes,backgroundcolor='white',weight='bold')
+            _figl_i+=1
             # annotate measured
             ax.text(0.2, 0.9,'measured',backgroundcolor='white',transform=ax.transAxes)
 
@@ -54,8 +56,8 @@ def make_nice_figure(retrieved:dict):
         if _i==0:
             ax.set_title("Intensity")
         ax.pcolormesh(x,x,np.abs(complex_obj)**2,cmap='jet')
-        ax.text(0.04,0.9,figletter,transform=ax.transAxes,backgroundcolor='white',weight='bold')
-        figletter = chr(ord(figletter)+1)
+        ax.text(0.04,0.9,figletters[_figl_i],transform=ax.transAxes,backgroundcolor='white',weight='bold')
+        _figl_i+=1
         ax.set_yticks([])
         if _i == 0 or _i == 1:
             ax.set_xticks([])
@@ -83,8 +85,8 @@ def make_nice_figure(retrieved:dict):
         if _i ==0:
             ax.set_title("Phase")
         im=ax.pcolormesh(x,x,obj_phase,cmap='jet',vmin=-np.pi,vmax=np.pi)
-        ax.text(0.04,0.9,figletter,transform=ax.transAxes,backgroundcolor='white',weight='bold')
-        figletter = chr(ord(figletter)+1)
+        ax.text(0.04,0.9,figletters[_figl_i],transform=ax.transAxes,backgroundcolor='white',weight='bold')
+        _figl_i+=1
         if _i == 0 or _i == 1:
             ax.set_xticks([])
         ax.set_yticks([])
@@ -94,18 +96,25 @@ def make_nice_figure(retrieved:dict):
             ax.set_xticks([-5,-2.5,0,2.5,5])
         ax.text(3.1,0.5,'z='+str(_dist)+r' $[\mu m]$',transform=ax.transAxes,size=20)
 
+    figletter = 'a'; _figl_i=0
+    figletters=['m','n','i','j','d','e']
     for _i,z in zip([2,1,0],[-0, -500e-6, -1000e-6]):
         # make spherical propagation test
         spherical = np.zeros((N,N))
         # or a rect
-        # spherical[np.sqrt(x.reshape(-1,1)**2 + x.reshape(1,-1)**2) < (2.7)/2] = 1
+        spherical[np.sqrt(x.reshape(-1,1)**2 + x.reshape(1,-1)**2) < (2.7)/2] = 1
+        spherical=gaussian_filter(spherical,sigma=3)
         # as a gaussian
-        spherical = np.exp(-x.reshape(-1,1)**2 / (2.7))*np.exp(-x.reshape(1,-1)**2 / (2.7))
+        # spherical = np.exp(-x.reshape(-1,1)**2 / (2.7))*np.exp(-x.reshape(1,-1)**2 / (2.7))
         spherical=propagate(spherical,z)
 
         # intensity plot
         ax = fig.add_subplot(gs[_i,3])
         ax.pcolormesh(x,x,np.abs(spherical)**2,cmap='jet')
+
+        ax.text(0.04,0.9,figletters[_figl_i],transform=ax.transAxes,backgroundcolor='white',weight='bold'); _figl_i+=1
+        ax.text(0.2, 0.9,'propagated',backgroundcolor='white',transform=ax.transAxes)
+
         if not _i == 2: ax.set_xticks([]); ax.set_yticks([])
         else: ax.set_yticks([]); ax.set_xlabel(r"position [um]"); ax.set_xticks([-5,-2.5,0,2.5,5])
         if _i == 0: ax.set_title('Intensity')
@@ -115,6 +124,9 @@ def make_nice_figure(retrieved:dict):
         nonzero_intensity = np.array(np.abs(spherical)); nonzero_intensity[nonzero_intensity < 0.05*np.max(nonzero_intensity)] = 0; nonzero_intensity[nonzero_intensity >= 0.05*np.max(nonzero_intensity)] = 1; obj_phase *= nonzero_intensity
         ax = fig.add_subplot(gs[_i,4])
         ax.pcolormesh(x,x,obj_phase,cmap='jet',vmin=-np.pi,vmax=np.pi)
+
+        ax.text(0.04,0.9,figletters[_figl_i],transform=ax.transAxes,backgroundcolor='white',weight='bold'); _figl_i+=1
+
         if not _i == 2: ax.set_xticks([]); ax.set_yticks([])
         else: ax.set_yticks([]); ax.set_xlabel(r"position [um]"); ax.set_xticks([-5,-2.5,0,2.5,5])
         if _i == 0: ax.set_title('Phase')
