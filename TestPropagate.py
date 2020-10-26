@@ -24,11 +24,11 @@ def make_nice_figure(retrieved:dict):
     f=simulation_axes['diffraction_plane']['f'] # 1/meters
     f*=1e-6
 
-    fig = plt.figure(figsize=(10,8))
+    fig = plt.figure(figsize=(14,8))
     fig.subplots_adjust(hspace=0.02,wspace=0.02, left=0.1,right=0.8)
     # fig.text(0.5, 0.95, run_name, ha="center")
     # fig.subplots_adjust(hspace=0.0, left=0.2)
-    gs = fig.add_gridspec(3,3)
+    gs = fig.add_gridspec(3,5)
 
     figletter = 'a'
     for _name, _i, _dist in zip(['-500','0','500_sim'],range(3),[-500,0,500]):
@@ -82,17 +82,44 @@ def make_nice_figure(retrieved:dict):
         ax = fig.add_subplot(gs[_i,2])
         if _i ==0:
             ax.set_title("Phase")
-        im=ax.pcolormesh(x,x,obj_phase,cmap='jet')
+        im=ax.pcolormesh(x,x,obj_phase,cmap='jet',vmin=-np.pi,vmax=np.pi)
         ax.text(0.04,0.9,figletter,transform=ax.transAxes,backgroundcolor='white',weight='bold')
         figletter = chr(ord(figletter)+1)
         if _i == 0 or _i == 1:
             ax.set_xticks([])
         ax.set_yticks([])
-        fig.colorbar(im,ax=ax)
+        # fig.colorbar(im,ax=ax)
         if _i == 2:
             ax.set_xlabel(r"position [um]")
             ax.set_xticks([-5,-2.5,0,2.5,5])
-        ax.text(1.3,0.5,'z='+str(_dist)+r' $[\mu m]$',transform=ax.transAxes,size=20)
+        ax.text(3.1,0.5,'z='+str(_dist)+r' $[\mu m]$',transform=ax.transAxes,size=20)
+
+    for _i,z in zip([2,1,0],[-0, -500e-6, -1000e-6]):
+        # make spherical propagation test
+        spherical = np.zeros((N,N))
+        # or a rect
+        # spherical[np.sqrt(x.reshape(-1,1)**2 + x.reshape(1,-1)**2) < (2.7)/2] = 1
+        # as a gaussian
+        spherical = np.exp(-x.reshape(-1,1)**2 / (2.7))*np.exp(-x.reshape(1,-1)**2 / (2.7))
+        spherical=propagate(spherical,z)
+
+        # intensity plot
+        ax = fig.add_subplot(gs[_i,3])
+        ax.pcolormesh(x,x,np.abs(spherical)**2,cmap='jet')
+        if not _i == 2: ax.set_xticks([]); ax.set_yticks([])
+        else: ax.set_yticks([]); ax.set_xlabel(r"position [um]"); ax.set_xticks([-5,-2.5,0,2.5,5])
+        if _i == 0: ax.set_title('Intensity')
+
+        # phase plot
+        obj_phase=np.angle(spherical)
+        nonzero_intensity = np.array(np.abs(spherical)); nonzero_intensity[nonzero_intensity < 0.05*np.max(nonzero_intensity)] = 0; nonzero_intensity[nonzero_intensity >= 0.05*np.max(nonzero_intensity)] = 1; obj_phase *= nonzero_intensity
+        ax = fig.add_subplot(gs[_i,4])
+        ax.pcolormesh(x,x,obj_phase,cmap='jet',vmin=-np.pi,vmax=np.pi)
+        if not _i == 2: ax.set_xticks([]); ax.set_yticks([])
+        else: ax.set_yticks([]); ax.set_xlabel(r"position [um]"); ax.set_xticks([-5,-2.5,0,2.5,5])
+        if _i == 0: ax.set_title('Phase')
+
+
     fig.savefig('xuv_experimental_results_1.png')
 
     fig=plt.figure(figsize=(10,8))
@@ -246,6 +273,31 @@ def make_nice_figure(retrieved:dict):
     print(retrieved.keys())
 
 
+def propagate(object:np.array,distance:float)->np.array:
+
+    experimental_params = {}
+    experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
+    experimental_params['z_distance'] = 33e-3 # [meters] distance from camera
+    experimental_params['wavelength'] = 13.5e-9 #[meters] wavelength
+    getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=np.shape(object)[0],
+            N_meas=2,#///
+            experimental_params=experimental_params)
+    f_object=getMeasuredDiffractionPattern.simulation_axes['diffraction_plane']['f']
+    gamma=np.sqrt(
+            1-
+            (experimental_params['wavelength']*f_object.reshape(-1,1))**2-
+            (experimental_params['wavelength']*f_object.reshape(1,-1))**2+
+            0j # complex so it can be square rooted and imaginry
+            )
+    k_sq = 2 * np.pi * distance / experimental_params['wavelength']
+    # transfer function
+    H = np.exp(1j * np.real(gamma) * k_sq) * np.exp(-1 * np.imag(gamma) * k_sq)
+
+    complex_beam_f=np.fft.fftshift(np.fft.fft2(np.fft.fftshift(object)))
+    complex_beam_f*=H
+    complex_beam_prop=np.fft.fftshift(np.fft.ifft2(np.fft.fftshift(complex_beam_f)))
+    return complex_beam_prop
+
 if __name__=="__main__":
     folder_dir="nn_pictures/teslatest5_doubleksize_doublefilters_reconscostfunction_pictures/46/measured/"
     # run_name="Data_for_Jonathon_z0_1-fits_ud_1-0_reconstructed.p"
@@ -257,32 +309,9 @@ if __name__=="__main__":
         obj=pickle.load(file)
     complex_beam=np.squeeze(obj["real_output"]+1j*obj["imag_output"])
 
-
-    experimental_params = {}
-    experimental_params['pixel_size'] = 27e-6 # [meters] with 2x2 binning
-    experimental_params['z_distance'] = 33e-3 # [meters] distance from camera
-    experimental_params['wavelength'] = 13.5e-9 #[meters] wavelength
-    getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=np.shape(complex_beam)[0],
-            N_meas=2,#///
-            experimental_params=experimental_params)
-
-    f_object=getMeasuredDiffractionPattern.simulation_axes['diffraction_plane']['f']
-
     # distance to focus
     z = 1000e-6
-    gamma=np.sqrt(
-            1-
-            (experimental_params['wavelength']*f_object.reshape(-1,1))**2-
-            (experimental_params['wavelength']*f_object.reshape(1,-1))**2+
-            0j # complex so it can be square rooted and imaginry
-            )
-    k_sq = 2 * np.pi * z / experimental_params['wavelength']
-    # transfer function
-    H = np.exp(1j * np.real(gamma) * k_sq) * np.exp(-1 * np.imag(gamma) * k_sq)
-
-    complex_beam_f=np.fft.fftshift(np.fft.fft2(np.fft.fftshift(complex_beam)))
-    complex_beam_f*=H
-    complex_beam_prop=np.fft.fftshift(np.fft.ifft2(np.fft.fftshift(complex_beam_f)))
+    complex_beam_prop=propagate(complex_beam,z)
 
     fig = diffraction_functions.plot_amplitude_phase_meas_retreival(
             {"measured_pattern":np.zeros_like(np.abs(complex_beam_prop)),
