@@ -92,7 +92,7 @@ def make_nice_figure(retrieved:dict):
         if _i == 2:
             ax.set_xlabel(r"position [um]")
             ax.set_xticks([-5,-2.5,0,2.5,5])
-        ax.text(1.3,0.5,'z='+str(_dist)+' [um]',transform=ax.transAxes,size=20)
+        ax.text(1.3,0.5,'z='+str(_dist)+r' $[\mu m]$',transform=ax.transAxes,size=20)
     fig.savefig('xuv_experimental_results_1.png')
 
     fig=plt.figure(figsize=(10,8))
@@ -121,8 +121,8 @@ def make_nice_figure(retrieved:dict):
     ax.text(385,378,r'2.7 [$\mu m$]',size=15,ha='left')
 
     # label wavelength
-    ax.text(105,365,r'18 [$nm$]',size=20,ha='left',color='black')
-    ax.text(65,365,r'$\lambda$',size=20,ha='left',color='red')
+    ax.text(65,365,r'13.5 [$nm$]',size=20,ha='left',color='black')
+    ax.text(25,365,r'$\lambda$',size=20,ha='left',color='red')
 
     ax.axis('off')
     fig.savefig('xuv_experimental_results_2.png')
@@ -142,14 +142,14 @@ def make_nice_figure(retrieved:dict):
 
     ax.text(424,472,r'$e^{i \phi}$',size=14,ha='left',color='black',backgroundcolor='white')
 
-    ax.text(560,263,'FFT',size=8,ha='left',color='black',backgroundcolor='white')
+    ax.text(560,263,'$FFT$',size=8,ha='left',color='black',backgroundcolor='white')
     ax.text(724,150,'Object',size=15,ha='left',color='black')
 
     ax.text(375,20,'Zernike\nCoefficients',size=15,ha='left',color='black')
 
     ax.text(337,542,'Beam Propagation Method',size=8,ha='left',color='black',backgroundcolor='white')
 
-    ax.text(385,661,'FFT',size=8,ha='left',color='black',backgroundcolor='white')
+    ax.text(385,661,'$FFT$',size=8,ha='left',color='black',backgroundcolor='white')
 
     ax.text(733,669,'Neural\nNetwork',size=8,ha='left',color='black',backgroundcolor='white')
 
@@ -164,7 +164,7 @@ def make_nice_figure(retrieved:dict):
     ax.text(686,206,'c',color='black',backgroundcolor='white',weight='bold')
     ax.text(155,607,'d',color='black',backgroundcolor='white',weight='bold')
     ax.text(505,607,'e',color='black',backgroundcolor='white',weight='bold')
-    ax.text(858,607,'d',color='black',backgroundcolor='white',weight='bold')
+    ax.text(858,607,'f',color='black',backgroundcolor='white',weight='bold')
 
 
     ax.imshow(im)
@@ -219,6 +219,28 @@ def make_nice_figure(retrieved:dict):
 
 
 
+    # cdi figure
+    fig=plt.figure(figsize=(10,8))
+    fig.subplots_adjust(left=0.0,right=1.0,bottom=0.1)
+    gs = fig.add_gridspec(1,1)
+    ax = fig.add_subplot(gs[0,0])
+    im = Image.open('figure_images/cdifigure.png')
+    im = np.array(im)
+    print("np.shape(im)", np.shape(im))
+    ax.imshow(im)
+    ax.axis('off')
+    ax.text(93,182,'a',color='black',backgroundcolor='white',weight='bold',size=15)
+    ax.text(333,182,'b',color='black',backgroundcolor='white',weight='bold',size=15)
+    ax.text(574,182,'c',color='black',backgroundcolor='white',weight='bold',size=15)
+
+
+    ax.text(420,140,'Retrieved Object',size=20,ha='center',color='black')
+    ax.text(123,465,'Apply\nObject\nDomain\nConstraint',size=20,ha='center',color='black')
+    ax.text(706,465,'Apply\nFrequency\nDomain\nConstraint',size=20,ha='center',color='black')
+
+    ax.text(382,68,'$FFT$',size=20,ha='left',color='black',backgroundcolor='white')
+    ax.text(382,463,r'$FFT^{-1}$',size=20,ha='left',color='black',backgroundcolor='white')
+    fig.savefig('cdi_figure_5.png')
 
     plt.show()
     print(retrieved.keys())
