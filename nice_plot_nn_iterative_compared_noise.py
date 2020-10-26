@@ -15,7 +15,8 @@ def place_colorbar(im,ax,offsetx,offsety,ticks:list,color:str,labels:list=None):
 
 if __name__ == "__main__":
     files={}
-    for filename in ['out_0.p','out_50.p','out_100.p','out_150.p']:
+    cts = ['0','50','40','30']
+    for filename in ['out_'+_ct+'.p' for _ct in cts]:
         with open(filename,'rb') as file:
             files[filename.split('.')[0]]=pickle.load(file)
 
@@ -26,7 +27,7 @@ if __name__ == "__main__":
     f=simulation_axes['diffraction_plane']['f'] # 1/meters
     f*=1e-6
 
-    for _ct in ['0','50','100','150']:
+    for _ct in cts:
 
         fig = plt.figure(figsize=(10,10))
         fig.subplots_adjust(wspace=0.05,hspace=0.05)
@@ -43,6 +44,9 @@ if __name__ == "__main__":
             ax=fig.add_subplot(gs[i,2])
             complex_obj=np.squeeze(files['out_'+_ct][retrieval]['real_output'] + 1j*files['out_'+_ct][retrieval]['imag_output'])
             complex_obj*=(1/np.max(np.abs(complex_obj)))
+            # phase at center set to 0
+            complex_obj*=np.exp(-1j * np.angle(complex_obj[N//2,N//2]))
+
             phase = np.angle(complex_obj)
             phase[np.abs(complex_obj)**2 < 0.001]=0
             im=ax.pcolormesh(x,x,np.abs(complex_obj)**2,vmin=0,vmax=1,cmap='jet')

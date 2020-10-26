@@ -7,7 +7,7 @@ pc=0
 camera_noise="SquareWFtest/CameraNoise/1_1000/Bild_1.png"
 
 
-noisecountv_arr=(50 100 150 0)
+noisecountv_arr=(50 40 30 0)
 for cts in ${noisecountv_arr[@]}
 do
 	# generate a dataset with specific objects
