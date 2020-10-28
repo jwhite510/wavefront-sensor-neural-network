@@ -1,3 +1,4 @@
+import argparse
 import matplotlib.pyplot as plt
 import datagen
 import numpy as np
@@ -14,6 +15,9 @@ def place_colorbar(im,ax,offsetx,offsety,ticks:list,color:str,labels:list=None):
     caxis.tick_params(axis='x',colors=color)
 
 if __name__ == "__main__":
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--wfsensor',type=int)
+    args,_=parser.parse_known_args()
     files={}
     cts = ['0','50','40','30']
     for filename in ['out_'+_ct+'.p' for _ct in cts]:
@@ -84,7 +88,7 @@ if __name__ == "__main__":
         fig.text(0.05,0.07,'Scale:',size=20,color='red')
         fig.text(0.03,0.05,'S:'+"%.2f"%scale,ha='left',va='top',size=20)
 
-        fig.savefig('./iterative_nn_compared_noise_'+_ct+'.png')
+        fig.savefig('./wfs_'+str(args.wfsensor)+'_iterative_nn_compared_noise_'+_ct+'.png')
 
 
 
