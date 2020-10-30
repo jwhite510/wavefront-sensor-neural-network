@@ -1,6 +1,3 @@
 #!/bin/bash
+python datagen.py --wfsensor 2
 
-set -e
-cd zernike3/build
-make
-# ./a.out

@@ -292,13 +292,13 @@ def save_to_hdf5(filename:str, afterwf:np.array, beforewf:np.array, z_coefs:np.a
 
 if __name__ == "__main__":
 
-    parser=argparse.ArgumentParser()
-    parser.add_argument('--count',type=int)
-    parser.add_argument('--seed',type=int)
-    parser.add_argument('--name',type=str)
-    parser.add_argument('--batch_size',type=int)
-    parser.add_argument('--samplesf',type=str)
-    args,_=parser.parse_known_args()
+    # parser=argparse.ArgumentParser()
+    # parser.add_argument('--count',type=int)
+    # parser.add_argument('--seed',type=int)
+    # parser.add_argument('--name',type=str)
+    # parser.add_argument('--batch_size',type=int)
+    # parser.add_argument('--samplesf',type=str)
+    # args,_=parser.parse_known_args()
 
     datagenerator = DataGenerator(1024,128)
 
@@ -306,6 +306,36 @@ if __name__ == "__main__":
     scale = tf.placeholder(tf.float32, shape=[None,1])
     beforewf=datagenerator.buildgraph(x,scale)
     afterwf=datagenerator.propagate_through_wfs(beforewf)
+
+    with tf.Session() as sess:
+        z_coefs = np.array(
+                [[0.0, 0.0, 0.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ],
+                [0.0, 0.0, 0.0, -3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ],
+                [0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ],
+                [0.0, 0.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ]],
+            )
+        scales = np.array([[1.0],
+                           [1.0],
+                           [1.0],
+                           [1.0],
+                           [1.0]])
+        f={x: z_coefs, scale:scales}
+        _afterwf,_beforewf=[np.squeeze(sess.run(e,feed_dict=f)) for e in (afterwf,beforewf)]
+        _diffraction = np.zeros_like(np.abs(_afterwf))
+        for i in range(5):
+            _diffraction[i,:,:]=np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(_afterwf[i,:,:]))))**2
+            _diffraction[i]*=(1/np.max(_diffraction[i]))
+            fig=diffraction_functions.plot_amplitude_phase_meas_retreival(
+                    {'measured_pattern':_diffraction[i],
+                        'tf_reconstructed_diff':_diffraction[i],
+                        'real_output':np.real(_beforewf[i]),
+                        'imag_output':np.imag(_beforewf[i]), },
+                    'test %i'%i
+                    )
+            plt.savefig('fig%i.png'%i)
+        plt.show()
+    exit()
 
     create_dataset(filename=args.name,coefficients=len(datagenerator.zernike_cvector))
     if args.samplesf:
