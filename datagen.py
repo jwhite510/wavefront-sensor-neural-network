@@ -7,6 +7,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import diffraction_functions
+from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
+import os
 
 
 # def gaussian_propagate(zernike_polynom:tf.Tensor,scale:tf.Tensor)->tf.Tensor:
@@ -307,6 +309,33 @@ if __name__ == "__main__":
     beforewf=datagenerator.buildgraph(x,scale)
     afterwf=datagenerator.propagate_through_wfs(beforewf)
 
+
+    # get measured diffraction patterns to compare
+    filenames = [ '9_02_20_data/0812_focus.npy',
+            '9_02_20_data/0812_focus_f3.npy',
+            '9_02_20_data/0812_focus_f7.npy',
+            '9_02_20_data/0812_focus_n3.npy',
+            '9_02_20_data/0812_focus_n7.npy', ]
+    a=None
+    measured_images={}
+    experimental_params = {}
+    experimental_params['pixel_size'] = 4.8e-6 # [meters] with 2x2 binning
+    experimental_params['z_distance'] = 16.5e-3 # [meters] distance from camera
+    experimental_params['wavelength'] = 633e-9 #[meters] wavelength
+    for _fn in filenames:
+
+        a=np.load(_fn)
+        a[a<0]=0
+        getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
+                N_meas=np.shape(a)[0], # for calculating the measured frequency axis (not really needed)
+                experimental_params=experimental_params)
+
+        transform={}; transform["rotation_angle"]=0; transform["scale"]=1.0; transform["flip"]='lr'
+        m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(a, transform)
+        m[m<0.003*np.max(m)]=0
+        measured_images[os.path.split(_fn)[-1].replace('.','_')]=m
+
+
     with tf.Session() as sess:
         z_coefs = np.array(
                 [[0.0, 0.0, 0.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ],
@@ -315,24 +344,41 @@ if __name__ == "__main__":
                 [0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ],
                 [0.0, 0.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ]],
             )
-        scales = np.array([[1.0],
-                           [1.0],
-                           [1.0],
-                           [1.0],
-                           [1.0]])
+        scales = np.array([[0.5],
+                           [0.5],
+                           [0.5],
+                           [0.5],
+                           [0.5]])
         f={x: z_coefs, scale:scales}
         _afterwf,_beforewf=[np.squeeze(sess.run(e,feed_dict=f)) for e in (afterwf,beforewf)]
         _diffraction = np.zeros_like(np.abs(_afterwf))
-        for i in range(5):
+        measured_keys=[ '0812_focus_f7_npy','0812_focus_f3_npy','0812_focus_npy','0812_focus_n3_npy','0812_focus_n7_npy']
+        for i,key in zip(range(5),measured_keys):
             _diffraction[i,:,:]=np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(_afterwf[i,:,:]))))**2
             _diffraction[i]*=(1/np.max(_diffraction[i]))
-            fig=diffraction_functions.plot_amplitude_phase_meas_retreival(
-                    {'measured_pattern':_diffraction[i],
-                        'tf_reconstructed_diff':_diffraction[i],
-                        'real_output':np.real(_beforewf[i]),
-                        'imag_output':np.imag(_beforewf[i]), },
-                    'test %i'%i
-                    )
+
+            fig = plt.figure(figsize=(20,10))
+            gs = fig.add_gridspec(4,4)
+            ax = fig.add_subplot(gs[1:,:2])
+            ax.pcolormesh(_diffraction[i],cmap='jet')
+            ax.text(0.0, 0.95,"Simulated: %i"%i, fontsize=10, ha='left', transform=ax.transAxes, backgroundcolor="yellow")
+
+            # plot intensity object
+            ax = fig.add_subplot(gs[0,0]); ax.pcolormesh(np.abs(_afterwf[i,:,:])**2,cmap='jet')
+            ax = fig.add_subplot(gs[0,1]); ax.pcolormesh(np.angle(_beforewf[i,:,:]),cmap='jet')
+
+            # plot measured diffraction pattern
+            ax = fig.add_subplot(gs[1:,2:])
+            ax.pcolormesh(np.squeeze(measured_images[key]),cmap='jet')
+            ax.text(0.0, 0.95,"Measured: %s"%key, fontsize=10, ha='left', transform=ax.transAxes, backgroundcolor="yellow")
+
+            # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(
+            #         {'measured_pattern':_diffraction[i],
+            #             'tf_reconstructed_diff':_diffraction[i],
+            #             'real_output':np.real(_beforewf[i]),
+            #             'imag_output':np.imag(_beforewf[i]), },
+            #         'test %i'%i
+            #         )
             plt.savefig('fig%i.png'%i)
         plt.show()
     exit()
