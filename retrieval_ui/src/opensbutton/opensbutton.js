@@ -11,6 +11,7 @@ export default function Opensbutton() {
   const [open0, set0] = useState(false)
   const [open1, set1] = useState(false)
   const [open2, set2] = useState(false)
+  const [ret_type, set3] = useState({val:""})
 
   const springRef = useRef()
   const { radius, size, opacity, ...rest } = useSpring({
@@ -50,7 +51,7 @@ export default function Opensbutton() {
   })
 
   // This will orchestrate the two animations above, comment the last arg and it creates a sequence
-  useChain(open0 ? [springRef, transRef] : [transRef])
+  useChain(open0 ? [springRef] : [springRef])
   useChain(open1 ? [transRef] : [transRef])
   useChain(open2 ? [transRef2] : [transRef2])
 
@@ -59,13 +60,10 @@ export default function Opensbutton() {
       <Global />
       <Container style={{ ...rest, width: size, height: size, borderRadius: radius}} onClick={() => 
 	{
-	  console.log('container clicked')
 	  if(!open0){
 	    set0(open0=>true)
 	    set1(open1=>true)
-	    // set1(open1=>true)
 	  }
-	  // set0(open0 => !open0)
 	}
 	}>
 	<animated.div className="centered">
@@ -75,14 +73,13 @@ export default function Opensbutton() {
         {transitions.map(({ item, key, props }) => (
           <Item key={key} style={{ ...props, background: item.css }}
 	      onClick={()=>{
-
-		// console.log('open : '+item.text); 
-		// console.log('open second menu');
 		set1(open1=>false)
 		setTimeout(function(){
 		  set2(open2=>true)
 		},900)
-		// set2(open2=>true)
+
+		set3(ret_type=>({val:ret_type.val+item.text+" "}))
+		// console.log("ret_type =>", ret_type);
 
 	    }}
 	  >
@@ -95,10 +92,14 @@ export default function Opensbutton() {
         {secondmenutransitions.map(({ item, key, props }) => (
           <Item key={key} style={{ ...props, background: item.css }}
 	      onClick={()=>{
-
-		console.log('open : '+item.text); 
-		// set0(open=>false)
-
+		setTimeout(function(){
+		  set0(open0=>false)
+		},900)
+		set2(open2=>false)
+		set3(ret_type=>({val:ret_type.val+item.text+" "}))
+		console.log(item.text, ret_type.val);
+		set3(ret_type=>({val:""}))
+		// console.log('open : '+item.text); 
 	    }}
 	  >
 	    <animated.div

@@ -2,17 +2,17 @@
 export default [
   {
     name: 'Ripe Malinka',
-    description: '#f093fb → #f5576c',
-    css: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    description: '#ebc0fd → #d9ded8',
+    css: 'linear-gradient(135deg, #ebc0fd 0%, #d9ded8 100%)',
     height: 200,
-    text: 'second menu thing 1'
+    text: 'Iterative'
   },
   {
     name: 'Deep Blue',
-    description: '#e0c3fc → #8ec5fc',
-    css: 'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)',
+    description: '#5ee7df → #b490ca',
+    css: 'linear-gradient(135deg, #5ee7df 0%, #b490ca 100%)',
     height: 400,
-    text: 'second menu thing 2'
+    text: 'Neural Network'
   }
 ]
 
