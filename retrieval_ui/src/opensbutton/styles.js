@@ -25,7 +25,7 @@ const Global = createGlobalStyle`
 
 const Container = styled(animated.div)`
   position: relative;
-  padding: 25px;
+  padding: 0px;
   background: white;
   border-radius: 50px;
   cursor: pointer;

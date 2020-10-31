@@ -71,7 +71,7 @@ export default function Opensbutton() {
 	  +
 	</animated.div>
 
-	<div style={{position:'absolute',width:'100%',height:'100%',pointerEvents:open1?'':'none'}}>
+	<div style={{position:'absolute',boxSizing:'border-box',padding:'5%',width:'100%',height:'100%',pointerEvents:open1?'':'none'}}>
 	  {transitions.map(({ item, key, props }) => (
 	    <Item key={key} style={{ ...props, background: item.css }}
 	      onClick={()=>{
@@ -99,7 +99,7 @@ export default function Opensbutton() {
 	  ))}
 	</div>
 
-	<div style={{position:'absolute', width:'100%',height:'100%',pointerEvents:open2?'':'none'}}>
+	<div style={{position:'absolute', boxSizing:'border-box',padding:'5%',width:'100%',height:'100%',pointerEvents:open2?'':'none'}}>
 	  {secondmenutransitions.map(({ item, key, props }) => (
 	    <Item key={key} style={{ ...props, background: item.css }}
 	      onClick={()=>{
