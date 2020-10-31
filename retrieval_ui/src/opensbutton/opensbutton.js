@@ -8,7 +8,8 @@ import data2 from './data2'
 import '../index.css';
 
 export default function Opensbutton() {
-  const [open, set] = useState(false)
+  const [open0, set0] = useState(false)
+  const [open1, set1] = useState(false)
   const [open2, set2] = useState(false)
 
   const springRef = useRef()
@@ -21,14 +22,14 @@ export default function Opensbutton() {
       radius: '50px'
     },
     to: {
-      size: open ? '30%' : '10%',
-      background: open ? 'white' : 'green' ,
-      radius: open ? '5px' : '50px'
+      size: open0 ? '30%' : '10%',
+      background: open0 ? 'white' : 'green' ,
+      radius: open0 ? '5px' : '50px'
     }
   })
 
   const transRef = useRef()
-  const transitions = useTransition(open ? data : [], item => item.name, {
+  const transitions = useTransition(open1 ? data : [], item => item.name, {
     ref: transRef,
     unique: true,
     trail: 400 / data.length,
@@ -49,7 +50,8 @@ export default function Opensbutton() {
   })
 
   // This will orchestrate the two animations above, comment the last arg and it creates a sequence
-  useChain(open ? [springRef, transRef, transRef2] : [transRef])
+  useChain(open0 ? [springRef, transRef] : [transRef])
+  useChain(open1 ? [transRef] : [transRef])
   useChain(open2 ? [transRef2] : [transRef2])
 
   return (
@@ -58,10 +60,12 @@ export default function Opensbutton() {
       <Container style={{ ...rest, width: size, height: size, borderRadius: radius}} onClick={() => 
 	{
 	  console.log('container clicked')
-	  if(!open){
-	    set(open=>true)
+	  if(!open0){
+	    set0(open0=>true)
+	    set1(open1=>true)
+	    // set1(open1=>true)
 	  }
-	  // set(open => !open)
+	  // set0(open0 => !open0)
 	}
 	}>
 	<animated.div className="centered">
@@ -72,10 +76,13 @@ export default function Opensbutton() {
           <Item key={key} style={{ ...props, background: item.css }}
 	      onClick={()=>{
 
-		console.log('open : '+item.text); 
-		console.log('open second menu');
-		set(open=>false)
-		set2(open2=>true)
+		// console.log('open : '+item.text); 
+		// console.log('open second menu');
+		set1(open1=>false)
+		setTimeout(function(){
+		  set2(open2=>true)
+		},900)
+		// set2(open2=>true)
 
 	    }}
 	  >
@@ -90,7 +97,7 @@ export default function Opensbutton() {
 	      onClick={()=>{
 
 		console.log('open : '+item.text); 
-		// set(open=>false)
+		// set0(open=>false)
 
 	    }}
 	  >
