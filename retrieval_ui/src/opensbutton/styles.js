@@ -36,7 +36,7 @@ const Container = styled(animated.div)`
 const Item = styled(animated.div)`
   width: 100%;
   height: 50%;
-  background: white;
+  background: black;
   border-radius: 5px;
   will-change: transform, opacity;
 `

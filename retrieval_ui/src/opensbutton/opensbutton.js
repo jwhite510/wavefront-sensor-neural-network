@@ -73,6 +73,11 @@ export default function Opensbutton() {
         {transitions.map(({ item, key, props }) => (
           <Item key={key} style={{ ...props, background: item.css }}
 	      onClick={()=>{
+		const original_color=item.css
+		item.css='red'
+		setTimeout(function(){
+		  item.css=original_color;
+		},900)
 		set1(open1=>false)
 		setTimeout(function(){
 		  set2(open2=>true)
@@ -92,6 +97,11 @@ export default function Opensbutton() {
         {secondmenutransitions.map(({ item, key, props }) => (
           <Item key={key} style={{ ...props, background: item.css }}
 	      onClick={()=>{
+		const original_color=item.css
+		item.css='red'
+		setTimeout(function(){
+		  item.css=original_color
+		},900)
 		setTimeout(function(){
 		  set0(open0=>false)
 		},900)
