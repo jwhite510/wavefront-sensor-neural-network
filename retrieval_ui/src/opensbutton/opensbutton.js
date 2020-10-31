@@ -4,6 +4,7 @@ import { render } from 'react-dom'
 import { useTransition, useSpring, useChain, config } from 'react-spring'
 import { Global, Container, Item } from './styles'
 import data from './data'
+import data2 from './data2'
 import '../index.css';
 
 export default function Opensbutton() {
@@ -37,10 +38,10 @@ export default function Opensbutton() {
   })
 
   const transRef2 = useRef()
-  const secondmenutransitions = useTransition(open2 ? data : [], item => item.name, {
+  const secondmenutransitions = useTransition(open2 ? data2 : [], item => item.name, {
     ref: transRef2,
     unique: true,
-    trail: 400 / data.length,
+    trail: 400 / data2.length,
     from: { opacity: 0, transform: 'scale(0)' },
     enter: { opacity: 1, transform: 'scale(1)' },
     leave: { opacity: 0, transform: 'scale(0)' }
@@ -48,8 +49,8 @@ export default function Opensbutton() {
   })
 
   // This will orchestrate the two animations above, comment the last arg and it creates a sequence
-  useChain(open ? [springRef, transRef] : [transRef, springRef], [0, open ? 0.1 : 0.6])
-  useChain(open2 ? [transRef2] : [transRef2], [0])
+  useChain(open ? [springRef, transRef, transRef2] : [transRef])
+  useChain(open2 ? [transRef2] : [transRef2])
 
   return (
     <>
@@ -73,6 +74,7 @@ export default function Opensbutton() {
 
 		console.log('open : '+item.text); 
 		console.log('open second menu');
+		set(open=>false)
 		set2(open2=>true)
 
 	    }}
