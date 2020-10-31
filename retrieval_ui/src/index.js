@@ -3,11 +3,10 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import Opensbutton from './opensbutton/opensbutton'
 
 ReactDOM.render(
   <React.StrictMode>
-    <Opensbutton/>
+    <App/>
   </React.StrictMode>,
   document.getElementById('root')
 );

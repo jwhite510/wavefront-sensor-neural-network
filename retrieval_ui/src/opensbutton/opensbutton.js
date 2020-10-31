@@ -18,12 +18,12 @@ export default function Opensbutton() {
     ref: springRef,
     config: config.stiff,
     from: {
-      size: '10%',
+      size: '30%',
       background: 'green' ,
       radius: '50px'
     },
     to: {
-      size: open0 ? '30%' : '10%',
+      size: open0 ? '100%' : '30%',
       background: open0 ? 'white' : 'green' ,
       radius: open0 ? '5px' : '50px'
     }
@@ -58,7 +58,11 @@ export default function Opensbutton() {
   return (
     <>
       <Global />
-      <Container style={{ ...rest, width: size, height: size, borderRadius: radius}} onClick={() => 
+      <Container style={{ ...rest, width: size, height: size, borderRadius: radius,
+	transform:'translate(-50%, -50%)',
+	left:'50%',
+	top:'50%'
+	}} onClick={() => 
 	{
 	  // console.log('container clicked');
 	  if(!open0){
