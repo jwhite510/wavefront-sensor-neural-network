@@ -60,6 +60,7 @@ export default function Opensbutton() {
       <Global />
       <Container style={{ ...rest, width: size, height: size, borderRadius: radius}} onClick={() => 
 	{
+	  // console.log('container clicked');
 	  if(!open0){
 	    set0(open0=>true)
 	    set1(open1=>true)
@@ -70,8 +71,9 @@ export default function Opensbutton() {
 	  +
 	</animated.div>
 
-        {transitions.map(({ item, key, props }) => (
-          <Item key={key} style={{ ...props, background: item.css }}
+	<div style={{position:'absolute',width:'100%',height:'100%',pointerEvents:open1?'':'none'}}>
+	  {transitions.map(({ item, key, props }) => (
+	    <Item key={key} style={{ ...props, background: item.css }}
 	      onClick={()=>{
 		const original_color=item.css
 		item.css='red'
@@ -81,21 +83,25 @@ export default function Opensbutton() {
 		set1(open1=>false)
 		setTimeout(function(){
 		  set2(open2=>true)
-		},900)
+		},0)
 
 		set3(ret_type=>({val:ret_type.val+item.text+" "}))
 		// console.log("ret_type =>", ret_type);
 
-	    }}
-	  >
-	    <animated.div
-	      className="centered">
-	      {item.text}
-	    </animated.div>
-	  </Item>
-        ))}
-        {secondmenutransitions.map(({ item, key, props }) => (
-          <Item key={key} style={{ ...props, background: item.css }}
+	      }}
+	    >
+	      <animated.div
+		className="centered">
+		{item.text}
+	      </animated.div>
+	    </Item>
+
+	  ))}
+	</div>
+
+	<div style={{position:'absolute', width:'100%',height:'100%',pointerEvents:open2?'':'none'}}>
+	  {secondmenutransitions.map(({ item, key, props }) => (
+	    <Item key={key} style={{ ...props, background: item.css }}
 	      onClick={()=>{
 		const original_color=item.css
 		item.css='red'
@@ -110,14 +116,15 @@ export default function Opensbutton() {
 		console.log(item.text, ret_type.val);
 		set3(ret_type=>({val:""}))
 		// console.log('open : '+item.text); 
-	    }}
-	  >
-	    <animated.div
-	      className="centered">
-	      {item.text}
-	    </animated.div>
-	  </Item>
-        ))}
+	      }}
+	    >
+	      <animated.div
+		className="centered">
+		{item.text}
+	      </animated.div>
+	    </Item>
+	  ))}
+	</div>
 
 
 
