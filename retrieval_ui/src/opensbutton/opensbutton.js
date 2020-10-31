@@ -1,18 +1,28 @@
 import React, { useState, useRef } from 'react'
+import { animated } from 'react-spring'
 import { render } from 'react-dom'
 import { useTransition, useSpring, useChain, config } from 'react-spring'
 import { Global, Container, Item } from './styles'
 import data from './data'
+import '../index.css';
 
 export default function Opensbutton() {
   const [open, set] = useState(false)
 
   const springRef = useRef()
-  const { size, opacity, ...rest } = useSpring({
+  const { radius, size, opacity, ...rest } = useSpring({
     ref: springRef,
     config: config.stiff,
-    from: { size: '20%', background: 'hotpink' },
-    to: { size: open ? '100%' : '20%', background: open ? 'white' : 'hotpink' }
+    from: {
+      size: '10%',
+      background: 'green' ,
+      radius: '50px'
+    },
+    to: {
+      size: open ? '30%' : '10%',
+      background: open ? 'white' : 'green' ,
+      radius: open ? '5px' : '50px'
+    }
   })
 
   const transRef = useRef()
@@ -31,9 +41,19 @@ export default function Opensbutton() {
   return (
     <>
       <Global />
-      <Container style={{ ...rest, width: size, height: size }} onClick={() => set(open => !open)}>
+      <Container style={{ ...rest, width: size, height: size, borderRadius: radius}} onClick={() => set(open => !open)}>
+	<animated.div className="centered">
+	  +
+	</animated.div>
         {transitions.map(({ item, key, props }) => (
-          <Item key={key} style={{ ...props, background: item.css }} />
+          <Item key={key} style={{ ...props, background: item.css }}
+	      onClick={()=>{ console.log('open : '+item.text); }}
+	  >
+	    <animated.div
+	      className="centered">
+	      {item.text}
+	    </animated.div>
+	  </Item>
         ))}
       </Container>
     </>
