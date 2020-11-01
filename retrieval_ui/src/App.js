@@ -1,23 +1,45 @@
+import React from 'react';
 import logo from './logo.svg';
 import Opensbutton from './opensbutton/opensbutton'
 import PullRelease from './draggablewindow/draggablewindow'
 import './App.css';
 
-function App() {
-  return (
-    <div className="App">
+class App extends React.Component {
+  constructor(props){
+    super(props)
+    this.state={
+      draggableboxes:[]
+    }
+    this.updatestate=this.updatestate.bind(this)
+  }
 
-        <img src={logo} className="App-logo" alt="logo" />
+  updatestate(){
+    console.log('updatestate called');
+    this.setState( {
+      draggableboxes:this.state.draggableboxes.concat(<PullRelease key={this.state.draggableboxes.length}/>)
+      })
+  }
+  render(){
+    return (
+      <div className="App">
 
-      <div style={{backgroundColor:'',width:'300px',height:'300px'}}>
-      <Opensbutton/>
+	<img src={logo} className="App-logo" alt="logo" />
+
+	<div style={{backgroundColor:'',width:'300px',height:'300px'}}>
+	  <Opensbutton/>
+	</div>
+	<div>
+	  <PullRelease/>
+	</div>
+	<div>
+	  <button onClick={this.updatestate}>CLICK ME</button>
+	  {this.state.draggableboxes}
+	</div>
+
       </div>
-      <div>
-	<PullRelease/>
-      </div>
+    );
+  }
 
-    </div>
-  );
 }
 
 export default App;
