@@ -30,7 +30,7 @@ export default function Opensbutton() {
   })
 
   const transRef = useRef()
-  const transitions = useTransition(open1 ? data : [], item => item.name, {
+  const transitions = useTransition(open1 ? data : [], {
     ref: transRef,
     unique: true,
     trail: 400 / data.length,
@@ -40,7 +40,7 @@ export default function Opensbutton() {
   })
 
   const transRef2 = useRef()
-  const secondmenutransitions = useTransition(open2 ? data2 : [], item => item.name, {
+  const secondmenutransitions = useTransition(open2 ? data2 : [], {
     ref: transRef2,
     unique: true,
     trail: 400 / data2.length,
@@ -76,8 +76,8 @@ export default function Opensbutton() {
 	</animated.div>
 
 	<div style={{position:'absolute',boxSizing:'border-box',padding:'5%',width:'100%',height:'100%',pointerEvents:open1?'':'none'}}>
-	  {transitions.map(({ item, key, props }) => (
-	    <Item key={key} style={{ ...props, background: item.css }}
+	  {transitions((style,item)=>{
+	    return <Item key={null} style={{ ...style, background: item.css }}
 	      onClick={()=>{
 		const original_color=item.css
 		item.css='red'
@@ -100,12 +100,12 @@ export default function Opensbutton() {
 	      </animated.div>
 	    </Item>
 
-	  ))}
+	    })}
 	</div>
 
 	<div style={{position:'absolute', boxSizing:'border-box',padding:'5%',width:'100%',height:'100%',pointerEvents:open2?'':'none'}}>
-	  {secondmenutransitions.map(({ item, key, props }) => (
-	    <Item key={key} style={{ ...props, background: item.css }}
+	{secondmenutransitions((style,item) => {
+	    return <Item key={null} style={{ ...style, background: item.css }}
 	      onClick={()=>{
 		const original_color=item.css
 		item.css='red'
@@ -127,7 +127,7 @@ export default function Opensbutton() {
 		{item.text}
 	      </animated.div>
 	    </Item>
-	  ))}
+	    })}
 	</div>
 
 
