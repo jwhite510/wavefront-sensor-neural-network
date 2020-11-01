@@ -1,5 +1,6 @@
 import logo from './logo.svg';
 import Opensbutton from './opensbutton/opensbutton'
+import PullRelease from './draggablewindow/draggablewindow'
 import './App.css';
 
 function App() {
@@ -10,6 +11,9 @@ function App() {
 
       <div style={{backgroundColor:'',width:'300px',height:'300px'}}>
       <Opensbutton/>
+      </div>
+      <div>
+	<PullRelease/>
       </div>
 
     </div>

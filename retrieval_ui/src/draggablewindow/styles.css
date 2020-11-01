@@ -1,0 +1,47 @@
+#root div{
+}
+.movingcube{
+	position:absolute;
+	background-color:red;
+	width:200px;
+	height:200px;
+}
+.controller1{
+	position:absolute;
+	background-color:blue;
+	width:100px;
+	height:100px;
+
+}
+.controller2 {
+	/* position: absolute; */
+	background-color: green;
+	width: 20px;
+	height: 100%;
+	/* left: 0; */
+	/* top: 0; */
+	float: right;
+}
+.controller3{
+	position:absolute;
+	background-color:orange;
+	width:100%;
+	height:20px;
+	left:0px;
+	top:0px;
+}
+.controller4{
+	position:absolute;
+	background-color:grey;
+	top:50%;
+	left:50%;
+	width:100px;
+	height:100px;
+
+}
+.cube{
+	background-color:blue;
+	width:100px;
+	height:100px;
+
+}
