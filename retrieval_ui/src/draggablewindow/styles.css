@@ -2,9 +2,11 @@
 }
 .movingcube{
 	position:absolute;
-	background-color:red;
+	background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
 	width:200px;
 	height:200px;
+	border-radius:30px;
+
 }
 .controller1{
 	position:absolute;

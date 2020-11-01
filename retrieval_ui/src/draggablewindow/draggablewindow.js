@@ -7,7 +7,7 @@ import { useDrag } from 'react-use-gesture'
 // document.addEventListener('gesturestart', e => e.preventDefault())
 // document.addEventListener('gesturechange', e => e.preventDefault())
 
-export default function PullRelease() {
+export default function PullRelease(props) {
   const [springprops, set_sp] = useSpring(() => ({ x: 0, y: 0 }))
   const [staticprops, set_st] = React.useState({ x_start: 0, y_start: 0, isPinching:false,isDragging:false})
 
@@ -74,6 +74,15 @@ export default function PullRelease() {
       y:springprops.y,
       touchAction:'none'
       }}>
+
+      <p>
+      retrieval_type:
+      {props.retrieval_type}
+      </p><p>
+      diffraction_type:
+      {props.diffraction_type}
+      </p>
+
     </animated.div>
 }
 

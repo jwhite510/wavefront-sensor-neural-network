@@ -10,13 +10,15 @@ class App extends React.Component {
     this.state={
       draggableboxes:[]
     }
-    this.updatestate=this.updatestate.bind(this)
+    this.updatewindows=this.updatewindows.bind(this)
   }
 
-  updatestate(){
-    console.log('updatestate called');
+  updatewindows(retrieval_type,diffraction_type){
+    console.log('updatewindows called');
     this.setState( {
-      draggableboxes:this.state.draggableboxes.concat(<PullRelease key={this.state.draggableboxes.length}/>)
+      draggableboxes:this.state.draggableboxes.concat(<PullRelease retrieval_type={retrieval_type}
+	diffraction_type={diffraction_type}
+	key={this.state.draggableboxes.length}/>)
       })
   }
   render(){
@@ -26,13 +28,9 @@ class App extends React.Component {
 	<img src={logo} className="App-logo" alt="logo" />
 
 	<div style={{backgroundColor:'',width:'300px',height:'300px'}}>
-	  <Opensbutton/>
+	  <Opensbutton updatewindows={this.updatewindows}/>
 	</div>
 	<div>
-	  <PullRelease/>
-	</div>
-	<div>
-	  <button onClick={this.updatestate}>CLICK ME</button>
 	  {this.state.draggableboxes}
 	</div>
 

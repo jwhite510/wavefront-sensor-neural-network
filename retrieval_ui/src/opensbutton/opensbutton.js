@@ -7,7 +7,7 @@ import data from './data'
 import data2 from './data2'
 import '../index.css';
 
-export default function Opensbutton() {
+export default function Opensbutton(props) {
   const [open0, set0] = useState(false)
   const [open1, set1] = useState(false)
   const [open2, set2] = useState(false)
@@ -118,6 +118,13 @@ export default function Opensbutton() {
 		set2(open2=>false)
 		set3(ret_type=>({val:ret_type.val+item.text+" "}))
 		console.log(item.text, ret_type.val);
+		// append to list
+		props.updatewindows(
+		  item.text,
+		  ret_type.val
+	      )
+
+
 		set3(ret_type=>({val:""}))
 		// console.log('open : '+item.text); 
 	      }}
