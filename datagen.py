@@ -151,6 +151,10 @@ class DataGenerator():
         # propagate through gaussian
         x = np.linspace(1,-1,self.N_computational).reshape(1,-1,1)
         y = np.linspace(1,-1,self.N_computational).reshape(1,1,-1)
+        # avoid linear phase shift
+        dx = x[0,1,0]-x[0,0,0]
+        x-=0.5*dx
+        y-=0.5*dx
         _scale = tf.expand_dims(scale,axis=-1)
         x = (1/_scale)*tf.constant(x,dtype=tf.float32)
         y = (1/_scale)*tf.constant(y,dtype=tf.float32)
@@ -332,7 +336,7 @@ if __name__ == "__main__":
 
         transform={}; transform["rotation_angle"]=0; transform["scale"]=1.0; transform["flip"]='lr'
         m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(a, transform)
-        m[m<0.003*np.max(m)]=0
+        # m[m<0.003*np.max(m)]=0
         measured_images[os.path.split(_fn)[-1].replace('.','_')]=m
 
 
@@ -360,7 +364,9 @@ if __name__ == "__main__":
             fig = plt.figure(figsize=(20,10))
             gs = fig.add_gridspec(4,4)
             ax = fig.add_subplot(gs[1:,:2])
-            ax.pcolormesh(_diffraction[i],cmap='jet')
+            im=ax.pcolormesh(np.log(_diffraction[i]),cmap='jet',vmin=-20,vmax=0)
+            fig.colorbar(im,ax=ax)
+
             ax.text(0.0, 0.95,"Simulated: %i"%i, fontsize=10, ha='left', transform=ax.transAxes, backgroundcolor="yellow")
 
             # plot intensity object
@@ -369,7 +375,8 @@ if __name__ == "__main__":
 
             # plot measured diffraction pattern
             ax = fig.add_subplot(gs[1:,2:])
-            ax.pcolormesh(np.squeeze(measured_images[key]),cmap='jet')
+            im=ax.pcolormesh(np.log(np.squeeze(measured_images[key])),cmap='jet',vmin=-20,vmax=0)
+            fig.colorbar(im,ax=ax)
             ax.text(0.0, 0.95,"Measured: %s"%key, fontsize=10, ha='left', transform=ax.transAxes, backgroundcolor="yellow")
 
             # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(
@@ -379,7 +386,7 @@ if __name__ == "__main__":
             #             'imag_output':np.imag(_beforewf[i]), },
             #         'test %i'%i
             #         )
-            plt.savefig('fig%i.png'%i)
+            plt.savefig('LR_fig%i.png'%i)
         plt.show()
     exit()
 
