@@ -26,6 +26,12 @@ function Xbutton(props){
 }
 
 export default function PullRelease(props) {
+  const [inputdata, setinputdata] = React.useState({
+		      diffraction:[[1, 1, 1], [1,1,1], [1,1,1]],
+		      xintensity:[[2, 2, 2], [2,2,2], [2,2,2]],
+		      xphase:[[3, 3, 3], [3,3,3], [3,3,3]],
+		      })
+
   const [springprops, set_sp] = useSpring(() => ({ x: 0, y: 0 }))
   const [staticprops, set_st] = React.useState({ x_start: 0, y_start: 0, isPinching:false,isDragging:false})
 
@@ -119,20 +125,41 @@ export default function PullRelease(props) {
 
 
       </animated.div>
-      <animated.table style={{width:'100%',height:'100%'}}>
+      <animated.table style={{position:'absolute',top:'10%',width:'100%',height:'90%'}}>
 	<animated.tbody>
 
 	  <animated.tr>
 	    <animated.td>
-	    </animated.td>
-	    <animated.td>
-	      <DiffractionPlot/>
+
+	      <animated.button onClick={()=>
+
+	      {console.log('set data')
+
+
+		var x = new Array(10)
+		for(var i=0; i < x.length; i++){
+		  x[i]= new Array(10)
+		  for(var j=0; j < x[i].length; j++){
+		    x[i][j]= Math.random()
+		  }
+		}
+
+		setinputdata({
+		  diffraction:x,
+		  xintensity:[[0, 0, 0], [0,0,0], [0,0,0]],
+		  xphase:[[0, 0, 0], [0,0,0], [0,0,0]],
+		})
+
+	      }}>Click Me</animated.button>
+
 	    </animated.td>
 	  </animated.tr>
 	  <animated.tr>
 	    <animated.td>
-
+	      <DiffractionPlot inputdata={inputdata} setinputdata={setinputdata}/>
 	    </animated.td>
+	  </animated.tr>
+	  <animated.tr>
 	    <animated.td>
 
 	    </animated.td>

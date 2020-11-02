@@ -2,9 +2,7 @@ import Plot from 'react-plotly.js';
 
 export default function DiffractionPlot(props) {
   var trace1 = {
-    z: [[1, 2, 3],
-	[4,5,6],
-	[7,8,9]],
+    z: props.inputdata.xintensity,
     xaxis: 'x3',
     yaxis: 'y3',
     type: 'heatmap',
@@ -17,9 +15,7 @@ export default function DiffractionPlot(props) {
   };
 
   var trace2 = {
-    z: [[1, 2, 3],
-	[4,5,6],
-	[7,8,9]],
+    z: props.inputdata.diffraction,
     xaxis: 'x4',
     yaxis: 'y4',
     type: 'heatmap',
@@ -32,9 +28,7 @@ export default function DiffractionPlot(props) {
   };
 
   var trace3 = {
-    z: [[1, 2, 3],
-        [4,5,6],
-        [7,8,9]],
+    z: props.inputdata.xphase,
     xaxis: 'x2',
     yaxis: 'y2',
     type: 'heatmap',
