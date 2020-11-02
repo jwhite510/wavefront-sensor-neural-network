@@ -79,7 +79,7 @@ export default function PullRelease(props) {
   const props2 = useSpring({opacity:toggle?1:0})
   const props3 = useSpring({transform:toggle?'scale(1)':'scale(0)'})
   // Bind it to a component
-    return <animated.div className='movingcube' {...bind()} style={{
+    return <animated.div className='movingcube'  style={{
       x:springprops.x,
       y:springprops.y,
       touchAction:'none',
@@ -87,27 +87,40 @@ export default function PullRelease(props) {
       transform:props3.transform
       }}
     >
+      <animated.div {...bind()} className='windowbar'>
+	<animated.table style={{width:'100%',height:'100%'}}>
+	  <animated.tbody>
+	    <animated.tr>
+	      <animated.td style={{width:'15%'}}>
+
+		<animated.div
+		  style={{transform:'rotate(45deg)',color:'red',fontSize:'30px'}}
+		  onClick={() => {
+		    settoggle(toggle=>false)
+		    setTimeout(function(){
+		      props.removewindow(props.magicthing)
+		    },3000)
+		    // reset=true;
+
+		  }}
+
+		>
+		  +
+		</animated.div>
+
+	      </animated.td>
+	      <animated.td> </animated.td>
+	    </animated.tr>
+	  </animated.tbody>
+	</animated.table>
+
+
+      </animated.div>
       <animated.table style={{width:'100%',height:'100%'}}>
 	<animated.tbody>
 
 	  <animated.tr>
 	    <animated.td>
-
-	      <animated.div 
-		style={{transform:'rotate(45deg)'}}
-		onClick={() => {
-		settoggle(toggle=>false)
-		setTimeout(function(){
-		  props.removewindow(props.magicthing)
-		},3000)
-		// reset=true;
-
-		}}
-
-	      >
-	      +
-	      </animated.div>
-
 	    </animated.td>
 	    <animated.td>
 	      <Plot
