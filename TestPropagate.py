@@ -98,14 +98,16 @@ def make_nice_figure(retrieved:dict):
 
     figletter = 'a'; _figl_i=0
     figletters=['m','n','i','j','d','e']
+    OFFSET=1.6
     for _i,z in zip([2,1,0],[-0, -500e-6, -1000e-6]):
         # make spherical propagation test
         spherical = np.zeros((N,N))
         # or a rect
-        spherical[np.sqrt(x.reshape(-1,1)**2 + x.reshape(1,-1)**2) < (2.7)/2] = 1
-        spherical=gaussian_filter(spherical,sigma=3)
+        # spherical[np.sqrt(x.reshape(-1,1)**2 + x.reshape(1,-1)**2) < (2.7)/2] = 1
+        # spherical=gaussian_filter(spherical,sigma=3)
         # as a gaussian
-        # spherical = np.exp(-x.reshape(-1,1)**2 / (2.7))*np.exp(-x.reshape(1,-1)**2 / (2.7))
+        spherical = np.exp(-x.reshape(-1,1)**2 / (2.7))*np.exp(-x.reshape(1,-1)**2 / (2.7))
+        spherical[np.sqrt((x+OFFSET).reshape(-1,1)**2 + (x-OFFSET).reshape(1,-1)**2) > (2.7)/2] = 0
         spherical=propagate(spherical,z)
 
         # intensity plot
@@ -132,7 +134,7 @@ def make_nice_figure(retrieved:dict):
         if _i == 0: ax.set_title('Phase')
 
 
-    fig.savefig('xuv_experimental_results_1.png')
+    fig.savefig('OFFSET_1_6_xuv_experimental_results_1.png')
 
     fig=plt.figure(figsize=(10,8))
     fig.subplots_adjust(left=0.0,right=1.0,bottom=0.1)
