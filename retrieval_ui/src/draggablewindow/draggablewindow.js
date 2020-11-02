@@ -96,26 +96,44 @@ export default function PullRelease(props) {
     z: [[1, 2, 3],
 	[4,5,6],
 	[7,8,9]],
-    type: 'heatmap'
+    xaxis: 'x3',
+    yaxis: 'y3',
+    type: 'heatmap',
   };
 
   var trace2 = {
     z: [[1, 2, 3],
 	[4,5,6],
 	[7,8,9]],
-    xaxis: 'x2',
-    yaxis: 'y2',
-    type: 'heatmap'
+    xaxis: 'x4',
+    yaxis: 'y4',
+    type: 'heatmap',
   };
 
-  var data = [trace1, trace2];
+  var trace3 = {
+    z: [[1, 2, 3],
+	[4,5,6],
+	[7,8,9]],
+    xaxis: 'x2',
+    yaxis: 'y2',
+    type: 'heatmap',
+  };
+
+  var data = [trace1, trace2, trace3];
 
   var layout = {
-    width: 300,
+    colorbar:false,
+    margin:{l:30,r:30,t:30,b:30},
+    width: 400,
     height: 300,
     title: 'Bitcoin Transaction Price',
     showlegend:false,
-    grid: {rows: 1, columns: 2, pattern: 'independent'},
+    yaxis2: { domain: [0.0, 0], anchor: 'x2' },
+    xaxis2: { domain: [0.5, 1], anchor: 'y2' },
+    yaxis3: { domain: [0.5, 1], anchor: 'x3' },
+    xaxis3: { domain: [0.5, 1], anchor: 'y3' },
+    xaxis4: { domain: [0, 0.5], anchor: 'y4' },
+    yaxis4: { domain: [0, 1], anchor: 'x4' },
   };
 
   const props2 = useSpring({opacity:toggle?1:0})
