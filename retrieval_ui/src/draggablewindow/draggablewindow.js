@@ -8,6 +8,23 @@ import Plot from 'react-plotly.js';
 // document.addEventListener('gesturestart', e => e.preventDefault())
 // document.addEventListener('gesturechange', e => e.preventDefault())
 
+function Xbutton(props){
+  return <animated.div
+    style={{transform:'rotate(45deg)',color:'red',fontSize:'30px'}}
+    onClick={() => {
+      props.settoggle(toggle=>false)
+      setTimeout(function(){
+	props.removewindow(props.magicthing)
+      },3000)
+      // reset=true;
+
+    }}
+
+  >
+    +
+  </animated.div>
+}
+
 export default function PullRelease(props) {
   const [springprops, set_sp] = useSpring(() => ({ x: 0, y: 0 }))
   const [staticprops, set_st] = React.useState({ x_start: 0, y_start: 0, isPinching:false,isDragging:false})
@@ -118,20 +135,7 @@ export default function PullRelease(props) {
 	    <animated.tr>
 	      <animated.td style={{width:'15%'}}>
 
-		<animated.div
-		  style={{transform:'rotate(45deg)',color:'red',fontSize:'30px'}}
-		  onClick={() => {
-		    settoggle(toggle=>false)
-		    setTimeout(function(){
-		      props.removewindow(props.magicthing)
-		    },3000)
-		    // reset=true;
-
-		  }}
-
-		>
-		  +
-		</animated.div>
+		<Xbutton {...props} settoggle={settoggle}/>
 
 	      </animated.td>
 	      <animated.td style={{color:'white',fontSize:'30px'}}>{props.diffraction_type} - {props.retrieval_type} </animated.td>
