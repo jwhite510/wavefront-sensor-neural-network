@@ -3,8 +3,8 @@
 .movingcube{
 	position:absolute;
 	background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-	width:200px;
-	height:200px;
+	width:500px;
+	height:500px;
 	border-radius:30px;
 
 }

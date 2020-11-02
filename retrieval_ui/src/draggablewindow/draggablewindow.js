@@ -4,6 +4,7 @@ import { useSpring, animated, to } from 'react-spring'
 import { useGesture } from 'react-use-gesture'
 import './styles.css'
 import { useDrag } from 'react-use-gesture'
+import Plot from 'react-plotly.js';
 // document.addEventListener('gesturestart', e => e.preventDefault())
 // document.addEventListener('gesturechange', e => e.preventDefault())
 
@@ -109,7 +110,27 @@ export default function PullRelease(props) {
 
 	    </animated.td>
 	    <animated.td>
-	    in a table
+	      <Plot
+		data={[
+		  {
+		    x: [1,2,3],
+		      y: [1,2,3],
+		      type: 'scatter',
+		      mode: 'lines+markers',
+		      marker: {color: 'red'},
+		  },
+		    // {type: 'bar', x: [1, 2, 3], y: [2, 5, 3]},
+		]}
+		layout={ {
+		  width: 300,
+		  height: 300,
+		  title: 'Bitcoin Transaction Price',
+		  showlegend:false
+		} }
+		config={{displayModeBar:false}}
+		// onInitialized={(figure) => this.setState(figure)}
+		// onUpdate={(figure) => this.setState(figure)}
+	      />
 	    </animated.td>
 	  </animated.tr>
 	  <animated.tr>
