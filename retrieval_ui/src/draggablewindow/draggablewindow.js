@@ -148,14 +148,17 @@ export default function PullRelease(props) {
     margin:{l:30,r:30,t:30,b:30},
     width: 400,
     height: 300,
-    title: 'Bitcoin Transaction Price',
+    title: 'title',
     showlegend:false,
-    yaxis2: { domain: [0.0, 0], anchor: 'x2' },
-    xaxis2: { domain: [0.5, 1], anchor: 'y2' },
-    yaxis3: { domain: [0.5, 1], anchor: 'x3' },
-    xaxis3: { domain: [0.5, 1], anchor: 'y3' },
-    xaxis4: { domain: [0, 0.5], anchor: 'y4' },
-    yaxis4: { domain: [0, 1], anchor: 'x4' },
+    // right bottom
+    yaxis2: { domain: [0.0, 0.49], anchor: 'x2',visible:false},
+    xaxis2: { domain: [0.51, 1], anchor: 'y2',visible:false},
+    // right top
+    yaxis3: { domain: [0.51, 1], anchor: 'x3',visible:false},
+    xaxis3: { domain: [0.51, 1], anchor: 'y3',visible:false},
+    // left
+    xaxis4: { domain: [0, 0.5], anchor: 'y4',visible:false},
+    yaxis4: { domain: [0, 1], anchor: 'x4' ,visible:false},
   };
 
   const props2 = useSpring({opacity:toggle?1:0})
