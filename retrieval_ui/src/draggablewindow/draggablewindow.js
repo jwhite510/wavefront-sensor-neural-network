@@ -69,7 +69,6 @@ export default function PullRelease(props) {
   )
 
   const [toggle, settoggle] = React.useState(false)
-
   // run only on creation
   React.useEffect(()=>{
       settoggle(toggle=>true)
@@ -96,8 +95,10 @@ export default function PullRelease(props) {
 	      <animated.div 
 		style={{transform:'rotate(45deg)'}}
 		onClick={() => {
-		console.log('thing is clicked')
 		settoggle(toggle=>false)
+		setTimeout(function(){
+		  props.removewindow(props.magicthing)
+		},3000)
 		// reset=true;
 
 		}}
