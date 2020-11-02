@@ -86,21 +86,42 @@ export default function PullRelease(props) {
       opacity:props2.opacity,
       transform:props3.transform
       }}
-      onClick={() => {
-      console.log('thing is clicked')
-      settoggle(toggle=>false)
-      // reset=true;
-
-      }}
     >
+      <animated.table style={{width:'100%',height:'100%'}}>
+	<animated.tbody>
 
-      <p>
-      retrieval_type:
-      {props.retrieval_type}
-      </p><p>
-      diffraction_type:
-      {props.diffraction_type}
-      </p>
+	  <animated.tr>
+	    <animated.td>
+
+	      <animated.div 
+		style={{transform:'rotate(45deg)'}}
+		onClick={() => {
+		console.log('thing is clicked')
+		settoggle(toggle=>false)
+		// reset=true;
+
+		}}
+
+	      >
+	      +
+	      </animated.div>
+
+	    </animated.td>
+	    <animated.td>
+	    in a table
+	    </animated.td>
+	  </animated.tr>
+	  <animated.tr>
+	    <animated.td>
+	      {props.retrieval_type}
+	    </animated.td>
+	    <animated.td>
+	      {props.diffraction_type}
+	    </animated.td>
+	  </animated.tr>
+
+	</animated.tbody>
+      </animated.table>
 
     </animated.div>
 }
