@@ -99,6 +99,12 @@ export default function PullRelease(props) {
     xaxis: 'x3',
     yaxis: 'y3',
     type: 'heatmap',
+    colorbar:{
+      thickness:10,
+      x:1.0,
+      y:0.75,
+      len:0.4,
+    },
   };
 
   var trace2 = {
@@ -108,18 +114,34 @@ export default function PullRelease(props) {
     xaxis: 'x4',
     yaxis: 'y4',
     type: 'heatmap',
+    colorbar:{
+      thickness:10,
+      x:0.0,
+      y:0.80,
+      len:0.4,
+    },
   };
 
   var trace3 = {
     z: [[1, 2, 3],
-	[4,5,6],
-	[7,8,9]],
+        [4,5,6],
+        [7,8,9]],
     xaxis: 'x2',
     yaxis: 'y2',
     type: 'heatmap',
+    colorbar:{
+      thickness:10,
+      x:1.0,
+      y:0.25,
+      len:0.4,
+    },
   };
 
-  var data = [trace1, trace2, trace3];
+  var data = [
+    trace1,
+    trace2,
+    trace3
+  ];
 
   var layout = {
     colorbar:false,
