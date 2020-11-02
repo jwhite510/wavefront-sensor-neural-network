@@ -197,7 +197,7 @@ class DiffractionNet():
         self.writer = tf.summary.FileWriter("./tensorboard_graph/" + self.name)
 
         # number of epochs to run
-        self.epochs = 50
+        self.epochs = 10
         self.i = 0
         self.epoch = None
         self.dots = None
@@ -247,7 +247,7 @@ class DiffractionNet():
 
         getMeasuredDiffractionPattern=None
         # orientations = [None, "lr", "ud", "lrud"]
-        orientations = [None]
+        orientations = ['lr']
         scales = [1.0]
         for filename in filenames:
             s = np.load(filename)
@@ -572,7 +572,7 @@ class DiffractionNet():
             print("add_tensorboard_values")
             self.add_tensorboard_values()
             self.update_error_plot_values()
-            if self.i % 5 == 0:
+            if self.i % 1 == 0:
 
                 # create directory if it doesnt exist
                 check_is_dir("nn_pictures")
@@ -594,7 +594,7 @@ class DiffractionNet():
 
 
             # save the network
-            if self.i % 10 == 0:
+            if self.i % 1 == 0:
                 print("saving network models/" + self.name + ".ckpt")
                 self.saver.save(self.sess, "models/" + self.name + ".ckpt")
                 training_parameters = {}

@@ -496,8 +496,6 @@ if __name__ == "__main__":
     parser=argparse.ArgumentParser()
     parser.add_argument('--network',type=str)
     parser.add_argument('--net_type',type=str)
-    parser.add_argument('--pc',type=str)
-    parser.add_argument('--outfile',type=str)
     args,_=parser.parse_known_args()
     comparenetworkiterative = CompareNetworkIterative(args)
     # run test on simulated validation data
@@ -560,66 +558,36 @@ if __name__ == "__main__":
             N_meas=np.shape(a)[0], # for calculating the measured frequency axis (not really needed)
             experimental_params=experimental_params)
 
-    orientations = [None]
-    # orientations = [None]
-    scales = [1.0]
+    for _name in measured_images.keys():
+        transform={};transform['rotation_angle']=0;transform['scale']=1.0;transform['flip']='lr'
+        m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_images[_name], transform)
+        m[m<0.003*np.max(m)]=0
+        m=np.squeeze(m)
+        for _f,_ret_type in zip(
+                [comparenetworkiterative.retrieve_measured, comparenetworkiterative.matlab_cdi_retrieval],
+                ['retrieved_nn','retrieved_iterative']
+                ):
+            # compare to training data set
+            retrieved,fig=_f(m,"measured: "+_name+" "+_ret_type+"predicted",mask=True)
+            fig.savefig('retrieved'+_name+'_'+_ret_type)
 
-    with tables.open_file("specific_samples_noise.hdf5",mode="r") as file:
-        N = file.root.N[0,0]
-        n_samples=file.root.object_real.shape[0]
-        for _i in range(n_samples):
-            obj_acutal={}
-            obj_acutal["real_output"] = file.root.object_real[_i, :].reshape(N,N)
-            obj_acutal["imag_output"] = file.root.object_imag[_i, :].reshape(N,N)
-            obj_acutal["measured_pattern"] = file.root.diffraction_noise[_i, :].reshape(N,N)
-            obj_acutal["tf_reconstructed_diff"] = file.root.diffraction_noisefree[_i, :].reshape(N,N)
-            obj_acutal["coefficients"]=file.root.coefficients[_i,:]
-            obj_acutal["scale"]=file.root.scale[_i,:]
-            fig=diffraction_functions.plot_amplitude_phase_meas_retreival(obj_acutal,"specific: "+str(_i)+" actual",ACTUAL=True,mask=True)
-            # fig.savefig(os.path.join(DIR,"specific: "+str(_i)))
-            fig.canvas.draw()
-            image_actual=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
-            image_actual=image_actual.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-
-            outfile={}
-            outfile['actual']=obj_acutal
-            for _f,_name in zip(
-                    [comparenetworkiterative.retrieve_measured, comparenetworkiterative.matlab_cdi_retrieval],
-                    ['retrieved_nn','retrieved_iterative']
-                    ):
-                # compare to training data set
-                retrieved,fig=_f(obj_acutal['measured_pattern'],"specific: "+str(_i)+" "+_name+"predicted",mask=True)
-                outfile[_name]=retrieved
-                fig.canvas.draw()
-                image_ret=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
-                image_ret=image_ret.reshape(fig.canvas.get_width_height()[::-1]+(3,))
-                image_combined=np.append(image_ret,image_actual,axis=1)
-                # save this as an image with PIL
-                im=Image.fromarray(image_combined)
-                im.save(_name+str(_i)+'.png')
-
-            with open(args.outfile,'wb') as file:
-                pickle.dump(outfile,file)
-            # plot simulated retrieved and actual
-        exit()
-        from pudb import set_trace; set_trace() # BREAKPOINT
-        print("BREAKPOINT")
+    exit()
 
 
 
-        # retrieve samples from specific data set
+        # # retrieve samples from specific data set
 
-        sim=comparenetworkiterative.get_train_sample(_i_sim)
-        # fig=plot_show_cm(sim['measured_pattern'],_name+" training ("+str(_i_sim)+")")
-        # fig.savefig(os.path.join(DIR,_name+"_similar_"+"training_measured_center"))
+        # sim=comparenetworkiterative.get_train_sample(_i_sim)
+        # # fig=plot_show_cm(sim['measured_pattern'],_name+" training ("+str(_i_sim)+")")
+        # # fig.savefig(os.path.join(DIR,_name+"_similar_"+"training_measured_center"))
 
-        # compare to training data set
-        fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],_name+" training, Predicted")
-        fig.savefig(os.path.join(DIR,_name+"_similar_"+"training_predicted"))
-        # plot simulated retrieved and actual
+        # # compare to training data set
+        # fig=comparenetworkiterative.retrieve_measured(sim['measured_pattern'],_name+" training, Predicted")
+        # fig.savefig(os.path.join(DIR,_name+"_similar_"+"training_predicted"))
+        # # plot simulated retrieved and actual
 
-        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,_name+" training, Actual",ACTUAL=True)
-        fig.savefig(os.path.join(DIR,_name+"_similar_"+"training_actual"))
+        # fig=diffraction_functions.plot_amplitude_phase_meas_retreival(sim,_name+" training, Actual",ACTUAL=True)
+        # fig.savefig(os.path.join(DIR,_name+"_similar_"+"training_actual"))
 
     # # plot simulated sample
     # sim=comparenetworkiterative.get_train_sample(0)
