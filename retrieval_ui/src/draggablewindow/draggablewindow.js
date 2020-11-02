@@ -68,11 +68,15 @@ export default function PullRelease(props) {
     }
   )
 
+  const props2 = useSpring({opacity:1, from: {opacity:0}})
+  const props3 = useSpring({transform:'scale(1)', from: {transform:'scale(0)'}})
   // Bind it to a component
     return <animated.div className='movingcube' {...bind()} style={{
       x:springprops.x,
       y:springprops.y,
-      touchAction:'none'
+      touchAction:'none',
+      opacity:props2.opacity,
+      transform:props3.transform
       }}>
 
       <p>
