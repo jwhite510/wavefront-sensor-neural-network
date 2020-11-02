@@ -134,7 +134,7 @@ export default function PullRelease(props) {
 		</animated.div>
 
 	      </animated.td>
-	      <animated.td> </animated.td>
+	      <animated.td style={{color:'white',fontSize:'30px'}}>{props.diffraction_type} - {props.retrieval_type} </animated.td>
 	    </animated.tr>
 	  </animated.tbody>
 	</animated.table>
@@ -159,10 +159,10 @@ export default function PullRelease(props) {
 	  </animated.tr>
 	  <animated.tr>
 	    <animated.td>
-	      {props.retrieval_type}
+
 	    </animated.td>
 	    <animated.td>
-	      {props.diffraction_type}
+
 	    </animated.td>
 	  </animated.tr>
 
