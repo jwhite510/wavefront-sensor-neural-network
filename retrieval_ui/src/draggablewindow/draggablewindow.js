@@ -75,6 +75,31 @@ export default function PullRelease(props) {
       settoggle(toggle=>true)
   },[])
 
+  var trace1 = {
+    z: [[1, 2, 3],
+	[4,5,6],
+	[7,8,9]],
+    type: 'heatmap'
+  };
+
+  var trace2 = {
+    z: [[1, 2, 3],
+	[4,5,6],
+	[7,8,9]],
+    xaxis: 'x2',
+    yaxis: 'y2',
+    type: 'heatmap'
+  };
+
+  var data = [trace1, trace2];
+
+  var layout = {
+    width: 300,
+    height: 300,
+    title: 'Bitcoin Transaction Price',
+    showlegend:false,
+    grid: {rows: 1, columns: 2, pattern: 'independent'},
+  };
 
   const props2 = useSpring({opacity:toggle?1:0})
   const props3 = useSpring({transform:toggle?'scale(1)':'scale(0)'})
@@ -124,22 +149,8 @@ export default function PullRelease(props) {
 	    </animated.td>
 	    <animated.td>
 	      <Plot
-		data={[
-		  {
-		    x: [1,2,3],
-		      y: [1,2,3],
-		      type: 'scatter',
-		      mode: 'lines+markers',
-		      marker: {color: 'red'},
-		  },
-		    // {type: 'bar', x: [1, 2, 3], y: [2, 5, 3]},
-		]}
-		layout={ {
-		  width: 300,
-		  height: 300,
-		  title: 'Bitcoin Transaction Price',
-		  showlegend:false
-		} }
+		data={data}
+		layout={layout}
 		config={{displayModeBar:false}}
 		// onInitialized={(figure) => this.setState(figure)}
 		// onUpdate={(figure) => this.setState(figure)}
