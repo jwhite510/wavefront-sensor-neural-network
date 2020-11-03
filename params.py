@@ -105,49 +105,49 @@ elif args.wfsensor==4:
     params.wavefront_sensor=wfs_square_10x10_upright()
 
 # size used in XUV
-# params.wavefron_sensor_size_nm=5*im.size[0]*1e-9
+params.wavefron_sensor_size_nm=5*params.wavefront_sensor.size[0]*1e-9
 
 # size used in visible
-params.wavefron_sensor_size_nm=60e-6
+# params.wavefron_sensor_size_nm=60e-6
 
 # define materials
 # https://refractiveindex.info/?shelf=main&book=Cu&page=Johnson
 # https://refractiveindex.info/?shelf=main&book=Si3N4&page=Luke
 # wavefront sensor material properties
-params_cu = MaterialParams(
-    lam=633e-9,
+# params_cu = MaterialParams(
+#     lam=633e-9,
+#     dz=10e-9,
+#     delta_Ta = 0.26965-1, # double check this
+#     beta_Ta = 3.4106,
+#     distance = 150e-9
+#         )
+# params.material_params.append(params_cu)
+# 
+# params_Si = MaterialParams(
+#     delta_Ta = 2.0394-1,
+#     beta_Ta = 0.0,
+#     dz=10e-9,
+#     lam=633e-9,
+#     distance=50e-9
+#         )
+# params.material_params.append(params_Si)
+
+# XUV 
+params_Si = MaterialParams(
+    beta_Ta = 0.00926,
+    delta_Ta = 0.02661,
     dz=10e-9,
-    delta_Ta = 0.26965-1, # double check this
-    beta_Ta = 3.4106,
-    distance = 150e-9
-        )
+    lam=18.5e-9,
+    distance=50e-9)
+
+params.material_params.append(params_Si)
+params_cu = MaterialParams(
+    beta_Ta = 0.0612,
+    delta_Ta = 0.03748,
+    lam=18.5e-9,
+    dz=10e-9,
+    distance = 150e-9)
 params.material_params.append(params_cu)
 
-params_Si = MaterialParams(
-    delta_Ta = 2.0394-1,
-    beta_Ta = 0.0,
-    dz=10e-9,
-    lam=633e-9,
-    distance=50e-9
-        )
-params.material_params.append(params_Si)
 
-# # XUV 
-# params_Si = MaterialParams(
-#     beta_Ta = 0.00926,
-#     delta_Ta = 0.02661,
-#     dz=10e-9,
-#     lam=18.5e-9,
-#     distance=50e-9)
-# 
-# params.material_params.append(params_Si)
-# params_cu = MaterialParams(
-#     beta_Ta = 0.0612,
-#     delta_Ta = 0.03748,
-#     lam=18.5e-9,
-#     dz=10e-9,
-#     distance = 150e-9)
-# params.material_params.append(params_cu)
-
-
-params.wf_ratio=1/3
+params.wf_ratio=1/2
