@@ -2,6 +2,7 @@
 *.png
 *.jpg
 *.vim
+*.gif
 coco_dataset/
 tags
 tensorboard_graph/
