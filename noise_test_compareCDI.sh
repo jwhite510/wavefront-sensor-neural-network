@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # read amples in .dat file
-wfsensor=0
-network="wfstest_0"
+wfsensor=2
+network="varnoise_10ewfstest_2"
 pc=0
 camera_noise="SquareWFtest/CameraNoise/1_1000/Bild_1.png"
 
 
-noisecountv_arr=(50 40 30 0)
+noisecountv_arr=(50 40 30 20 10 5 0)
 for cts in ${noisecountv_arr[@]}
 do
 	# generate a dataset with specific objects

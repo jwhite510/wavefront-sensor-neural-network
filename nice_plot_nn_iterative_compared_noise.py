@@ -19,7 +19,7 @@ if __name__ == "__main__":
     parser.add_argument('--wfsensor',type=int)
     args,_=parser.parse_known_args()
     files={}
-    cts = ['0','50','40','30']
+    cts = ['0','50','40','30','20','10','5']
     for filename in ['out_'+_ct+'.p' for _ct in cts]:
         with open(filename,'rb') as file:
             files[filename.split('.')[0]]=pickle.load(file)
@@ -52,7 +52,7 @@ if __name__ == "__main__":
             complex_obj*=np.exp(-1j * np.angle(complex_obj[N//2,N//2]))
 
             phase = np.angle(complex_obj)
-            phase[np.abs(complex_obj)**2 < 0.001]=0
+            phase[np.abs(complex_obj)**2 < 0.01]=0
             im=ax.pcolormesh(x,x,np.abs(complex_obj)**2,vmin=0,vmax=1,cmap='jet')
             ax.text(0.05,0.95,name+'Intensity',transform=ax.transAxes,color='white',weight='bold',va='top')
             ax.xaxis.set_ticks_position('top'); ax.xaxis.set_label_position('top')
