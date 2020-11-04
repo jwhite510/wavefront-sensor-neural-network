@@ -28,13 +28,13 @@ def make_nice_figure(retrieved:dict):
     fig.subplots_adjust(hspace=0.02,wspace=0.02, left=0.1,right=0.8)
     # fig.text(0.5, 0.95, run_name, ha="center")
     # fig.subplots_adjust(hspace=0.0, left=0.2)
-    gs = fig.add_gridspec(3,3)
+    gs = fig.add_gridspec(4,3)
 
     figletter = 'a'
-    for _name, _i, _dist in zip(['-500','0','500_sim'],range(3),[-500,0,500]):
+    for _name, _i, _dist in zip(['-1000','-500','0','500_sim'],range(4),[-1000,-500,0,500]):
         complex_obj = np.squeeze(retrieved[_name]['real_output']+1j*retrieved[_name]['imag_output'])
 
-        if _i == 0 or _i == 1:
+        if _i == 0 or _i == 2 or _i==1:
             ax = fig.add_subplot(gs[_i,0])
             if _i==0:
                 ax.set_title("Diffraction Pattern")
@@ -59,16 +59,16 @@ def make_nice_figure(retrieved:dict):
         ax.set_yticks([])
         if _i == 0 or _i == 1:
             ax.set_xticks([])
-        if _i == 2:
+        if _i == 3:
             ax.set_xlabel(r"position [um]")
             ax.set_xticks([-5,-2.5,0,2.5,5])
         if _i == 0 or _i == 1:
             ax.text(0.2, 0.9,'retrieved',backgroundcolor='white',transform=ax.transAxes)
-        if _i == 2:
-            ax.text(0.2, 0.8,'propagated from\n -500 [um]',backgroundcolor='white',transform=ax.transAxes)
+        if _i == 3:
+            ax.text(0.2, 0.8,'propagated from\n z=0 [um]',backgroundcolor='white',transform=ax.transAxes)
             # draw circle
             # circle to show where the wavefront originates
-            circle=plt.Circle((0.6,-1.0),(2.7)/2,color='r',fill=False,linewidth=2.0)
+            circle=plt.Circle((0.3,-0.4),(2.7)/2,color='r',fill=False,linewidth=2.0)
             ax.add_artist(circle)
             ax.text(0.2, 0.4,"Spherical\nAperture\n2.7 um", fontsize=10, ha='center', transform=ax.transAxes,color="red",weight='bold')
 
@@ -92,7 +92,7 @@ def make_nice_figure(retrieved:dict):
         if _i == 2:
             ax.set_xlabel(r"position [um]")
             ax.set_xticks([-5,-2.5,0,2.5,5])
-        ax.text(1.3,0.5,'z='+str(_dist)+r' $[\mu m]$',transform=ax.transAxes,size=20)
+        ax.text(1.27,0.5,'z='+str(_dist)+r' $[\mu m]$',transform=ax.transAxes,size=20)
     fig.savefig('xuv_experimental_results_1.png')
 
     fig=plt.figure(figsize=(10,8))
@@ -247,9 +247,9 @@ def make_nice_figure(retrieved:dict):
 
 
 if __name__=="__main__":
-    folder_dir="nn_pictures/teslatest5_doubleksize_doublefilters_reconscostfunction_pictures/46/measured/"
-    # run_name="Data_for_Jonathon_z0_1-fits_ud_1-0_reconstructed.p"
-    sample_name="Data_for_Jonathon_z-500_1-fits_ud_1-0_reconstructed.p"
+    # folder_dir="nn_pictures/teslatest5_doubleksize_doublefilters_reconscostfunction_pictures/46/measured/"
+    folder_dir="nn_pictures/xuvdata2_varnoise_wfstest_0_pictures/10/measured/"
+    sample_name="Data_for_Jonathon_z0_1-fits_ud_1-0_reconstructed.p"
     filename=os.path.join(folder_dir,sample_name)
     print("filename =>", filename)
 
@@ -269,7 +269,7 @@ if __name__=="__main__":
     f_object=getMeasuredDiffractionPattern.simulation_axes['diffraction_plane']['f']
 
     # distance to focus
-    z = 1000e-6
+    z = 500e-6
     gamma=np.sqrt(
             1-
             (experimental_params['wavelength']*f_object.reshape(-1,1))**2-
@@ -305,25 +305,23 @@ if __name__=="__main__":
             }
 
 
-    # compare the z - 500 nm propagation to the 0 nm retrieval
-    sample_name="Data_for_Jonathon_z0_1-fits_ud_1-0_reconstructed.p"
-    filename=os.path.join(folder_dir,sample_name)
-    with open(filename,"rb") as file:
-        obj=pickle.load(file)
-    fig=diffraction_functions.plot_amplitude_phase_meas_retreival(obj,"Retrieval at z=0 um")
-    # plt.savefig("z0retrieval")
-    plt.close(fig)
-    retrieved['0'] = obj
 
-    # plot the original retrieval at -500 nm
-    sample_name="Data_for_Jonathon_z-500_1-fits_ud_1-0_reconstructed.p"
-    filename=os.path.join(folder_dir,sample_name)
-    with open(filename,"rb") as file:
-        obj=pickle.load(file)
-    fig=diffraction_functions.plot_amplitude_phase_meas_retreival(obj,"Retrieval at z=-500 um")
-    # plt.savefig("z-500retrieval")
-    plt.close(fig)
-    retrieved['-500'] = obj
+    for _sample_name,_title,_key in zip(["Data_for_Jonathon_z0_1-fits_ud_1-0_reconstructed.p",
+                                        "Data_for_Jonathon_z-500_1-fits_ud_1-0_reconstructed.p",
+                                        "Data_for_Jonathon_z-1000_1-fits_ud_1-0_reconstructed.p"],
+                                        ['Retrieval at z=0 um',
+                                        'Retrieval at z=-500 um',
+                                        'Retrieval at z=-1000 um'],
+                                        ['0',
+                                        '-500',
+                                        '-1000']):
+        filename=os.path.join(folder_dir,_sample_name)
+        with open(filename,"rb") as file:
+            obj=pickle.load(file)
+        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(obj,_title)
+        # plt.savefig("z0retrieval")
+        plt.close(fig)
+        retrieved[_key] = obj
 
     make_nice_figure(retrieved)
 
