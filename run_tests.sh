@@ -11,11 +11,11 @@ declare -a runs=(
 # "original" # nr network
 # "0" # wavefront sensor
 
-"varnoise_10ewfstest_2" # name
+"xuvdata2_varnoise_wfstest_0" # name
 "36000" # train samples
 "50,40,30,20,10,5" # peak count
 "original" # nr network
-"2" # wavefront sensor
+"0" # wavefront sensor
 
 )
 i=0

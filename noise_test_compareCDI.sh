@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # read amples in .dat file
-wfsensor=2
-network="varnoise_10ewfstest_2"
+wfsensor=0
+network="xuvdata2_varnoise_wfstest_0"
 pc=0
 camera_noise="SquareWFtest/CameraNoise/1_1000/Bild_1.png"
 

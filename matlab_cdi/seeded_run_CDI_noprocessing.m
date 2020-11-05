@@ -17,7 +17,7 @@ meas_diff = double(diffraction);
 seed_obj = double(support);
 
 % the parameters
-beta = 0.9; %between 0.8 and 0.98; if higher, feedback is stronger
+beta = 0.98; %between 0.8 and 0.98; if higher, feedback is stronger
 iter_total = 400;  % total number of iterations
 iter_cycle = 401;   % cycle of HIO/RAAR and ER
 HIO_num = 200;      % HIO/RAAR per cycle
