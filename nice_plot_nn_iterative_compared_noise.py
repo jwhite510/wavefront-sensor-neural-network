@@ -33,12 +33,13 @@ if __name__ == "__main__":
 
     fig = plt.figure(figsize=(10,10))
     fig.subplots_adjust(wspace=0.05,hspace=0.05)
-    fig.suptitle('nn iterative compared')
-    gs = fig.add_gridspec(6,5)
+    # fig.suptitle('nn iterative compared')
+    gs = fig.add_gridspec(6,4)
     for _ct,_z in zip(['0','10'],[0,3]):
         ax=fig.add_subplot(gs[0+_z:2+_z,0:2])
         ax.pcolormesh(f,f,files['out_'+_ct]['retrieved_nn']['measured_pattern'],cmap='jet')
         ax.xaxis.set_ticks([])
+        ax.set_title('Simulated Diffraction pattern no noise'if _ct=='0'else'Simulated diffraction pattern 10 counts peak')
         ax.set_ylabel(r"frequency [1/m]$\cdot 10^{6}$")
         for i,retrieval,name in zip(
                 [0,1,2],['retrieved_nn','retrieved_iterative','actual'],
@@ -54,31 +55,23 @@ if __name__ == "__main__":
             phase = np.angle(complex_obj)
             phase[np.abs(complex_obj)**2 < 0.005]=0
             im=ax.pcolormesh(x,x,np.abs(complex_obj)**2,vmin=0,vmax=1,cmap='jet')
-            ax.text(0.05,0.95,name+'Intensity',transform=ax.transAxes,color='white',weight='bold',va='top')
-            ax.xaxis.set_ticks_position('top'); ax.xaxis.set_label_position('top')
+            ax.text(0.05,0.95,name,transform=ax.transAxes,color='white',weight='bold',va='top')
+            # ax.xaxis.set_ticks_position('top'); ax.xaxis.set_label_position('top')
             ax.yaxis.set_ticks([])
-            if not i==0: ax.xaxis.set_ticks([])
+            if i==0:ax.set_title('Intensity')
+            if not i==5: ax.xaxis.set_ticks([])
             else:ax.set_xlabel(("position [um]"))
             place_colorbar(im,ax,offsetx=0.015,offsety=0.005,ticks=[0,0.5,1],color='white')
 
             ax=fig.add_subplot(gs[i,3])
             im=ax.pcolormesh(x,x,phase,vmin=-np.pi,vmax=np.pi,cmap='jet')
-            ax.text(0.05,0.95,name+'Phase',transform=ax.transAxes,color='black',weight='bold',va='top')
-            ax.xaxis.set_ticks_position('top'); ax.xaxis.set_label_position('top')
+            ax.text(0.05,0.95,name,transform=ax.transAxes,color='black',weight='bold',va='top')
+            # ax.xaxis.set_ticks_position('top'); ax.xaxis.set_label_position('top')
             ax.yaxis.set_ticks([])
-            if not i==0: ax.xaxis.set_ticks([])
+            if i==0:ax.set_title('Phase')
+            if not i==5: ax.xaxis.set_ticks([])
             else:ax.set_xlabel(("position [um]"))
             place_colorbar(im,ax,offsetx=0.015,offsety=0.005,ticks=[-3.14,0,3.14],color='black',labels=['-pi','0','+pi'])
-
-            ax=fig.add_subplot(gs[i,4])
-            im=ax.pcolormesh(f,f,np.squeeze(files['out_'+_ct][retrieval]['tf_reconstructed_diff']),vmin=0,vmax=1,cmap='jet')
-            ax.text(0.05,0.95,name+'\nReconstructed\nDiffraction Pattern',transform=ax.transAxes,color='white',weight='bold',va='top')
-            ax.xaxis.set_ticks_position('top'); ax.xaxis.set_label_position('top')
-            ax.yaxis.set_ticks([])
-            if not i==0: ax.xaxis.set_ticks([])
-            else:ax.set_xlabel((r"frequency [1/m]$\cdot 10^{6}$"))
-
-            place_colorbar(im,ax,offsetx=0.015,offsety=0.005,ticks=[0,0.5,1],color='white')
 
     # fig.savefig('./wfs_'+str(args.wfsensor)+'beta_98_INTERP_iterative_nn_compared_noise_'+_ct+'.png')
     fig.savefig('./wfs_'+str(args.wfsensor)+'_iterative_nn_compared_noise_'+'multiple'+'.png')
