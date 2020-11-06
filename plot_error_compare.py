@@ -34,7 +34,7 @@ def construct_arrays(errorvals,error_type):
 if __name__ == "__main__":
     parser=argparse.ArgumentParser()
     parser.add_argument('--pc',nargs='+')
-    args=parser.parse_args()
+    args,_=parser.parse_known_args()
     peakcounts=[]
     errorvals=[]
     for pc in args.pc:
