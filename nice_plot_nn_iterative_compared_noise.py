@@ -32,11 +32,13 @@ if __name__ == "__main__":
     f*=1e-6
 
     fig = plt.figure(figsize=(10,10))
-    fig.subplots_adjust(wspace=0.05,hspace=0.05)
+    fig.subplots_adjust(wspace=0.00,hspace=0.0)
     # fig.suptitle('nn iterative compared')
     gs = fig.add_gridspec(6,4)
+    letter='a'
     for _ct,_z in zip(['0','10'],[0,3]):
         ax=fig.add_subplot(gs[0+_z:2+_z,0:2])
+        ax.text(0.05,0.9,letter,transform=ax.transAxes,weight='bold',color='white');letter=chr(ord(letter)+1)
         ax.pcolormesh(f,f,files['out_'+_ct]['retrieved_nn']['measured_pattern'],cmap='jet')
         ax.xaxis.set_ticks([])
         ax.set_title('Simulated Diffraction pattern no noise'if _ct=='0'else'Simulated diffraction pattern 10 counts peak')
@@ -47,6 +49,7 @@ if __name__ == "__main__":
                 ):
             i+=_z
             ax=fig.add_subplot(gs[i,2])
+            ax.text(0.9,0.9,letter,transform=ax.transAxes,weight='bold',color='white');letter=chr(ord(letter)+1)
             complex_obj=np.squeeze(files['out_'+_ct][retrieval]['real_output'] + 1j*files['out_'+_ct][retrieval]['imag_output'])
             complex_obj*=(1/np.max(np.abs(complex_obj)))
             # phase at center set to 0
@@ -64,6 +67,7 @@ if __name__ == "__main__":
             place_colorbar(im,ax,offsetx=0.015,offsety=0.005,ticks=[0,0.5,1],color='white')
 
             ax=fig.add_subplot(gs[i,3])
+            ax.text(0.9,0.9,letter,transform=ax.transAxes,weight='bold',color='black');letter=chr(ord(letter)+1)
             im=ax.pcolormesh(x,x,phase,vmin=-np.pi,vmax=np.pi,cmap='jet')
             ax.text(0.05,0.95,name,transform=ax.transAxes,color='black',weight='bold',va='top')
             # ax.xaxis.set_ticks_position('top'); ax.xaxis.set_label_position('top')
