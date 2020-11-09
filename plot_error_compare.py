@@ -45,26 +45,19 @@ if __name__ == "__main__":
 
     # construct list of average and standard deviation values
     # plot intensity average + std
-    network_avg,network_std,iterative_avg,iterative_std=construct_arrays(errorvals,'intensity')
-    plt.figure(1)
-    plt.title("retrieved intensity error (100 samples per noise level)")
-    plt.errorbar(np.array(peakcounts,dtype=int),network_avg,network_std,label='neural network',alpha=0.5)
-    plt.errorbar(np.array(peakcounts,dtype=int),iterative_avg,iterative_std,label='iterative',alpha=0.5)
-    plt.gca().set_xlabel("peak signal count")
-    plt.gca().set_ylabel("Average Root Mean Square Error (intensity)")
-    plt.legend()
-    plt.savefig('intensity.png')
-
-    # plot intensity average + std
-    network_avg,network_std,iterative_avg,iterative_std=construct_arrays(errorvals,'phase')
-
-    plt.figure(2)
-    plt.title("retrieved phase error (100 samples per noise level)")
-    plt.errorbar(np.array(peakcounts,dtype=int),network_avg,network_std,label='neural network',alpha=0.5)
-    plt.errorbar(np.array(peakcounts,dtype=int),iterative_avg,iterative_std,label='iterative',alpha=0.5)
-    plt.gca().set_xlabel("peak signal count")
-    plt.gca().set_ylabel("Average Root Mean Square Error (phase)")
-    plt.legend()
-    plt.savefig('phase.png')
-
-    plt.show()
+    fig=plt.figure()
+    fig.subplots_adjust(left=0.15,hspace=0.0)
+    gs=fig.add_gridspec(2,1)
+    letter='a'
+    for _i,_retrieval in enumerate(['intensity','phase']):
+        ax=fig.add_subplot(gs[_i,0])
+        network_avg,network_std,iterative_avg,iterative_std=construct_arrays(errorvals,_retrieval)
+        ax.text(0.03,0.9,letter,transform=ax.transAxes,weight='bold',backgroundcolor='white');letter=chr(ord(letter)+1)
+        ax.text(0.1,0.9,"Retrieved "+('Intensity'if _retrieval=='intensity'else'Phase')+" Error",transform=ax.transAxes)
+        ax.errorbar(np.array(peakcounts,dtype=int),network_avg,network_std,label='neural network',alpha=0.5,color='blue',linewidth=4.0)
+        ax.errorbar(np.array(peakcounts,dtype=int),iterative_avg,iterative_std,label='iterative',alpha=0.5,color='orange',linewidth=4.0)
+        if _i==0:ax.set_xticks([]);ax.legend(bbox_to_anchor=(0.65,1.3),loc='upper left');ax.set_ylim([0.01,0.14])
+        else: ax.set_xlabel("peak signal count");ax.set_ylim([0.01,0.7])
+        ax.set_ylabel("Average Root Mean\nSquare Error ("+('Intensity'if _retrieval=='intensity'else'Phase')+")")
+    fig.savefig('intensity_phase_nn_it_compared.png')
+    # plt.show()
