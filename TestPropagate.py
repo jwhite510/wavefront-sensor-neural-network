@@ -95,34 +95,34 @@ def make_nice_figure(retrieved:dict):
         ax.text(1.27,0.5,'z='+str(_dist)+r' $[\mu m]$',transform=ax.transAxes,size=20)
     fig.savefig('xuv_experimental_results_1.png')
 
-    fig=plt.figure(figsize=(10,8))
+    fig=plt.figure(figsize=(10,6))
     fig.subplots_adjust(left=0.0,right=1.0,bottom=0.1)
     gs = fig.add_gridspec(1,1)
     ax = fig.add_subplot(gs[0,0])
     im = Image.open('figure_images/xuv_experimental_setup.png')
     im = np.array(im)
     ax.imshow(im)
-    ax.text(0.15,-0.1,r'z=500 [$\mu m$]',transform=ax.transAxes,size=20,ha='left')
-    ax.text(0.45,-0.1,r'z=0 [$\mu m$]',transform=ax.transAxes,size=20,ha='left')
-    ax.text(0.7,-0.1,r'z=-500 [$\mu m$]',transform=ax.transAxes,size=20,ha='left')
-    ax.text(0.05,0.025,'z',transform=ax.transAxes,size=30,ha='left')
+    ax.text(0.10,-0.1,r'z=500 [$\mu m$]',transform=ax.transAxes,size=15,ha='left')
+    ax.text(0.31,-0.1,r'z=0 [$\mu m$]',transform=ax.transAxes,size=15,ha='left')
+    ax.text(0.5,-0.1,r'z=-500 [$\mu m$]',transform=ax.transAxes,size=15,ha='left')
+    ax.text(0.73,-0.1,r'z=-1000 [$\mu m$]',transform=ax.transAxes,size=15,ha='left')
+    ax.text(0.03,0.021,'z',transform=ax.transAxes,size=30,ha='left')
 
     # label WFS
-    ax.text(0.55,1.05,'Wavefront Sensor',transform=ax.transAxes,size=15,ha='left')
-    ax.text(0.60,1.0,'6 [$\mu m$]',transform=ax.transAxes,size=15,ha='left')
-    ax.text(0.43,0.82,'6 [$\mu m$]',transform=ax.transAxes,size=15,ha='left')
+    ax.text(0.39,1.05,'Wavefront Sensor',transform=ax.transAxes,size=15,ha='left')
+    ax.text(0.44,1.0,'6 [$\mu m$]',transform=ax.transAxes,size=15,ha='left')
+    ax.text(0.29,0.82,'6 [$\mu m$]',transform=ax.transAxes,size=15,ha='left')
 
     # label detector
-    ax.text(0.57,0.2,'Detector',transform=ax.transAxes,size=15,ha='left')
-    ax.text(0.88,0.2,'Detector',transform=ax.transAxes,size=15,ha='left')
+    ax.text(0.41,0.2,'Detector',transform=ax.transAxes,size=15,ha='left')
 
     # label pinhole
     ax.text(385,337,'Pinhole',size=15,ha='left')
     ax.text(385,378,r'2.7 [$\mu m$]',size=15,ha='left')
 
     # label wavelength
-    ax.text(65,365,r'13.5 [$nm$]',size=20,ha='left',color='black')
-    ax.text(25,365,r'$\lambda$',size=20,ha='left',color='red')
+    ax.text(59,365,r'13.5 [$nm$]',size=15,ha='left',color='black')
+    ax.text(21,365,r'$\lambda$',size=15,ha='left',color='red')
 
     ax.axis('off')
     fig.savefig('xuv_experimental_results_2.png')
