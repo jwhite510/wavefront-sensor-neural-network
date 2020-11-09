@@ -501,4 +501,4 @@ if __name__ == "__main__":
     args,_=parser.parse_known_args()
     comparenetworkiterative = CompareNetworkIterative(args)
     # run test on simulated validation data
-    comparenetworkiterative.simulated_test(100)
+    comparenetworkiterative.simulated_test(200)

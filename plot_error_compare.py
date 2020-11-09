@@ -45,26 +45,14 @@ if __name__ == "__main__":
 
     # construct list of average and standard deviation values
     # plot intensity average + std
-    network_avg,network_std,iterative_avg,iterative_std=construct_arrays(errorvals,'intensity')
-    plt.figure(1)
-    plt.title("retrieved intensity error (100 samples per noise level)")
-    plt.errorbar(np.array(peakcounts,dtype=int),network_avg,network_std,label='neural network',alpha=0.5)
-    plt.errorbar(np.array(peakcounts,dtype=int),iterative_avg,iterative_std,label='iterative',alpha=0.5)
-    plt.gca().set_xlabel("peak signal count")
-    plt.gca().set_ylabel("Average Root Mean Square Error (intensity)")
-    plt.legend()
-    plt.savefig('intensity.png')
-
-    # plot intensity average + std
-    network_avg,network_std,iterative_avg,iterative_std=construct_arrays(errorvals,'phase')
-
-    plt.figure(2)
-    plt.title("retrieved phase error (100 samples per noise level)")
-    plt.errorbar(np.array(peakcounts,dtype=int),network_avg,network_std,label='neural network',alpha=0.5)
-    plt.errorbar(np.array(peakcounts,dtype=int),iterative_avg,iterative_std,label='iterative',alpha=0.5)
-    plt.gca().set_xlabel("peak signal count")
-    plt.gca().set_ylabel("Average Root Mean Square Error (phase)")
-    plt.legend()
-    plt.savefig('phase.png')
-
-    plt.show()
+    for _i,_retrieval in enumerate(['intensity','phase']):
+        network_avg,network_std,iterative_avg,iterative_std=construct_arrays(errorvals,'intensity')
+        plt.figure(_i)
+        plt.title("retrieved "+_retrieval+" error (200 samples per noise level)")
+        plt.errorbar(np.array(peakcounts,dtype=int),network_avg,network_std,label='neural network',alpha=0.5,color='blue',linewidth=4.0)
+        plt.errorbar(np.array(peakcounts,dtype=int),iterative_avg,iterative_std,label='iterative',alpha=0.5,color='orange',linewidth=4.0)
+        plt.gca().set_xlabel("peak signal count")
+        plt.gca().set_ylabel("Average Root Mean Square Error ("+_retrieval+")")
+        plt.legend()
+        plt.savefig(_retrieval+'.png')
+    # plt.show()
