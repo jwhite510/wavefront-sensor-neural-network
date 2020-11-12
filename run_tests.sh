@@ -5,13 +5,13 @@
 # source zernike3/loadmodules.sh
 
 declare -a runs=(
-"varnoise_wfstest_0" # name
-"36000" # train samples
-"50,40,30,20,10,5" # peak count
-"original" # nr network
-"0" # wavefront sensor
+# "varnoise_wfstest_0" # name
+# "36000" # train samples
+# "50,40,30,20,10,5" # peak count
+# "original" # nr network
+# "0" # wavefront sensor
 
-"varnoise_wfstest_2" # name
+"varnoise_10ewfstest_2" # name
 "36000" # train samples
 "50,40,30,20,10,5" # peak count
 "original" # nr network
