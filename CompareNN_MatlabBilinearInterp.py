@@ -529,11 +529,12 @@ if __name__ == "__main__":
             # '2020_08_12/1208_focus_n3/1208_focus_n3.npy',
             # '2020_08_12/1208_focus/1208_focus.npy',
 
-            '9_02_20_data/0812_focus.npy',
-            '9_02_20_data/0812_focus_f3.npy',
-            '9_02_20_data/0812_focus_f7.npy',
-            '9_02_20_data/0812_focus_n3.npy',
-            '9_02_20_data/0812_focus_n7.npy',
+            # '9_02_20_data/0812_focus.npy',
+            # '9_02_20_data/0812_focus_f3.npy',
+            # '9_02_20_data/0812_focus_f7.npy',
+            # '9_02_20_data/0812_focus_n3.npy',
+            # '9_02_20_data/0812_focus_n7.npy',
+            '11_12_20_data/2020_11_12.npy'
 
 
 
@@ -551,9 +552,9 @@ if __name__ == "__main__":
     # measured_images['greyscale']=a
 
     experimental_params = {}
-    experimental_params['pixel_size'] = 4.8e-6 # [meters] with 2x2 binning
-    experimental_params['z_distance'] = 16.5e-3 # [meters] distance from camera
-    experimental_params['wavelength'] = 633e-9 #[meters] wavelength
+    experimental_params['pixel_size'] = 3.45e-6 # [meters] with 2x2 binning
+    experimental_params['z_distance'] = 12.05e-3 # [meters] distance from camera
+    experimental_params['wavelength'] = 612e-9 #[meters] wavelength
     getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
             N_meas=np.shape(a)[0], # for calculating the measured frequency axis (not really needed)
             experimental_params=experimental_params)
@@ -568,7 +569,7 @@ if __name__ == "__main__":
                 ['retrieved_nn','retrieved_iterative']
                 ):
             # compare to training data set
-            retrieved,fig=_f(m,"measured: "+_name+" "+_ret_type+"predicted",mask=True)
+            retrieved,fig=_f(m,"measured: "+_name+"\n"+_ret_type+"predicted",mask=True)
             fig.savefig('retrieved'+_name+'_'+_ret_type)
 
     exit()

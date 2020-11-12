@@ -63,7 +63,7 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     # fig.subplots_adjust(wspace=0.5, left=0.5, top=0.95, bottom=0.10)
     fig.subplots_adjust(wspace=0.1, left=0.3)
     gs = fig.add_gridspec(4,2)
-    fig.text(0.5, 0.95, title, ha="center", size=30)
+    fig.text(0.5, 0.95, title, ha="center", size=15)
 
     # run the constructor to get z n, m vector
     datagenerator = datagen.DataGenerator(1024,128)
