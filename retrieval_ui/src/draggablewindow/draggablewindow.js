@@ -34,6 +34,7 @@ export default function PullRelease(props) {
 
   const [springprops, set_sp] = useSpring(() => ({ x: 0, y: 0 }))
   const [staticprops, set_st] = React.useState({ x_start: 0, y_start: 0, isPinching:false,isDragging:false})
+  const [slidervalue,setslidervalue]=React.useState({s:'2'})
 
   // Set the drag hook and define component movement based on gesture data
   const bind = useGesture(
@@ -134,8 +135,8 @@ export default function PullRelease(props) {
 	      <animated.button onClick={()=>
 
 	      {console.log('set data')
-
-
+		console.log('setslidervalue');
+		setslidervalue({s:1.337})
 		var x = new Array(10)
 		for(var i=0; i < x.length; i++){
 		  x[i]= new Array(10)
@@ -152,6 +153,22 @@ export default function PullRelease(props) {
 
 	      }}>Click Me</animated.button>
 
+	      <animated.div className="slidecontainer">
+		<input type="range" value={slidervalue.s} min="-600" max="600" onChange={
+		  (event)=>{
+		    console.log(event.target.value/100)
+		    setslidervalue(slider=>{
+		      let oldslider = slider;
+		      oldslider.s = event.target.value;
+		      return {s:oldslider.s}
+		    })
+
+		  }
+		  }
+		  style={{width:'100%'}}
+		  className="slider" id="myRange"/>
+	      </animated.div>
+
 	    </animated.td>
 	  </animated.tr>
 	  <animated.tr>
@@ -161,7 +178,7 @@ export default function PullRelease(props) {
 	  </animated.tr>
 	  <animated.tr>
 	    <animated.td>
-
+	      <DiffractionPlot inputdata={inputdata} setinputdata={setinputdata}/>
 	    </animated.td>
 	  </animated.tr>
 
