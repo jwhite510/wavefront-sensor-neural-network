@@ -34,7 +34,7 @@ export default function PullRelease(props) {
 
   const [springprops, set_sp] = useSpring(() => ({ x: 0, y: 0 }))
   const [staticprops, set_st] = React.useState({ x_start: 0, y_start: 0, isPinching:false,isDragging:false})
-  const [parameters,setparameters]=React.useState({s:'2',x:'3'})
+  const [parameters,setparameters]=React.useState({magnitude:2,order:3})
 
   // Set the drag hook and define component movement based on gesture data
   const bind = useGesture(
@@ -136,7 +136,7 @@ export default function PullRelease(props) {
 
 	      {console.log('set data')
 		console.log('setparameters');
-		// setparameters({s:1.337})
+		// setparameters({magnitude:1.337})
 		var x = new Array(10)
 		for(var i=0; i < x.length; i++){
 		  x[i]= new Array(10)
@@ -155,25 +155,33 @@ export default function PullRelease(props) {
 
 	      <animated.div className="slidecontainer">
 
-		<input type="number" min="0" max="15" value={parameters.x} onChange={
+		<input type="number" min="0" max="15" value={parameters.order} onChange={
 		  (event)=>{
 		    setparameters(params=>{
 		      let olsparams = params;
-		      olsparams.x = event.target.value;
-		      return {s:olsparams.s,
-			      x:olsparams.x}
+		      olsparams.order = event.target.value;
+
+		      // send to server
+
+
+		      return {magnitude:olsparams.magnitude,
+			      order:olsparams.order}
 		    })
 
 		  }
 
 		}/>
-		<input type="range" value={parameters.s} min="-600" max="600" onChange={
+		<input type="range" value={parameters.magnitude} min="-600" max="600" onChange={
 		  (event)=>{
 		    setparameters(params=>{
 		      let olsparams = params;
-		      olsparams.s = event.target.value;
-		      return {s:olsparams.s,
-			      x:olsparams.x}
+		      olsparams.magnitude = event.target.value;
+
+		      // send to server
+
+
+		      return {magnitude:olsparams.magnitude,
+			      order:olsparams.order}
 		    })
 
 		  }
