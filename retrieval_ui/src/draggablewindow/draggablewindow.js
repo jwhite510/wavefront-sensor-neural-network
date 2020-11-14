@@ -8,6 +8,21 @@ import DiffractionPlot from '../diffractionplot/diffractionplot'
 // document.addEventListener('gesturestart', e => e.preventDefault())
 // document.addEventListener('gesturechange', e => e.preventDefault())
 
+function getCookie(name) {
+  var cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    var cookies = document.cookie.split(';');
+    for (var i = 0; i < cookies.length; i++) {
+      var cookie = (cookies[i]).trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+	cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+	break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
 function Xbutton(props){
   return <animated.div
     style={{transform:'rotate(45deg)',color:'red',fontSize:'30px'}}
@@ -162,6 +177,21 @@ export default function PullRelease(props) {
 		      olsparams.order = event.target.value;
 
 		      // send to server
+		    return fetch('retrieve', {
+		      method:'POST',
+		      headers: {
+			'content-type': 'application/json',
+			'X-CSRFToken':getCookie('csrftoken')
+		      },
+		      body: JSON.stringify({magnitude:olsparams.magnitude,
+					    order:olsparams.order})
+		      // body: undefined
+		    }).then(function(res) {
+		      console.log('response received')
+		      return res.json();
+		    }).then(function(details) {
+		      console.log('details: ',details)
+		    })
 
 
 		      return {magnitude:olsparams.magnitude,
@@ -171,7 +201,7 @@ export default function PullRelease(props) {
 		  }
 
 		}/>
-		<input type="range" value={parameters.magnitude} min="-600" max="600" onChange={
+		<input type="range" value={parameters.magnitude} step="0.02" min="-6" max="6" onChange={
 		  (event)=>{
 		    setparameters(params=>{
 		      let olsparams = params;
@@ -188,6 +218,7 @@ export default function PullRelease(props) {
 		  }
 		  style={{width:'100%'}}
 		  className="slider" id="myRange"/>
+		<p>{parameters.magnitude}</p>
 
 
 
