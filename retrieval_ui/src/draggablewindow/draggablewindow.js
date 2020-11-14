@@ -34,7 +34,7 @@ export default function PullRelease(props) {
 
   const [springprops, set_sp] = useSpring(() => ({ x: 0, y: 0 }))
   const [staticprops, set_st] = React.useState({ x_start: 0, y_start: 0, isPinching:false,isDragging:false})
-  const [slidervalue,setslidervalue]=React.useState({s:'2'})
+  const [parameters,setparameters]=React.useState({s:'2',x:'3'})
 
   // Set the drag hook and define component movement based on gesture data
   const bind = useGesture(
@@ -135,8 +135,8 @@ export default function PullRelease(props) {
 	      <animated.button onClick={()=>
 
 	      {console.log('set data')
-		console.log('setslidervalue');
-		setslidervalue({s:1.337})
+		console.log('setparameters');
+		// setparameters({s:1.337})
 		var x = new Array(10)
 		for(var i=0; i < x.length; i++){
 		  x[i]= new Array(10)
@@ -154,19 +154,35 @@ export default function PullRelease(props) {
 	      }}>Click Me</animated.button>
 
 	      <animated.div className="slidecontainer">
-		<input type="range" value={slidervalue.s} min="-600" max="600" onChange={
+
+		<input type="number" min="0" max="15" value={parameters.x} onChange={
 		  (event)=>{
-		    console.log(event.target.value/100)
-		    setslidervalue(slider=>{
-		      let oldslider = slider;
-		      oldslider.s = event.target.value;
-		      return {s:oldslider.s}
+		    setparameters(params=>{
+		      let olsparams = params;
+		      olsparams.x = event.target.value;
+		      return {s:olsparams.s,
+			      x:olsparams.x}
+		    })
+
+		  }
+
+		}/>
+		<input type="range" value={parameters.s} min="-600" max="600" onChange={
+		  (event)=>{
+		    setparameters(params=>{
+		      let olsparams = params;
+		      olsparams.s = event.target.value;
+		      return {s:olsparams.s,
+			      x:olsparams.x}
 		    })
 
 		  }
 		  }
 		  style={{width:'100%'}}
 		  className="slider" id="myRange"/>
+
+
+
 	      </animated.div>
 
 	    </animated.td>
