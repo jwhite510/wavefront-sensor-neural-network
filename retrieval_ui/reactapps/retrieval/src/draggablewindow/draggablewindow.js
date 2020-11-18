@@ -176,15 +176,19 @@ export default function PullRelease(props) {
 		      let olsparams = params;
 		      olsparams.order = event.target.value;
 
+		      console.log('send data to server');
+		      console.log("olsparams.order =>", olsparams.order);
+		      console.log("olsparams.magnitude =>", olsparams.magnitude);
+
 		      // send to server
-		    return fetch('retrieve', {
+		    fetch('retrieve', {
 		      method:'POST',
 		      headers: {
-			'content-type': 'application/json',
-			'X-CSRFToken':getCookie('csrftoken')
+		        'content-type': 'application/json',
+		        'X-CSRFToken':getCookie('csrftoken')
 		      },
 		      body: JSON.stringify({magnitude:olsparams.magnitude,
-					    order:olsparams.order})
+		        		    order:olsparams.order})
 		      // body: undefined
 		    }).then(function(res) {
 		      console.log('response received')
