@@ -14,5 +14,11 @@ def home(request):
 def retrieve(request):
     data=json.loads(request.body)
     print("data =>", data)
-    arrayret=np.array([[1,2,3],[4,5,6],[1,2,3]])
-    return JsonResponse({'array':arrayret.tolist()})
+    diffraction=np.array([[1,2,3],[4,5,6],[1,2,3]])
+    xintensity=np.array([[1,2,3],[4,5,6],[1,2,3]])
+    xphase=np.array([[1,2,3],[4,5,6],[1,2,3]])
+    return JsonResponse({
+        'diffraction':diffraction.tolist(),
+        'xintensity':xintensity.tolist(),
+        'xphase':xphase.tolist(),
+        })

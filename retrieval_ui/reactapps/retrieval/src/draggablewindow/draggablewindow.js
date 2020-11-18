@@ -8,6 +8,28 @@ import DiffractionPlot from '../diffractionplot/diffractionplot'
 // document.addEventListener('gesturestart', e => e.preventDefault())
 // document.addEventListener('gesturechange', e => e.preventDefault())
 
+function compute_and_update(inputdata,setinputdata){
+  fetch('retrieve/', {
+    method:'POST',
+    headers: {
+      'content-type': 'application/json',
+      'X-CSRFToken':getCookie('csrftoken')
+    },
+    body: JSON.stringify( inputdata)
+    // body: undefined
+  }).then(function(res) {
+    // console.log('response received')
+    return res.json();
+  }).then(function(details) {
+    // console.log('details: ',details)
+    setinputdata({
+      diffraction:details.diffraction,
+      xintensity:details.xintensity,
+      xphase:details.xphase,
+    })
+  })
+}
+
 function getCookie(name) {
   var cookieValue = null;
   if (document.cookie && document.cookie !== '') {
@@ -175,31 +197,12 @@ export default function PullRelease(props) {
 		    setparameters(params=>{
 		      let olsparams = params;
 		      olsparams.order = event.target.value;
-
 		      console.log('send data to server');
 		      console.log("olsparams.order =>", olsparams.order);
 		      console.log("olsparams.magnitude =>", olsparams.magnitude);
-
 		      // send to server
-		    fetch('retrieve/', {
-		      method:'POST',
-		      headers: {
-		        'content-type': 'application/json',
-		        'X-CSRFToken':getCookie('csrftoken')
-		      },
-		      body: JSON.stringify({magnitude:olsparams.magnitude,
-		        		    order:olsparams.order})
-		      // body: undefined
-		    }).then(function(res) {
-		      console.log('response received')
-		      return res.json();
-		    }).then(function(details) {
-		      console.log('details: ',details)
-		    })
-
-
-		      return {magnitude:olsparams.magnitude,
-			      order:olsparams.order}
+		      compute_and_update({magnitude:olsparams.magnitude, order:olsparams.order},setinputdata)
+		      return {magnitude:olsparams.magnitude, order:olsparams.order}
 		    })
 
 		  }
@@ -210,12 +213,12 @@ export default function PullRelease(props) {
 		    setparameters(params=>{
 		      let olsparams = params;
 		      olsparams.magnitude = event.target.value;
-
+		      console.log('send data to server');
+		      console.log("olsparams.order =>", olsparams.order);
+		      console.log("olsparams.magnitude =>", olsparams.magnitude);
 		      // send to server
-
-
-		      return {magnitude:olsparams.magnitude,
-			      order:olsparams.order}
+		      compute_and_update({magnitude:olsparams.magnitude, order:olsparams.order},setinputdata)
+		      return {magnitude:olsparams.magnitude, order:olsparams.order}
 		    })
 
 		  }
