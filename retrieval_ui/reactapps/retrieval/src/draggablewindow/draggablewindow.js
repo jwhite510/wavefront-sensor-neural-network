@@ -181,7 +181,7 @@ export default function PullRelease(props) {
 		      console.log("olsparams.magnitude =>", olsparams.magnitude);
 
 		      // send to server
-		    fetch('retrieve', {
+		    fetch('retrieve/', {
 		      method:'POST',
 		      headers: {
 		        'content-type': 'application/json',
