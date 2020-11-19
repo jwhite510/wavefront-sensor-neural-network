@@ -69,6 +69,10 @@ params = Parameters()
 parser=argparse.ArgumentParser()
 parser.add_argument('--wfsensor',type=int)
 args,_=parser.parse_known_args()
+class Args():
+    def __init__(self,wfsensor):
+        self.wfsensor=wfsensor
+args=Args(0)
 if args.wfsensor==None: raise ValueError('wfs argument not passed')
 
 # # used in XUV experiment

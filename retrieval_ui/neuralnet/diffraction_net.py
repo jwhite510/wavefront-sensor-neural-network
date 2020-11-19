@@ -6,14 +6,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import shutil
 import tables
-import diffraction_functions
+import neuralnet.diffraction_functions
 import pickle
 import sys
-from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
-import datagen
+import neuralnet.GetMeasuredDiffractionPattern
+GetMeasuredDiffractionPattern=neuralnet.GetMeasuredDiffractionPattern.GetMeasuredDiffractionPattern
+
+import neuralnet.datagen as datagen
 import subprocess
 from subprocess import PIPE
-import noise_resistant_net
+import neuralnet.noise_resistant_net as noise_resistant_net
 
 
 class GetData():

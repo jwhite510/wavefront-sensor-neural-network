@@ -1,18 +1,20 @@
 import numpy as np
-from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
+import neuralnet.GetMeasuredDiffractionPattern
+GetMeasuredDiffractionPattern=neuralnet.GetMeasuredDiffractionPattern.GetMeasuredDiffractionPattern
 from numpy import unravel_index
 import scipy
-import diffraction_functions
+import neuralnet.diffraction_functions
 from PIL import Image, ImageDraw
 import matplotlib.pyplot as plt
-import diffraction_net
+import neuralnet.diffraction_net
 import tables
 import pickle
 import os
 from scipy import interpolate
 import argparse
-import params
+import neuralnet.params as params
 import imageio
+
 
 def get_interpolation_points(amplitude_mask):
     """

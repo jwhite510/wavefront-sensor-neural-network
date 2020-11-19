@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import diffraction_functions
+import neuralnet.diffraction_functions as diffraction_functions
 from  astropy.io import fits
-import params
+import neuralnet.params as params
 
 class GetMeasuredDiffractionPattern():
     """

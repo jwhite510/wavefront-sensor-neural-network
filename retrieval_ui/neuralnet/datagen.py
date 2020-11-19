@@ -1,13 +1,14 @@
 import tensorflow as tf
-from params import MaterialParams
-import params
+import neuralnet.params;MaterialParams=neuralnet.params.MaterialParams
+import neuralnet.params as params
 import argparse
 import tables
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-import diffraction_functions
-from GetMeasuredDiffractionPattern import GetMeasuredDiffractionPattern
+import neuralnet.diffraction_functions
+import neuralnet.GetMeasuredDiffractionPattern
+# GetMeasuredDiffractionPattern=neuralnet.GetMeasuredDiffractionPattern.GetMeasuredDiffractionPattern
 import os
 
 

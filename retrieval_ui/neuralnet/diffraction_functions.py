@@ -1,5 +1,5 @@
 import numpy as np
-import params
+import neuralnet.params as params
 from numpy import unravel_index
 import os
 import math
@@ -17,8 +17,8 @@ from scipy.misc import factorial
 from skimage.transform import resize
 from scipy import ndimage
 import scipy.io
-import params
-import datagen
+import neuralnet.params as params
+import neuralnet.datagen as datagen
 
 def fits_to_numpy(fits_file_name):
     thing = fits.open(fits_file_name)
