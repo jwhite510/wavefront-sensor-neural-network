@@ -13,6 +13,42 @@ import os
     # ax[0].pcolormesh(np.abs(complex_b))
     # ax[0].set_title("ABS")
 
+def calculate_percentage_inside(x:np.array,complex_obj:np.array,d1:float,d2:float):
+    # inside the circle
+    fig,ax=plt.subplots(2,1,figsize=(5,10))
+    integral_total=None; integral_inside=None;
+    for i in range(2):
+
+        circle=plt.Circle((d1,d2),(2.7)/2,color='r',fill=False,linewidth=2.0)
+        intens=np.abs(complex_obj)**2
+        vmin=0;vmax=np.max(intens);
+        integral=None
+        if i==0: # make integral
+            # intens[np.sqrt(((x-d2).reshape(-1,1)**2)+((x-d1).reshape(1,-1)**2))<(2.7/2)]=0.0 # inside circle set to 0
+            integral=np.sum(intens); integral_total=integral
+            print("total integral =>", integral)
+            print("integral_total =>", integral_total)
+        if i==1: # make integral
+            intens[np.sqrt(((x-d2).reshape(-1,1)**2)+((x-d1).reshape(1,-1)**2))>(2.7/2)]=0.0 # outside circle set to 0
+            integral=np.sum(intens); integral_inside=integral
+            print("inside integral =>", integral)
+            print("integral_inside =>", integral_inside)
+        ax[i].add_artist(circle)
+        im=ax[i].pcolormesh(x,x,intens,cmap='jet',vmin=vmin,vmax=vmax)
+        ax[i].text(2.0,4.0,('TOTAL' if i==0 else 'INSIDE CIRCLE')+'\nsummation:%.3f'%integral
+                ,color='white',backgroundcolor='green',ha='center',va='center')
+
+        fig.colorbar(im,ax=ax[i])
+    fig.text(0.5,0.9,'ratio:%.3f'%(integral_inside/integral_total)
+                        ,color='white',backgroundcolor='green',ha='center',va='center')
+
+    # fig.text(0.5,0.6,'integral_inside:%.3f'%(integral_inside)
+    #                     ,color='white',backgroundcolor='green',ha='center',va='center')
+    # fig.text(0.5,0.7,'integral_total:%.3f'%(integral_total)
+    #                     ,color='white',backgroundcolor='green',ha='center',va='center')
+
+    fig.savefig('intensitycalc.png')
+
 def make_nice_figure(retrieved:dict):
 
     # get axes for retrieved object and diffraction pattern
@@ -68,9 +104,11 @@ def make_nice_figure(retrieved:dict):
             ax.text(0.2, 0.8,'propagated from\n z=0 [um]',backgroundcolor='white',transform=ax.transAxes)
             # draw circle
             # circle to show where the wavefront originates
-            circle=plt.Circle((0.3,-0.4),(2.7)/2,color='r',fill=False,linewidth=2.0)
+            d1=0.3;d2=-0.4; # original
+            circle=plt.Circle((d1,d2),(2.7)/2,color='r',fill=False,linewidth=2.0)
             ax.add_artist(circle)
             ax.text(0.2, 0.4,"Spherical\nAperture\n2.7 um", fontsize=10, ha='center', transform=ax.transAxes,color="red",weight='bold')
+            calculate_percentage_inside(x,complex_obj,d1,d2)
 
         obj_phase = np.angle(complex_obj)
         # not using the amplitude_mask, use the absolute value of the intensity
