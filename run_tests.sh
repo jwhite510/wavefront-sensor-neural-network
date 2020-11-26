@@ -12,7 +12,7 @@ declare -a runs=(
 # "0" # wavefront sensor
 
 "varnoise_10ewfstest_2" # name
-"36000" # train samples
+"200" # train samples
 "50,40,30,20,10,5" # peak count
 "original" # nr network
 "2" # wavefront sensor
@@ -41,8 +41,8 @@ do
 	python addnoise.py --infile ${network}_train.hdf5 --outfile ${network}_train_noise.hdf5 --peakcount $pc --cameraimage $camera_noise --wfsensor $wfsensor
 	python addnoise.py --infile ${network}_test.hdf5 --outfile ${network}_test_noise.hdf5 --peakcount $pc --cameraimage $camera_noise --wfsensor $wfsensor
 
-	echo ${network}
-	python diffraction_net.py --name ${network} --net_type ${net_type} --wfsensor $wfsensor
+	# echo ${network}
+	# python diffraction_net.py --name ${network} --net_type ${net_type} --wfsensor $wfsensor
 
 	i=$i+5
 done

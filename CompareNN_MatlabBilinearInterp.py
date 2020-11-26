@@ -14,6 +14,11 @@ import argparse
 import params
 import imageio
 
+def makeaxis(N,pixelsize):
+    A=np.arange(-N/2,N/2,1,dtype=np.float)
+    A*=pixelsize
+    return A
+
 def get_interpolation_points(amplitude_mask):
     """
         get the points for bilinear interp
@@ -192,8 +197,8 @@ class CompareNetworkIterative():
                     self.network.nn_nodes["out_scale"],
                     feed_dict={self.network.x:measured.reshape(1,N,N,1)}
                     )
-        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
-        return retrieved,fig
+        fig,simulation_axes=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
+        return retrieved,fig,simulation_axes
 
     def matlab_cdi_retrieval(self,measured,figtitle,mask=False):
         measured=np.squeeze(measured)
@@ -201,8 +206,8 @@ class CompareNetworkIterative():
         _, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(N, int(params.params.wf_ratio*N))
         retrieved=diffraction_functions.matlab_cdi_retrieval(measured,amplitude_mask,interpolate=True)
 
-        fig=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
-        return retrieved,fig
+        fig,simulation_axes=diffraction_functions.plot_amplitude_phase_meas_retreival(retrieved,figtitle,mask=mask)
+        return retrieved,fig,simulation_axes
 
 
     def get_train_sample(self,index):
@@ -534,7 +539,14 @@ if __name__ == "__main__":
             # '9_02_20_data/0812_focus_f7.npy',
             # '9_02_20_data/0812_focus_n3.npy',
             # '9_02_20_data/0812_focus_n7.npy',
-            '11_12_20_data/2020_11_12.npy'
+            # '11_12_20_data/2020_11_12.npy'
+            '20201124/1124_(in_focus).npy',
+            '20201124/1124_(left_less_rayleigh).npy',
+            '20201124/1124_(left_more_rayleigh).npy',
+            '20201124/1124_(left_rayleigh).npy',
+            '20201124/1124_(right_less_rayleigh).npy',
+            '20201124/1124_(right_more_rayleigh).npy',
+            '20201124/1124_(right_rayleigh).npy',
 
 
 
@@ -553,25 +565,82 @@ if __name__ == "__main__":
 
     experimental_params = {}
     experimental_params['pixel_size'] = 3.45e-6 # [meters] with 2x2 binning
-    experimental_params['z_distance'] = 12.05e-3 # [meters] distance from camera
+    experimental_params['z_distance'] = 18.4e-3 # [meters] distance from camera
     experimental_params['wavelength'] = 612e-9 #[meters] wavelength
     getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
             N_meas=np.shape(a)[0], # for calculating the measured frequency axis (not really needed)
             experimental_params=experimental_params)
 
-    for _name in measured_images.keys():
-        transform={};transform['rotation_angle']=0;transform['scale']=1.0;transform['flip']='lr'
-        m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_images[_name], transform)
-        m[m<0.003*np.max(m)]=0
-        m=np.squeeze(m)
-        for _f,_ret_type in zip(
-                [comparenetworkiterative.retrieve_measured, comparenetworkiterative.matlab_cdi_retrieval],
-                ['retrieved_nn','retrieved_iterative']
-                ):
-            # compare to training data set
-            retrieved,fig=_f(m,"measured: "+_name+"\n"+_ret_type+"predicted",mask=True)
-            fig.savefig('retrieved'+_name+'_'+_ret_type)
+    allretrieved={}
+    # for _name in measured_images.keys():
+    #     transform={};transform['rotation_angle']=0;transform['scale']=1.0;transform['flip']='lr'
+    #     m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_images[_name], transform)
+    #     m[m<0.003*np.max(m)]=0
+    #     m=np.squeeze(m)
+    #     for _f,_ret_type in zip(
+    #             [comparenetworkiterative.retrieve_measured, comparenetworkiterative.matlab_cdi_retrieval],
+    #             ['retrieved_nn','retrieved_iterative']
+    #             ):
+    #         # compare to training data set
+    #         retrieved,fig,simulation_axes=_f(m,"measured: "+_name+"\n"+_ret_type+"predicted",mask=True)
 
+    #         allretrieved['simulation_axes']=simulation_axes
+    #         if not _ret_type in allretrieved.keys():allretrieved[_ret_type]={}
+    #         allretrieved[_ret_type][_name]=retrieved
+    #         fig.savefig('retrieved'+_name+'_'+_ret_type)
+
+    # with open('allretrieved.p','wb') as file:
+    #     pickle.dump(allretrieved,file)
+    with open('allretrieved.p','rb') as file:
+        allretrieved=pickle.load(file)
+
+    beam_images={}; prefix='20201124';
+    filenames=['focus_detector1.tif','focus_detector2.tif','focus_sample2.tif','focus_sample.tif']
+    for _file in filenames:
+        beam_images[_file.split('.')[0]]=np.array(Image.open(os.path.join(prefix,_file)))
+
+    # draw all the retrievals on a figure
+    fig=plt.figure(figsize=(7,20))
+    fig.subplots_adjust(hspace=0.4)
+    gs=fig.add_gridspec(7,2)
+    for _i,_filename in enumerate([_file.split('.')[0] for _file in filenames]):
+        ax=fig.add_subplot(gs[_i,0])
+        # create x axis
+        x=makeaxis(np.shape(beam_images[_filename])[0],experimental_params['pixel_size'])
+        x*=1e6 # plot in micrometers
+        y=makeaxis(np.shape(beam_images[_filename])[1],experimental_params['pixel_size'])
+        y*=1e6 # plot in mimcrometers
+        I=np.sum(beam_images[_filename],axis=2)
+
+        # interpolate onto axis
+        interpolator=interpolate.interp2d(y,x,I)
+        Inew=interpolator(allretrieved['simulation_axes']['object']['x'],allretrieved['simulation_axes']['object']['x'])
+        xnew=allretrieved['simulation_axes']['object']['x']
+        ax.pcolormesh(xnew,xnew,Inew,cmap='jet')
+
+        # # draw circle for reference
+        # c_y = calc_centroid(mat, axis=0)
+        # c_x = calc_centroid(mat, axis=1)
+
+        circle=plt.Circle((0,0),50,color='r',fill=False,linewidth=5.0)
+        ax.add_artist(circle)
+
+        ax.set_title(_filename)
+    # plot the retrieved intensities
+    for _i,_filename in enumerate(allretrieved['retrieved_nn'].keys()):
+        ax=fig.add_subplot(gs[_i,1])
+        intens=np.abs(allretrieved['retrieved_nn'][_filename]['real_output']+1j*allretrieved['retrieved_nn'][_filename]['imag_output'])**2
+        intens=np.squeeze(intens)
+        ax.pcolormesh(allretrieved['simulation_axes']['object']['x'],allretrieved['simulation_axes']['object']['x'],intens,cmap='jet')
+        ax.yaxis.set_ticks_position('right'); ax.yaxis.set_label_position('right')
+        ax.set_ylabel('micrometers')
+
+        # draw circle for reference
+        circle=plt.Circle((0,0),50,color='r',fill=False,linewidth=5.0)
+        ax.add_artist(circle)
+
+        ax.set_title(_filename)
+    fig.savefig('images_compared.png')
     exit()
 
 

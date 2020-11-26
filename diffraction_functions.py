@@ -195,7 +195,7 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     axes["imag"].text(0.2, 0.9,"imag("+RETRIEVED+")", fontsize=10, ha='center', transform=axes["imag"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["imag"])
 
-    return fig
+    return fig,simulation_axes
 
 def plot_image_show_centroid_distance(mat, title, figurenum):
     """
