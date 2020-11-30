@@ -597,7 +597,19 @@ if __name__ == "__main__":
     beam_images={}; prefix='20201124';
     filenames=['focus_detector1.tif','focus_detector2.tif','focus_sample2.tif','focus_sample.tif']
     for _file in filenames:
-        beam_images[_file.split('.')[0]]=np.array(Image.open(os.path.join(prefix,_file)))
+        beam_image=np.array(Image.open(os.path.join(prefix,_file)))
+        beam_image=np.sum(beam_image,axis=2)
+        # center the image
+        # crop to make it square
+        Inew=np.array(beam_image); shape=np.shape(Inew); nmin=min(shape)
+        Inew=Inew[(shape[0]//2)-(nmin//2):(shape[0]//2)+(nmin//2),
+                  (shape[1]//2)-(nmin//2):(shape[1]//2)+(nmin//2)]
+
+        # plt.figure();plt.pcolormesh(Inew);plt.savefig('I_before.png');
+        Inew=diffraction_functions.center_image_at_centroid(Inew)
+        # plt.figure();plt.pcolormesh(Inew);plt.savefig('I_after.png');
+
+        beam_images[_file.split('.')[0]]=Inew
 
     # draw all the retrievals on a figure
     fig=plt.figure(figsize=(7,20))
@@ -610,7 +622,8 @@ if __name__ == "__main__":
         x*=1e6 # plot in micrometers
         y=makeaxis(np.shape(beam_images[_filename])[1],experimental_params['pixel_size'])
         y*=1e6 # plot in mimcrometers
-        I=np.sum(beam_images[_filename],axis=2)
+        # I=np.sum(beam_images[_filename],axis=2)
+        I=beam_images[_filename]
 
         # interpolate onto axis
         interpolator=interpolate.interp2d(y,x,I)
