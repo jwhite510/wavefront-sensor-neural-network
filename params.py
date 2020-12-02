@@ -43,6 +43,20 @@ def wfs_square_10x10_upright():
     im=im3
     return im
 
+def wfs_square_20x20_upright():
+    # for the 6x6 image in same format as the 600nm
+    im2 = Image.open("20x20.png")
+    im2=im2.resize((1200,1200))
+    im3=np.zeros((1200,1200,3),dtype=np.array(im2).dtype)
+    im3[:,:,0]=np.array(im2)[:,:,3]
+    im3[:,:,1]=np.array(im2)[:,:,3]
+    im3[:,:,2]=np.array(im2)[:,:,3]
+    im3=Image.fromarray(im3)
+    im3=PIL.ImageOps.invert(im3)
+    im=im3
+    return im
+
+
 def wfs_round_10x10_downleft():
     return Image.open("size_6um_pitch_600nm_diameter_300nm_psize_5nm.png")
 
@@ -104,11 +118,14 @@ elif args.wfsensor==3:
 elif args.wfsensor==4:
     params.wavefront_sensor=wfs_square_10x10_upright()
 
+elif args.wfsensor==5:
+    params.wavefront_sensor=wfs_square_20x20_upright()
+
 # size used in XUV
 # params.wavefron_sensor_size_nm=5*im.size[0]*1e-9
 
 # size used in visible
-params.wavefron_sensor_size_nm=60e-6
+params.wavefron_sensor_size_nm=100e-6
 
 # define materials
 # https://refractiveindex.info/?shelf=main&book=Cu&page=Johnson
