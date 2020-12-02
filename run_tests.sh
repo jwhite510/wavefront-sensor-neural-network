@@ -12,7 +12,7 @@ declare -a runs=(
 # "0" # wavefront sensor
 
 "varnoise_10ewfstest_20x20wfs" # name
-"3600" # train samples
+"36000" # train samples
 "50,40,30,20,10,5" # peak count
 "original" # nr network
 "5" # wavefront sensor
