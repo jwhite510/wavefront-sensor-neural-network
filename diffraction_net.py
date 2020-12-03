@@ -829,7 +829,7 @@ class DiffractionNet():
                 print("time to retrieve real and imaginary part:"+str(time2-time1))
                 calculate_retrieval_time=False
 
-            fig = diffraction_functions.plot_amplitude_phase_meas_retreival(
+            fig,_ = diffraction_functions.plot_amplitude_phase_meas_retreival(
                     retrieved_obj,
                     logger_name + "_epoch: "+str(self.epoch))
 
@@ -876,7 +876,7 @@ class DiffractionNet():
             actual_object["real_output"] = object_real_samples[index,:,:,0]
             actual_object["imag_output"] = object_imag_samples[index,:,:,0]
             m_index=(64,64)
-            fig=diffraction_functions.plot_amplitude_phase_meas_retreival(actual_object,"actual_object_"+str(index),ACTUAL=True,m_index=m_index)
+            fig,_=diffraction_functions.plot_amplitude_phase_meas_retreival(actual_object,"actual_object_"+str(index),ACTUAL=True,m_index=m_index)
             fig.savefig("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/"+str(index)+"_actual")
 
             # save the retrieved object
@@ -885,7 +885,7 @@ class DiffractionNet():
             nn_retrieved["tf_reconstructed_diff"] = tf_reconstructed_diff[index,:,:,0]
             nn_retrieved["real_output"] = real_output[index,:,:,0]
             nn_retrieved["imag_output"] = imag_output[index,:,:,0]
-            fig=diffraction_functions.plot_amplitude_phase_meas_retreival(nn_retrieved,"nn_retrieved",m_index=m_index)
+            fig,_=diffraction_functions.plot_amplitude_phase_meas_retreival(nn_retrieved,"nn_retrieved",m_index=m_index)
             fig.savefig("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/"+str(index)+"_retrieved")
 def max_pooling_layer(input_x, pool_size_val,  stride_val, pad=False):
     if pad:
