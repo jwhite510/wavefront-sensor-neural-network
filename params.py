@@ -167,4 +167,4 @@ params.material_params.append(params_Si)
 # params.material_params.append(params_cu)
 
 
-params.wf_ratio=1/3
+params.wf_ratio=3/4
