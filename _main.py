@@ -280,6 +280,10 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
                     # im = self.retrieve_raw_img()
                     # process image
                     im=np.squeeze( cam.get_frame().as_numpy_ndarray() )
+                    # ipdb> np.shape(im)
+                    # (4436, 4432)
+                    # import ipdb; ipdb.set_trace() # BREAKPOINT
+                    # print("BREAKPOINT")
 
                     transform={}
                     transform["rotation_angle"]=self.processing.rotation
@@ -295,7 +299,11 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
                     elif self.processing.orientation == "Left->Right & Up->Down":
                         transform["flip"]="lrud"
+                    print("formatting diffraction pattern")
+                    time_a=time.time()
                     im_p = self.getMeasuredDiffractionPattern.format_measured_diffraction_pattern(im, transform)
+                    time_b=time.time()
+                    print(time_b-time_a)
 
                     # input through neural network
                     print("input through net:")
