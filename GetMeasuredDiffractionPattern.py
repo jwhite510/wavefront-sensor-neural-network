@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import diffraction_functions
 from  astropy.io import fits
 import params
+import time
 
 class GetMeasuredDiffractionPattern():
     """
@@ -52,6 +53,9 @@ class GetMeasuredDiffractionPattern():
         transform["scale"] = integer
         transform["flip"] = "lr" "ud" "lrud" None
         """
+        print('BBBBBBBBBBBBBBBB')
+        print('format_measured_diffraction_pattern running')
+        time_a=time.time()
 
         measured_diffraction_pattern = diffraction_functions.format_experimental_trace(
             N=self.N_sim,
@@ -59,6 +63,10 @@ class GetMeasuredDiffractionPattern():
             measured_diffraction_pattern=measured_diffraction_pattern,
             rotation_angle=transform["rotation_angle"],
             trim=1) # if transposed (measured_pattern.T) , flip the rotation
+
+        time_b=time.time()
+        print('format_experimental_trace total time:',time_b-time_a)
+        time_a=time.time()
 
 
         if transform["flip"] is not None:
@@ -79,6 +87,8 @@ class GetMeasuredDiffractionPattern():
         measured_diffraction_pattern = np.expand_dims(measured_diffraction_pattern, axis=0)
         measured_diffraction_pattern = np.expand_dims(measured_diffraction_pattern, axis=-1)
         measured_diffraction_pattern *= (1/np.max(measured_diffraction_pattern))
+        time_b=time.time()
+        print('center_image_at_centroid:',time_b-time_a)
         return measured_diffraction_pattern
 
 

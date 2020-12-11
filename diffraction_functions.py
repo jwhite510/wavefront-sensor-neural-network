@@ -19,6 +19,7 @@ from scipy import ndimage
 import scipy.io
 import params
 import datagen
+import time
 
 def fits_to_numpy(fits_file_name):
     thing = fits.open(fits_file_name)
@@ -226,6 +227,7 @@ def format_experimental_trace(N, df_ratio, measured_diffraction_pattern, rotatio
     measured_diffraction_pattern: the measured diffraction pattern to format
     rotation_angle: angle which to rotate the measured diffraction pattern (currently must be done by eye)
     """
+    time_a=time.time()
     # divide scale the measured trace by this amount
     new_size = np.shape(measured_diffraction_pattern)[0] * df_ratio
     new_size = int(new_size)
@@ -243,7 +245,13 @@ def format_experimental_trace(N, df_ratio, measured_diffraction_pattern, rotatio
         measured_diffraction_pattern=measured_diffraction_pattern[:,(s[1]//2)-(_s//2):(s[1]//2)+(_s//2)]
     # print("shape after ",np.shape(measured_diffraction_pattern))
 
+    time_AA=time.time()
     measured_diffraction_pattern = resize(measured_diffraction_pattern, (new_size, new_size))
+    time_BB=time.time()
+    # takes almost one second
+    print('resize:',time_BB-time_AA)
+    time_b=time.time()
+    print('format_experimental_trace first half',time_b-time_a)
 
     # rotate the image by eye
     measured_diffraction_pattern = ndimage.rotate(measured_diffraction_pattern, rotation_angle, reshape=False)
@@ -280,6 +288,8 @@ def format_experimental_trace(N, df_ratio, measured_diffraction_pattern, rotatio
 
     measured_diffraction_pattern = center_image_at_centroid(measured_diffraction_pattern)
 
+    time_b=time.time()
+    print('format_experimental_trace total',time_b-time_a)
     return measured_diffraction_pattern
 
 def center_image_at_centroid(mat):

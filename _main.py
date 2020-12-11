@@ -183,12 +183,13 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
                 # print("hello?")
         # self.Tis.Stop_pipeline()
         # exit()
-        im=None
-        with Vimba.get_instance():
-            with get_camera(None) as cam:
-                setup_camera(cam)
-                im=np.squeeze( cam.get_frame().as_numpy_ndarray() )
+        # im=None
+        # with Vimba.get_instance():
+        #     with get_camera(None) as cam:
+        #         setup_camera(cam)
+        #         im=np.squeeze( cam.get_frame().as_numpy_ndarray() )
 
+        im=np.ones((4436,4432),dtype=np.float32)
         # im=self.retrieve_raw_img()
         # self.Tis.Stop_pipeline()
 
@@ -210,6 +211,8 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
 
         self.show()
+        self.running=True
+        self.run_retrieval()
         sys.exit(app.exec_())
 
     def __del__(self):
@@ -269,9 +272,9 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
     def run_retrieval(self):
 
-        with Vimba.get_instance():
-            with get_camera(None) as cam:
-                setup_camera(cam)
+        with open('something.txt','r')as file1:
+            with open('something.txt','r')as file2:
+                # setup_camera(cam)
                 while self.running:
                     time1=time.time()
                     QtCore.QCoreApplication.processEvents()
@@ -279,7 +282,8 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
                     # grab raw image
                     # im = self.retrieve_raw_img()
                     # process image
-                    im=np.squeeze( cam.get_frame().as_numpy_ndarray() )
+                    # im=np.squeeze( cam.get_frame().as_numpy_ndarray() )
+                    im=np.ones((4436,4432),dtype=np.float32)
                     # ipdb> np.shape(im)
                     # (4436, 4432)
                     # import ipdb; ipdb.set_trace() # BREAKPOINT
@@ -299,11 +303,12 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
                     elif self.processing.orientation == "Left->Right & Up->Down":
                         transform["flip"]="lrud"
-                    print("formatting diffraction pattern")
                     time_a=time.time()
+                    print('AAAAAAAAAAAAAA')
                     im_p = self.getMeasuredDiffractionPattern.format_measured_diffraction_pattern(im, transform)
                     time_b=time.time()
-                    print(time_b-time_a)
+                    print("formatting diffraction pattern total ran",time_b-time_a)
+                    exit()
 
                     # input through neural network
                     print("input through net:")
@@ -313,6 +318,9 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
                     out_imag = self.network.sess.run( self.network.nn_nodes["imag_out"], feed_dict={self.network.x:im_p})
                     time_b=time.time()
                     print(time_b-time_a)
+
+
+                    time_a=time.time()
 
                     out_real=np.squeeze(out_real)
                     out_imag=np.squeeze(out_imag)
@@ -344,6 +352,11 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
                     self.display_intens_real_draw["data"].setImage(I)
                     self.display_phase_imag_draw["data"].setImage(obj_phase)
                     self.display_recons_draw["data"].setImage(out_recons)
+
+                    time_b=time.time()
+                    print("the rest")
+                    print(time_b-time_a)
+
                     time2=time.time()
                     print("total time:")
                     print(time2-time1)

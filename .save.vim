@@ -2,88 +2,52 @@ let SessionLoad = 1
 let s:so_save = &so | let s:siso_save = &siso | set so=0 siso=0
 let v:this_session=expand("<sfile>:p")
 silent only
-cd ~/diffraction_net2
+cd ~/projects/diffraction_network
 if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +1 vortex.py
-badd +1 diffraction_net.py
-badd +11 TestPropagate.py
-badd +11 phase_normalization.py
-badd +472 term://.//18637:/bin/bash
-badd +408 CompareNN_MatlabBilinearInterp.py
-badd +1 noise_test_compareCDI.sh
-badd +2718 term://.//11821:/bin/bash
-badd +195 diffraction_functions.py
-badd +1 matlab_cdi/seeded_run_CDI_noprocessing.m
-badd +64 matlab_cdi/seeded_reconst_func.m
-badd +46 term://.//11841:/bin/bash
-badd +14 ~/tf2test/main.py
-badd +1 deconv_test.py
-badd +577 term://.//2641:/bin/bash
-badd +351 term://.//29283:/bin/bash
-badd +256 term://.//16208:/bin/bash
-badd +52 plot_error_compare.py
-badd +197 term://.//29039:/bin/bash
-badd +257 term://.//10947:/bin/bash
-badd +9580 term://.//7899:/bin/bash
-badd +1063 term://.//33683:/bin/bash
-badd +433 zernike3/build/utility.py
-badd +55 GetMeasuredDiffractionPattern.py
-badd +1531 term://.//5219:/bin/bash
-badd +332 term://.//23820:/bin/bash
-badd +1313 term://.//29861:/bin/bash
-badd +2918 term://.//37071:/bin/bash
-badd +314 term://.//26133:/bin/bash
-badd +1 HEAD
-badd +183 term://.//36638:/bin/bash
-badd +1 HEAD\ vortex_beam
-badd +1007 term://.//36802:/bin/bash
-badd +1 .save.vim
-badd +1 multires_network.py
-badd +1 run_tests.sh
-badd +92 zernike3/build/addnoise.py
-badd +1 zernike3/build/plot2.py
-badd +3 zernike3/runmpi.sh
-badd +138 zernike3/src/c_arrays.h
-badd +49 zernike3/src/main.cpp
-badd +673 zernike3/src/zernikedatagen.h
-badd +1 term://.//7961:/bin/bash
-badd +528 term://.//46136:/bin/bash
-badd +46 ~/.vimrc
-badd +539 term://.//5689:/bin/bash
-badd +50 ~/pythontf_cpu_venv/req.txt
-badd +402 term://.//8027:/bin/bash
-badd +230 term://.//3972:/bin/bash
-badd +1170 term://.//4796:/bin/bash
-badd +106 _main.py
-badd +3928 term://.//8115:/bin/bash
-badd +1 live_capture/TIS.py
-badd +1 live_capture/live_stream_test.py
-badd +260 ~/.vim/plugged/vim-fugitive/doc/fugitive.txt
-badd +15 __Tagbar__.226
-badd +1 .git/index
-badd +0 fugitive:///home/jonathon/diffraction_net2/.git//0/_main.py
+badd +3470 term://.//8162:/bin/bash
+badd +149 term://.//8201:/bin/bash
+badd +10 requirements.txt
+badd +371 term://.//8449:/bin/bash
+badd +192 _main.py
+badd +14 run_tests.sh
+badd +96 params.py
+badd +156 diffraction_functions.py
+badd +7 live_capture/TIS.py
+badd +435 term://.//10775:/bin/bash
+badd +2 something.txt
+badd +715 term://.//17634:/bin/bash
+badd +124 diffraction_net.py
+badd +72 GetMeasuredDiffractionPattern.py
+badd +496 term://.//27676:/bin/bash
+badd +117 term://.//28951:/bin/bash
+badd +0 test.py
+badd +0 term://.//9541:/bin/bash
 argglobal
 %argdel
-$argadd ./
+$argadd .
 set stal=2
-edit diffraction_net.py
+edit requirements.txt
 set splitbelow splitright
+wincmd _ | wincmd |
+split
+1wincmd k
+wincmd w
+wincmd _ | wincmd |
+vsplit
+1wincmd h
+wincmd _ | wincmd |
+split
+1wincmd k
+wincmd w
+wincmd w
 wincmd _ | wincmd |
 split
 wincmd _ | wincmd |
 split
 2wincmd k
-wincmd _ | wincmd |
-vsplit
-1wincmd h
-wincmd w
-wincmd w
-wincmd _ | wincmd |
-vsplit
-1wincmd h
 wincmd w
 wincmd w
 set nosplitbelow
@@ -93,555 +57,616 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe '1resize ' . ((&lines * 23 + 24) / 49)
-exe 'vert 1resize ' . ((&columns * 106 + 106) / 212)
-exe '2resize ' . ((&lines * 23 + 24) / 49)
-exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
-exe '3resize ' . ((&lines * 14 + 24) / 49)
-exe 'vert 3resize ' . ((&columns * 106 + 106) / 212)
-exe '4resize ' . ((&lines * 14 + 24) / 49)
-exe 'vert 4resize ' . ((&columns * 105 + 106) / 212)
-exe '5resize ' . ((&lines * 7 + 24) / 49)
+exe '1resize ' . ((&lines * 6 + 27) / 54)
+exe '2resize ' . ((&lines * 10 + 27) / 54)
+exe 'vert 2resize ' . ((&columns * 152 + 102) / 204)
+exe '3resize ' . ((&lines * 33 + 27) / 54)
+exe 'vert 3resize ' . ((&columns * 152 + 102) / 204)
+exe '4resize ' . ((&lines * 11 + 27) / 54)
+exe 'vert 4resize ' . ((&columns * 51 + 102) / 204)
+exe '5resize ' . ((&lines * 10 + 27) / 54)
+exe 'vert 5resize ' . ((&columns * 51 + 102) / 204)
+exe '6resize ' . ((&lines * 21 + 27) / 54)
+exe 'vert 6resize ' . ((&columns * 51 + 102) / 204)
 argglobal
-if bufexists("term://.//7899:/bin/bash") | buffer term://.//7899:/bin/bash | else | edit term://.//7899:/bin/bash | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
 setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-let s:l = 23 - ((22 * winheight(0) + 11) / 23)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-23
-normal! 0
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=13
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-let s:l = 55 - ((7 * winheight(0) + 11) / 23)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-55
-normal! 09|
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-if bufexists("~/diffraction_net2/diffraction_net.py") | buffer ~/diffraction_net2/diffraction_net.py | else | edit ~/diffraction_net2/diffraction_net.py | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=13
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-16
-normal! zo
-64
-normal! zo
-65
-normal! zo
-237
-normal! zo
-454
-normal! zo
-456
-normal! zo
-712
-normal! zo
-717
-normal! zo
-755
-normal! zo
-let s:l = 134 - ((7 * winheight(0) + 7) / 14)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-134
-normal! 09|
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-if bufexists("~/diffraction_net2/run_tests.sh") | buffer ~/diffraction_net2/run_tests.sh | else | edit ~/diffraction_net2/run_tests.sh | endif
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
+setlocal fdl=20
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 8 - ((2 * winheight(0) + 7) / 14)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-8
-normal! 07|
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-if bufexists("term://.//7961:/bin/bash") | buffer term://.//7961:/bin/bash | else | edit term://.//7961:/bin/bash | endif
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-let s:l = 7 - ((6 * winheight(0) + 3) / 7)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-7
-normal! 0
-lcd ~/diffraction_net2
-wincmd w
-exe '1resize ' . ((&lines * 23 + 24) / 49)
-exe 'vert 1resize ' . ((&columns * 106 + 106) / 212)
-exe '2resize ' . ((&lines * 23 + 24) / 49)
-exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
-exe '3resize ' . ((&lines * 14 + 24) / 49)
-exe 'vert 3resize ' . ((&columns * 106 + 106) / 212)
-exe '4resize ' . ((&lines * 14 + 24) / 49)
-exe 'vert 4resize ' . ((&columns * 105 + 106) / 212)
-exe '5resize ' . ((&lines * 7 + 24) / 49)
-tabedit ~/diffraction_net2/noise_test_compareCDI.sh
-set splitbelow splitright
-wincmd _ | wincmd |
-vsplit
-wincmd _ | wincmd |
-vsplit
-2wincmd h
-wincmd _ | wincmd |
-split
-1wincmd k
-wincmd w
-wincmd w
-wincmd _ | wincmd |
-split
-1wincmd k
-wincmd w
-wincmd w
-set nosplitbelow
-set nosplitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
-exe '1resize ' . ((&lines * 11 + 24) / 49)
-exe 'vert 1resize ' . ((&columns * 70 + 106) / 212)
-exe '2resize ' . ((&lines * 34 + 24) / 49)
-exe 'vert 2resize ' . ((&columns * 70 + 106) / 212)
-exe '3resize ' . ((&lines * 11 + 24) / 49)
-exe 'vert 3resize ' . ((&columns * 70 + 106) / 212)
-exe '4resize ' . ((&lines * 34 + 24) / 49)
-exe 'vert 4resize ' . ((&columns * 70 + 106) / 212)
-exe 'vert 5resize ' . ((&columns * 70 + 106) / 212)
-argglobal
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-silent! normal! zE
-let s:l = 11 - ((4 * winheight(0) + 5) / 11)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-11
-normal! 08|
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-if bufexists("~/diffraction_net2/CompareNN_MatlabBilinearInterp.py") | buffer ~/diffraction_net2/CompareNN_MatlabBilinearInterp.py | else | edit ~/diffraction_net2/CompareNN_MatlabBilinearInterp.py | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=4
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-54
-normal! zo
-136
-normal! zo
-166
-normal! zo
-172
-normal! zo
-174
-normal! zo
-176
-normal! zo
-182
-normal! zo
-let s:l = 147 - ((9 * winheight(0) + 17) / 34)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-147
-normal! 013|
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-if bufexists("term://.//8027:/bin/bash") | buffer term://.//8027:/bin/bash | else | edit term://.//8027:/bin/bash | endif
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-let s:l = 11 - ((10 * winheight(0) + 5) / 11)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-11
-normal! 0
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-if bufexists("~/diffraction_net2/CompareNN_MatlabBilinearInterp.py") | buffer ~/diffraction_net2/CompareNN_MatlabBilinearInterp.py | else | edit ~/diffraction_net2/CompareNN_MatlabBilinearInterp.py | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=4
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-15
-normal! zo
-54
-normal! zo
-166
-normal! zo
-172
-normal! zo
-174
-normal! zo
-176
-normal! zo
-182
-normal! zo
-364
-normal! zo
-374
-normal! zo
-385
-normal! zo
-413
-normal! zo
-420
-normal! zo
-let s:l = 416 - ((12 * winheight(0) + 17) / 34)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-416
-normal! 0
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-if bufexists("~/diffraction_net2/CompareNN_MatlabBilinearInterp.py") | buffer ~/diffraction_net2/CompareNN_MatlabBilinearInterp.py | else | edit ~/diffraction_net2/CompareNN_MatlabBilinearInterp.py | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=4
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-54
-normal! zo
-60
-normal! zo
-136
-normal! zo
-166
-normal! zo
-172
-normal! zo
-174
-normal! zo
-176
-normal! zo
-182
-normal! zo
-let s:l = 170 - ((5 * winheight(0) + 23) / 46)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-170
-normal! 017|
-lcd ~/diffraction_net2
-wincmd w
-exe '1resize ' . ((&lines * 11 + 24) / 49)
-exe 'vert 1resize ' . ((&columns * 70 + 106) / 212)
-exe '2resize ' . ((&lines * 34 + 24) / 49)
-exe 'vert 2resize ' . ((&columns * 70 + 106) / 212)
-exe '3resize ' . ((&lines * 11 + 24) / 49)
-exe 'vert 3resize ' . ((&columns * 70 + 106) / 212)
-exe '4resize ' . ((&lines * 34 + 24) / 49)
-exe 'vert 4resize ' . ((&columns * 70 + 106) / 212)
-exe 'vert 5resize ' . ((&columns * 70 + 106) / 212)
-tabedit ~/diffraction_net2/_main.py
-set splitbelow splitright
-wincmd _ | wincmd |
-vsplit
-wincmd _ | wincmd |
-vsplit
-2wincmd h
-wincmd _ | wincmd |
-split
-1wincmd k
-wincmd w
-wincmd w
-wincmd w
-set nosplitbelow
-set nosplitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
-exe '1resize ' . ((&lines * 23 + 24) / 49)
-exe 'vert 1resize ' . ((&columns * 70 + 106) / 212)
-exe '2resize ' . ((&lines * 22 + 24) / 49)
-exe 'vert 2resize ' . ((&columns * 70 + 106) / 212)
-exe 'vert 3resize ' . ((&columns * 70 + 106) / 212)
-exe 'vert 4resize ' . ((&columns * 70 + 106) / 212)
-argglobal
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=4
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-let s:l = 83 - ((12 * winheight(0) + 11) / 23)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-83
-normal! 09|
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-if bufexists("term://.//8115:/bin/bash") | buffer term://.//8115:/bin/bash | else | edit term://.//8115:/bin/bash | endif
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-let s:l = 22 - ((21 * winheight(0) + 11) / 22)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-22
-normal! 0
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-if bufexists("~/diffraction_net2/_main.py") | buffer ~/diffraction_net2/_main.py | else | edit ~/diffraction_net2/_main.py | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=4
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-let s:l = 182 - ((18 * winheight(0) + 23) / 46)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-182
-normal! 0
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-if bufexists("~/diffraction_net2/_main.py") | buffer ~/diffraction_net2/_main.py | else | edit ~/diffraction_net2/_main.py | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=4
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-26
-normal! zo
-236
-normal! zo
-let s:l = 244 - ((15 * winheight(0) + 23) / 46)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-244
-normal! 09|
-lcd ~/diffraction_net2
-wincmd w
-exe '1resize ' . ((&lines * 23 + 24) / 49)
-exe 'vert 1resize ' . ((&columns * 70 + 106) / 212)
-exe '2resize ' . ((&lines * 22 + 24) / 49)
-exe 'vert 2resize ' . ((&columns * 70 + 106) / 212)
-exe 'vert 3resize ' . ((&columns * 70 + 106) / 212)
-exe 'vert 4resize ' . ((&columns * 70 + 106) / 212)
-tabedit ~/diffraction_net2/_main.py
-set splitbelow splitright
-wincmd _ | wincmd |
-vsplit
-wincmd _ | wincmd |
-vsplit
-2wincmd h
-wincmd _ | wincmd |
-split
-1wincmd k
-wincmd w
-wincmd w
-wincmd w
-set nosplitbelow
-set nosplitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
-exe '1resize ' . ((&lines * 23 + 24) / 49)
-exe 'vert 1resize ' . ((&columns * 70 + 106) / 212)
-exe '2resize ' . ((&lines * 22 + 24) / 49)
-exe 'vert 2resize ' . ((&columns * 70 + 106) / 212)
-exe 'vert 3resize ' . ((&columns * 70 + 106) / 212)
-exe 'vert 4resize ' . ((&columns * 70 + 106) / 212)
-argglobal
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=4
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-let s:l = 12 - ((11 * winheight(0) + 11) / 23)
+let s:l = 12 - ((4 * winheight(0) + 3) / 6)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 12
-normal! 028|
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-if bufexists("~/diffraction_net2/_main.py") | buffer ~/diffraction_net2/_main.py | else | edit ~/diffraction_net2/_main.py | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=4
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-15
-normal! zo
-26
-normal! zo
-27
-normal! zo
-let s:l = 106 - ((8 * winheight(0) + 11) / 22)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-106
-normal! 09|
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-if bufexists("~/diffraction_net2/live_capture/TIS.py") | buffer ~/diffraction_net2/live_capture/TIS.py | else | edit ~/diffraction_net2/live_capture/TIS.py | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=5
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-18
-normal! zo
-let s:l = 19 - ((18 * winheight(0) + 23) / 46)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-19
 normal! 0
-lcd ~/diffraction_net2
+lcd ~/projects/diffraction_network
 wincmd w
 argglobal
-if bufexists("~/diffraction_net2/live_capture/live_stream_test.py") | buffer ~/diffraction_net2/live_capture/live_stream_test.py | else | edit ~/diffraction_net2/live_capture/live_stream_test.py | endif
+if bufexists("~/projects/diffraction_network/diffraction_functions.py") | buffer ~/projects/diffraction_network/diffraction_functions.py | else | edit ~/projects/diffraction_network/diffraction_functions.py | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=
+setlocal fdl=20
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+silent! normal! zE
+25,28fold
+34,35fold
+37,38fold
+42,45fold
+75,77fold
+72,80fold
+104,104fold
+125,127fold
+129,129fold
+146,148fold
+150,150fold
+154,157fold
+181,183fold
+185,185fold
+191,193fold
+195,195fold
+33,199fold
+202,221fold
+239,241fold
+243,245fold
+263,263fold
+263,263fold
+262,263fold
+269,269fold
+269,269fold
+268,269fold
+272,272fold
+272,272fold
+271,272fold
+265,274fold
+224,293fold
+297,311fold
+315,350fold
+354,360fold
+354,360fold
+364,418fold
+364,418fold
+422,460fold
+422,460fold
+468,470fold
+472,474fold
+464,476fold
+481,485fold
+481,485fold
+479,486fold
+491,496fold
+500,506fold
+512,512fold
+514,514fold
+546,546fold
+548,548fold
+511,558fold
+564,578fold
+581,598fold
+602,605fold
+611,613fold
+624,625fold
+601,627fold
+631,634fold
+640,642fold
+653,654fold
+630,656fold
+660,675fold
+678,689fold
+713,714fold
+710,714fold
+721,722fold
+717,722fold
+692,724fold
+727,738fold
+771,773fold
+741,775fold
+778,780fold
+783,787fold
+791,793fold
+790,802fold
+807,808fold
+806,808fold
+828,832fold
+805,850fold
+854,885fold
+888,920fold
+926,926fold
+935,935fold
+950,957fold
+997,998fold
+1000,1001fold
+924,1003fold
+1028,1062fold
+33
+normal! zo
+511
+normal! zo
+let s:l = 737 - ((6 * winheight(0) + 5) / 10)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+737
+normal! 05|
+lcd ~/projects/diffraction_network
+wincmd w
+argglobal
+if bufexists("term://.//8162:/bin/bash") | buffer term://.//8162:/bin/bash | else | edit term://.//8162:/bin/bash | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=20
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+let s:l = 10026 - ((25 * winheight(0) + 16) / 33)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+10026
+normal! 0
+lcd ~/projects/diffraction_network
+wincmd w
+argglobal
+if bufexists("~/projects/diffraction_network/test.py") | buffer ~/projects/diffraction_network/test.py | else | edit ~/projects/diffraction_network/test.py | endif
 setlocal fdm=indent
 setlocal fde=0
 setlocal fmr={{{,}}}
 setlocal fdi=
-setlocal fdl=6
+setlocal fdl=20
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+3
+normal! zo
+4
+normal! zo
+let s:l = 4 - ((3 * winheight(0) + 5) / 11)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+4
+normal! 014|
+lcd ~/projects/diffraction_network
+wincmd w
+argglobal
+if bufexists("term://.//28951:/bin/bash") | buffer term://.//28951:/bin/bash | else | edit term://.//28951:/bin/bash | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=20
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+let s:l = 246 - ((9 * winheight(0) + 5) / 10)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+246
+normal! 0
+lcd ~/projects/diffraction_network
+wincmd w
+argglobal
+if bufexists("term://.//8449:/bin/bash") | buffer term://.//8449:/bin/bash | else | edit term://.//8449:/bin/bash | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=20
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+let s:l = 374 - ((20 * winheight(0) + 10) / 21)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+374
+normal! 0
+lcd ~/projects/diffraction_network
+wincmd w
+exe '1resize ' . ((&lines * 6 + 27) / 54)
+exe '2resize ' . ((&lines * 10 + 27) / 54)
+exe 'vert 2resize ' . ((&columns * 152 + 102) / 204)
+exe '3resize ' . ((&lines * 33 + 27) / 54)
+exe 'vert 3resize ' . ((&columns * 152 + 102) / 204)
+exe '4resize ' . ((&lines * 11 + 27) / 54)
+exe 'vert 4resize ' . ((&columns * 51 + 102) / 204)
+exe '5resize ' . ((&lines * 10 + 27) / 54)
+exe 'vert 5resize ' . ((&columns * 51 + 102) / 204)
+exe '6resize ' . ((&lines * 21 + 27) / 54)
+exe 'vert 6resize ' . ((&columns * 51 + 102) / 204)
+tabedit ~/projects/diffraction_network/GetMeasuredDiffractionPattern.py
+set splitbelow splitright
+wincmd _ | wincmd |
+vsplit
+1wincmd h
+wincmd _ | wincmd |
+split
+1wincmd k
+wincmd w
+wincmd w
+wincmd _ | wincmd |
+split
+1wincmd k
+wincmd w
+set nosplitbelow
+set nosplitright
+wincmd t
+set winminheight=0
+set winheight=1
+set winminwidth=0
+set winwidth=1
+exe '1resize ' . ((&lines * 24 + 27) / 54)
+exe 'vert 1resize ' . ((&columns * 95 + 102) / 204)
+exe '2resize ' . ((&lines * 26 + 27) / 54)
+exe 'vert 2resize ' . ((&columns * 95 + 102) / 204)
+exe '3resize ' . ((&lines * 5 + 27) / 54)
+exe 'vert 3resize ' . ((&columns * 108 + 102) / 204)
+exe '4resize ' . ((&lines * 45 + 27) / 54)
+exe 'vert 4resize ' . ((&columns * 108 + 102) / 204)
+argglobal
+setlocal fdm=indent
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=
+setlocal fdl=20
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
 9
 normal! zo
-28
+50
 normal! zo
-28
+61
+normal! zc
+73
 normal! zo
-29
-normal! zo
-29
-normal! zo
-let s:l = 36 - ((18 * winheight(0) + 23) / 46)
+73
+normal! zc
+let s:l = 57 - ((8 * winheight(0) + 12) / 24)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-36
-normal! 025|
-lcd ~/diffraction_net2
+57
+let s:c = 16 - ((11 * winwidth(0) + 47) / 95)
+if s:c > 0
+  exe 'normal! ' . s:c . '|zs' . 16 . '|'
+else
+  normal! 016|
+endif
+lcd ~/projects/diffraction_network
 wincmd w
-exe '1resize ' . ((&lines * 23 + 24) / 49)
-exe 'vert 1resize ' . ((&columns * 70 + 106) / 212)
-exe '2resize ' . ((&lines * 22 + 24) / 49)
-exe 'vert 2resize ' . ((&columns * 70 + 106) / 212)
-exe 'vert 3resize ' . ((&columns * 70 + 106) / 212)
-exe 'vert 4resize ' . ((&columns * 70 + 106) / 212)
-tabedit ~/diffraction_net2/_main.py
+argglobal
+if bufexists("~/projects/diffraction_network/_main.py") | buffer ~/projects/diffraction_network/_main.py | else | edit ~/projects/diffraction_network/_main.py | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=
+setlocal fdl=20
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+silent! normal! zE
+18,23fold
+17,23fold
+106,110fold
+105,110fold
+122,123fold
+122,123fold
+29,135fold
+138,139fold
+143,143fold
+152,152fold
+148,154fold
+157,158fold
+147,158fold
+161,163fold
+167,169fold
+172,173fold
+166,173fold
+175,176fold
+179,182fold
+175,182fold
+204,204fold
+207,207fold
+210,210fold
+213,213fold
+193,260fold
+191,260fold
+266,266fold
+278,280fold
+282,282fold
+265,282fold
+28,282fold
+295,313fold
+17
+normal! zo
+28
+normal! zo
+29
+normal! zo
+175
+normal! zo
+191
+normal! zo
+193
+normal! zo
+265
+normal! zo
+let s:l = 311 - ((16 * winheight(0) + 13) / 26)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+311
+let s:c = 63 - ((42 * winwidth(0) + 47) / 95)
+if s:c > 0
+  exe 'normal! ' . s:c . '|zs' . 63 . '|'
+else
+  normal! 063|
+endif
+lcd ~/projects/diffraction_network
+wincmd w
+argglobal
+if bufexists("~/projects/diffraction_network/diffraction_functions.py") | buffer ~/projects/diffraction_network/diffraction_functions.py | else | edit ~/projects/diffraction_network/diffraction_functions.py | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=
+setlocal fdl=20
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+silent! normal! zE
+25,28fold
+34,35fold
+37,38fold
+42,45fold
+75,77fold
+72,80fold
+104,104fold
+125,127fold
+129,129fold
+146,148fold
+150,150fold
+154,157fold
+181,183fold
+185,185fold
+191,193fold
+195,195fold
+33,199fold
+202,221fold
+239,241fold
+243,245fold
+263,263fold
+263,263fold
+262,263fold
+269,269fold
+269,269fold
+268,269fold
+272,272fold
+272,272fold
+271,272fold
+265,274fold
+224,293fold
+297,311fold
+315,350fold
+354,360fold
+354,360fold
+364,418fold
+364,418fold
+422,460fold
+422,460fold
+468,470fold
+472,474fold
+464,476fold
+481,485fold
+481,485fold
+479,486fold
+491,496fold
+500,506fold
+512,512fold
+514,514fold
+546,546fold
+548,548fold
+511,558fold
+564,578fold
+581,598fold
+602,605fold
+611,613fold
+624,625fold
+601,627fold
+631,634fold
+640,642fold
+653,654fold
+630,656fold
+660,675fold
+678,689fold
+713,714fold
+710,714fold
+721,722fold
+717,722fold
+692,724fold
+727,738fold
+771,773fold
+741,775fold
+778,780fold
+783,787fold
+791,793fold
+790,802fold
+807,808fold
+806,808fold
+828,832fold
+805,850fold
+854,885fold
+888,920fold
+926,926fold
+935,935fold
+950,957fold
+997,998fold
+1000,1001fold
+924,1003fold
+1028,1062fold
+33
+normal! zo
+224
+normal! zo
+511
+normal! zo
+let s:l = 22 - ((3 * winheight(0) + 2) / 5)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+22
+normal! 011|
+lcd ~/projects/diffraction_network
+wincmd w
+argglobal
+if bufexists("~/projects/diffraction_network/diffraction_functions.py") | buffer ~/projects/diffraction_network/diffraction_functions.py | else | edit ~/projects/diffraction_network/diffraction_functions.py | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=
+setlocal fdl=20
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+silent! normal! zE
+25,28fold
+34,35fold
+37,38fold
+42,45fold
+75,77fold
+72,80fold
+104,104fold
+125,127fold
+129,129fold
+146,148fold
+150,150fold
+154,157fold
+181,183fold
+185,185fold
+191,193fold
+195,195fold
+33,199fold
+202,221fold
+239,241fold
+243,245fold
+263,263fold
+263,263fold
+262,263fold
+269,269fold
+269,269fold
+268,269fold
+272,272fold
+272,272fold
+271,272fold
+265,274fold
+224,293fold
+297,311fold
+315,350fold
+354,360fold
+354,360fold
+364,418fold
+364,418fold
+422,460fold
+422,460fold
+468,470fold
+472,474fold
+464,476fold
+481,485fold
+481,485fold
+479,486fold
+491,496fold
+500,506fold
+512,512fold
+514,514fold
+546,546fold
+548,548fold
+511,558fold
+564,578fold
+581,598fold
+602,605fold
+611,613fold
+624,625fold
+601,627fold
+631,634fold
+640,642fold
+653,654fold
+630,656fold
+660,675fold
+678,689fold
+713,714fold
+710,714fold
+721,722fold
+717,722fold
+692,724fold
+727,738fold
+771,773fold
+741,775fold
+778,780fold
+783,787fold
+791,793fold
+790,802fold
+807,808fold
+806,808fold
+828,832fold
+805,850fold
+854,885fold
+888,920fold
+926,926fold
+935,935fold
+950,957fold
+997,998fold
+1000,1001fold
+924,1003fold
+1028,1062fold
+33
+normal! zo
+224
+normal! zo
+239
+normal! zc
+243
+normal! zc
+262
+normal! zo
+262
+normal! zc
+265
+normal! zo
+265
+normal! zc
+511
+normal! zo
+let s:l = 249 - ((32 * winheight(0) + 22) / 45)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+249
+normal! 06|
+lcd ~/projects/diffraction_network
+wincmd w
+3wincmd w
+exe '1resize ' . ((&lines * 24 + 27) / 54)
+exe 'vert 1resize ' . ((&columns * 95 + 102) / 204)
+exe '2resize ' . ((&lines * 26 + 27) / 54)
+exe 'vert 2resize ' . ((&columns * 95 + 102) / 204)
+exe '3resize ' . ((&lines * 5 + 27) / 54)
+exe 'vert 3resize ' . ((&columns * 108 + 102) / 204)
+exe '4resize ' . ((&lines * 45 + 27) / 54)
+exe 'vert 4resize ' . ((&columns * 108 + 102) / 204)
+tabnew
 set splitbelow splitright
-wincmd _ | wincmd |
-vsplit
-wincmd _ | wincmd |
-vsplit
-2wincmd h
-wincmd w
-wincmd w
 set nosplitbelow
 set nosplitright
 wincmd t
@@ -649,154 +674,24 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe 'vert 1resize ' . ((&columns * 85 + 106) / 212)
-exe 'vert 2resize ' . ((&columns * 85 + 106) / 212)
-exe 'vert 3resize ' . ((&columns * 40 + 106) / 212)
 argglobal
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=4
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-15
-normal! zo
-26
-normal! zo
-27
-normal! zo
-let s:l = 101 - ((14 * winheight(0) + 23) / 46)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-101
-normal! 09|
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-if bufexists("~/diffraction_net2/_main.py") | buffer ~/diffraction_net2/_main.py | else | edit ~/diffraction_net2/_main.py | endif
-setlocal fdm=indent
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=4
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-15
-normal! zo
-26
-normal! zo
-27
-normal! zo
-let s:l = 75 - ((16 * winheight(0) + 23) / 46)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-75
-normal! 09|
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-enew
-file ~/diffraction_net2/__Tagbar__.4
+if bufexists("term://.//9541:/bin/bash") | buffer term://.//9541:/bin/bash | else | edit term://.//9541:/bin/bash | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
 setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal nofen
-lcd ~/diffraction_net2
-wincmd w
-2wincmd w
-exe 'vert 1resize ' . ((&columns * 85 + 106) / 212)
-exe 'vert 2resize ' . ((&columns * 85 + 106) / 212)
-exe 'vert 3resize ' . ((&columns * 40 + 106) / 212)
-tabedit ~/diffraction_net2/.git/index
-set splitbelow splitright
-wincmd _ | wincmd |
-split
-1wincmd k
-wincmd w
-wincmd _ | wincmd |
-vsplit
-1wincmd h
-wincmd w
-set nosplitbelow
-set nosplitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
-exe '1resize ' . ((&lines * 11 + 24) / 49)
-exe '2resize ' . ((&lines * 34 + 24) / 49)
-exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
-exe '3resize ' . ((&lines * 34 + 24) / 49)
-exe 'vert 3resize ' . ((&columns * 105 + 106) / 212)
-argglobal
-setlocal fdm=syntax
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=1
+setlocal fdl=20
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-let s:l = 16 - ((5 * winheight(0) + 5) / 11)
+let s:l = 804 - ((50 * winheight(0) + 25) / 51)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-16
-normal! 0
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-if bufexists("fugitive:///home/jonathon/diffraction_net2/.git//0/_main.py") | buffer fugitive:///home/jonathon/diffraction_net2/.git//0/_main.py | else | edit fugitive:///home/jonathon/diffraction_net2/.git//0/_main.py | endif
-setlocal fdm=diff
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-let s:l = 234 - ((128 * winheight(0) + 17) / 34)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-234
-normal! 0
-lcd ~/diffraction_net2
-wincmd w
-argglobal
-if bufexists("~/diffraction_net2/_main.py") | buffer ~/diffraction_net2/_main.py | else | edit ~/diffraction_net2/_main.py | endif
-setlocal fdm=diff
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-let s:l = 245 - ((130 * winheight(0) + 17) / 34)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-245
-normal! 0
-lcd ~/diffraction_net2
-wincmd w
-exe '1resize ' . ((&lines * 11 + 24) / 49)
-exe '2resize ' . ((&lines * 34 + 24) / 49)
-exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
-exe '3resize ' . ((&lines * 34 + 24) / 49)
-exe 'vert 3resize ' . ((&columns * 105 + 106) / 212)
-tabnext 5
+804
+normal! 069|
+lcd ~/projects/diffraction_network
+tabnext 2
 set stal=1
 if exists('s:wipebuf') && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf
