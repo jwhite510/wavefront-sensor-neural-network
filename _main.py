@@ -12,6 +12,79 @@ import pickle
 from live_capture import TIS
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import sys
+from typing import Optional
+from vimba import *
+
+
+def print_preamble():
+    print('//////////////////////////////////////////')
+    print('/// Vimba API Synchronous Grab Example ///')
+    print('//////////////////////////////////////////\n')
+
+
+def print_usage():
+    print('Usage:')
+    print('    python synchronous_grab.py [camera_id]')
+    print('    python synchronous_grab.py [/h] [-h]')
+    print()
+    print('Parameters:')
+    print('    camera_id   ID of the camera to use (using first camera if not specified)')
+    print()
+
+
+def abort(reason: str, return_code: int = 1, usage: bool = False):
+    print(reason + '\n')
+
+    if usage:
+        print_usage()
+
+    sys.exit(return_code)
+
+
+def parse_args() -> Optional[str]:
+    args = sys.argv[1:]
+    argc = len(args)
+
+    for arg in args:
+        if arg in ('/h', '-h'):
+            print_usage()
+            sys.exit(0)
+
+    if argc > 1:
+        abort(reason="Invalid number of arguments. Abort.", return_code=2, usage=True)
+
+    return None if argc == 0 else args[0]
+
+
+def get_camera(camera_id: Optional[str]) -> Camera:
+    with Vimba.get_instance() as vimba:
+        if camera_id:
+            try:
+                return vimba.get_camera_by_id(camera_id)
+
+            except VimbaCameraError:
+                abort('Failed to access Camera \'{}\'. Abort.'.format(camera_id))
+
+        else:
+            cams = vimba.get_all_cameras()
+            if not cams:
+                abort('No Cameras accessible. Abort.')
+
+            return cams[0]
+
+
+def setup_camera(cam: Camera):
+    with cam:
+        # Try to adjust GeV packet size. This Feature is only available for GigE - Cameras.
+        try:
+            cam.GVSPAdjustPacketSize.run()
+
+            while not cam.GVSPAdjustPacketSize.is_done():
+                pass
+
+        except (AttributeError, VimbaFeatureError):
+            pass
 
 class Processing():
     def __init__(self):
@@ -97,8 +170,13 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         self.orientation_edit.setCurrentIndex(2) # default to up->down
 
         # initialize camera
-        self.Tis=params['Tis']
-        self.Tis.Start_pipeline()  # Start the pipeline so the camera streams
+        # self.Tis=params['Tis']
+        # self.Tis.Start_pipeline()  # Start the pipeline so the camera streams
+        self.inst=Vimba.get_instance()
+        self.cam=get_camera(cam_id)
+        setup_camera(cam)
+
+
 
         # plt.ion()
         # while True:
@@ -135,8 +213,10 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         sys.exit(app.exec_())
 
     def __del__(self):
+        inst.close();
+        cam.close();
         # cleanup camera
-        self.Tis.Stop_pipeline()
+        # self.Tis.Stop_pipeline()
 
 
     def textchanged(self):
@@ -256,7 +336,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
             print(time2-time1)
 
 
-    def retrieve_raw_img(self):
+    def retrieve_raw_img(self)->np.array:
 
         # with open("sample.p", "rb") as file:
             # obj = pickle.load(file)
@@ -267,12 +347,15 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # z = np.exp(-x**2 / 0.5) * np.exp(-y**2 / 0.5)
         # return obj
         # return np.random.rand(500,600)
-        if self.Tis.Snap_image(1) is True:  # Snap an image with one second timeout
-            im=self.Tis.Get_image()
-            im=np.sum(im,axis=2)
-            return im
-        else:
-            return None
+
+        # if self.Tis.Snap_image(1) is True:  # Snap an image with one second timeout
+        #     im=self.Tis.Get_image()
+        #     im=np.sum(im,axis=2)
+        #     return im
+        # else:
+        #     return None
+        frame=self.cam.get_frame()
+        return np.squeeze(frame.to_np_ndarray())
 
 
 
@@ -288,7 +371,7 @@ if __name__ == "__main__":
     # for camera
     # self.Tis = TIS.TIS("48710182", 640, 480, 30, False)
     # self.Tis = TIS.TIS("48710182", 2592, 2048, 60, False)
-    params['Tis']=TIS.TIS("48710182", 2592, 2048, 60, False)
+    # params['Tis']=TIS.TIS("48710182", 2592, 2048, 60, False)
     # https://github.com/TheImagingSource/tiscamera
 
 
