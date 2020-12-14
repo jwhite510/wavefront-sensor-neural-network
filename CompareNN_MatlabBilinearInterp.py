@@ -540,13 +540,21 @@ if __name__ == "__main__":
             # '9_02_20_data/0812_focus_n3.npy',
             # '9_02_20_data/0812_focus_n7.npy',
             # '11_12_20_data/2020_11_12.npy'
-            '20201124/1124_(in_focus).npy',
-            '20201124/1124_(left_less_rayleigh).npy',
-            '20201124/1124_(left_more_rayleigh).npy',
-            '20201124/1124_(left_rayleigh).npy',
-            '20201124/1124_(right_less_rayleigh).npy',
-            '20201124/1124_(right_more_rayleigh).npy',
-            '20201124/1124_(right_rayleigh).npy',
+            # '20201124/1124_(in_focus).npy',
+            # '20201124/1124_(left_less_rayleigh).npy',
+            # '20201124/1124_(left_more_rayleigh).npy',
+            # '20201124/1124_(left_rayleigh).npy',
+            # '20201124/1124_(right_less_rayleigh).npy',
+            # '20201124/1124_(right_more_rayleigh).npy',
+            # '20201124/1124_(right_rayleigh).npy',
+
+            '2020_11_27/1127_(in_focus).npy',
+            '2020_11_27/1127_(left_more_rayleigh).npy',
+            '2020_11_27/1127_(right_less_rayleigh).npy',
+            '2020_11_27/1127_(right_rayleigh).npy',
+            '2020_11_27/1127_(left_less_rayleigh).npy',
+            '2020_11_27/1127_(left_rayleigh).npy',
+            '2020_11_27/1127_(right_more_rayleigh).npy',
 
 
 
@@ -572,25 +580,25 @@ if __name__ == "__main__":
             experimental_params=experimental_params)
 
     allretrieved={}
-    # for _name in measured_images.keys():
-    #     transform={};transform['rotation_angle']=0;transform['scale']=1.0;transform['flip']='lr'
-    #     m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_images[_name], transform)
-    #     m[m<0.003*np.max(m)]=0
-    #     m=np.squeeze(m)
-    #     for _f,_ret_type in zip(
-    #             [comparenetworkiterative.retrieve_measured, comparenetworkiterative.matlab_cdi_retrieval],
-    #             ['retrieved_nn','retrieved_iterative']
-    #             ):
-    #         # compare to training data set
-    #         retrieved,fig,simulation_axes=_f(m,"measured: "+_name+"\n"+_ret_type+"predicted",mask=True)
+    for _name in measured_images.keys():
+        transform={};transform['rotation_angle']=0;transform['scale']=1.0;transform['flip']='lr'
+        m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_images[_name], transform)
+        m[m<0.003*np.max(m)]=0
+        m=np.squeeze(m)
+        for _f,_ret_type in zip(
+                [comparenetworkiterative.retrieve_measured, comparenetworkiterative.matlab_cdi_retrieval],
+                ['retrieved_nn','retrieved_iterative']
+                ):
+            # compare to training data set
+            retrieved,fig,simulation_axes=_f(m,"measured: "+_name+"\n"+_ret_type+"predicted",mask=True)
 
-    #         allretrieved['simulation_axes']=simulation_axes
-    #         if not _ret_type in allretrieved.keys():allretrieved[_ret_type]={}
-    #         allretrieved[_ret_type][_name]=retrieved
-    #         fig.savefig('retrieved'+_name+'_'+_ret_type)
+            allretrieved['simulation_axes']=simulation_axes
+            if not _ret_type in allretrieved.keys():allretrieved[_ret_type]={}
+            allretrieved[_ret_type][_name]=retrieved
+            fig.savefig('retrieved'+_name+'_'+_ret_type)
 
-    # with open('allretrieved.p','wb') as file:
-    #     pickle.dump(allretrieved,file)
+    with open('allretrieved.p','wb') as file:
+        pickle.dump(allretrieved,file)
     with open('allretrieved.p','rb') as file:
         allretrieved=pickle.load(file)
 

@@ -275,7 +275,12 @@ def save_to_hdf5(filename:str, afterwf:np.array, beforewf:np.array, z_coefs:np.a
             diffraction_pattern_noisefree = np.abs(np.fft.fftshift(np.fft.fft2(np.fft.fftshift(afterwf[i,:,:]))))**2
             _z_coefs = z_coefs[i,:]
             _scales = scales[i]
-
+            # print("_scales =>", _scales)
+            # print("_z_coefs =>", _z_coefs)
+            # plt.figure()
+            # plt.pcolormesh(diffraction_pattern_noisefree)
+            # plt.savefig('diffraction_pattern_noisefree3_4.png')
+            # exit()
 
             # normalize
             diffraction_pattern_noisefree = diffraction_pattern_noisefree / np.max(diffraction_pattern_noisefree)
