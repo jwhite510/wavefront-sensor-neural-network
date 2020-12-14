@@ -15,6 +15,7 @@ from  astropy.io import fits
 from scipy.ndimage import shift as sc_im_shift
 from scipy.misc import factorial
 from skimage.transform import resize
+import cv2
 from scipy import ndimage
 import scipy.io
 import params
@@ -243,7 +244,8 @@ def format_experimental_trace(N, df_ratio, measured_diffraction_pattern, rotatio
         measured_diffraction_pattern=measured_diffraction_pattern[:,(s[1]//2)-(_s//2):(s[1]//2)+(_s//2)]
     # print("shape after ",np.shape(measured_diffraction_pattern))
 
-    measured_diffraction_pattern = resize(measured_diffraction_pattern, (new_size, new_size))
+    # measured_diffraction_pattern = resize(measured_diffraction_pattern, (new_size, new_size))
+    measured_diffraction_pattern=cv2.resize(measured_diffraction_pattern,dsize=(new_size,new_size),interpolation=cv2.INTER_CUBIC)
 
     # rotate the image by eye
     measured_diffraction_pattern = ndimage.rotate(measured_diffraction_pattern, rotation_angle, reshape=False)
