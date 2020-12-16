@@ -122,14 +122,41 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         self.display_raw_draw["plot"].setTitle('Raw',color=self.COLORGREEN)
 
         # processed image
+        leftaxis=pg.AxisItem(orientation='left')
+        leftaxis.setTicks(
+                [
+                    [ (0, 'label1'), (5, 'label2'),  ],
+                ]
+                )
+        bottomaxis=pg.AxisItem(orientation='bottom')
+        bottomaxis.setTicks(
+                [
+                    [ (0, 'blabel1'), (5, 'blabel2'),  ],
+                ]
+                )
+        plot=pg.PlotItem(axisItems={'left':leftaxis,'bottom':bottomaxis})
+
+        plot.setLabel(axis='left',text='Y-axis')
+        plot.setLabel(axis='bottom',text='X-axis')
         self.display_proc_draw = {}
-        self.display_proc_draw["data"] = pg.ImageItem()
-        self.display_proc_draw["data"].setLookupTable(lut)
-        self.display_proc_draw["plot"] = self.display_proc.addPlot()
-        self.display_proc_draw["plot"].addItem(self.display_proc_draw["data"])
-        self.display_proc_draw["plot"].getAxis('left').setLabel('Spatial Frequency', color=self.COLORGREEN)
-        self.display_proc_draw["plot"].getAxis('bottom').setLabel('Spatial Frequency', color=self.COLORGREEN)
-        self.display_proc_draw["plot"].setTitle('Processed',color=self.COLORGREEN)
+        self.display_proc_draw["data"] = pg.ImageView(view=plot)
+        colors = [
+            (0, 0, 0),
+            (45, 5, 61),
+            (84, 42, 55),
+            (150, 87, 60),
+            (208, 171, 141),
+            (255, 255, 255)
+        ]
+        cmap = pg.ColorMap(pos=np.linspace(0.0, 1.0, 6), color=colors)
+        self.display_proc_draw["data"].setColorMap(cmap)
+        # self.display_proc_draw["data"].setLookupTable(lut)
+        # GraphicsLayoutWidget
+        self.verticalLayout.addWidget(self.display_proc_draw["data"])
+        self.display_proc_draw["data"].setImage(np.random.rand(10*10).reshape(10,10)
+                # ,axes={'t':0, 'x':1, 'y':2, 'c':3}
+                # ,axes={'x':1, 'y':2}
+                )
 
         # reconstructed
         self.display_recons_draw = {}
@@ -337,7 +364,10 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
             print("self.processing.scale =>", self.processing.scale)
 
             self.display_raw_draw["data"].setImage(im)
-            self.display_proc_draw["data"].setImage(im_p)
+            x=np.linspace(-1,1,128).reshape(-1,1);y=np.linspace(-1,1,128).reshape(1,-1);w=0.5;
+            gau=np.exp(-(x**2/w))*np.exp(-(y**2)/w)
+
+            self.display_proc_draw["data"].setImage(gau)
             self.display_intens_real_draw["data"].setImage(I)
             self.display_phase_imag_draw["data"].setImage(obj_phase)
             self.display_recons_draw["data"].setImage(out_recons)
