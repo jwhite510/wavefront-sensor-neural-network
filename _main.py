@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import sys
 from typing import Optional
-from vimba import *
+# from vimba import *
 
 
 def print_preamble():
@@ -57,34 +57,34 @@ def parse_args() -> Optional[str]:
     return None if argc == 0 else args[0]
 
 
-def get_camera(camera_id: Optional[str]) -> Camera:
-    with Vimba.get_instance() as vimba:
-        if camera_id:
-            try:
-                return vimba.get_camera_by_id(camera_id)
+# def get_camera(camera_id: Optional[str]) -> Camera:
+#     with Vimba.get_instance() as vimba:
+#         if camera_id:
+#             try:
+#                 return vimba.get_camera_by_id(camera_id)
+# 
+#             except VimbaCameraError:
+#                 abort('Failed to access Camera \'{}\'. Abort.'.format(camera_id))
+# 
+#         else:
+#             cams = vimba.get_all_cameras()
+#             if not cams:
+#                 abort('No Cameras accessible. Abort.')
+# 
+#             return cams[0]
 
-            except VimbaCameraError:
-                abort('Failed to access Camera \'{}\'. Abort.'.format(camera_id))
 
-        else:
-            cams = vimba.get_all_cameras()
-            if not cams:
-                abort('No Cameras accessible. Abort.')
-
-            return cams[0]
-
-
-def setup_camera(cam: Camera):
-    with cam:
-        # Try to adjust GeV packet size. This Feature is only available for GigE - Cameras.
-        try:
-            cam.GVSPAdjustPacketSize.run()
-
-            while not cam.GVSPAdjustPacketSize.is_done():
-                pass
-
-        except (AttributeError, VimbaFeatureError):
-            pass
+# def setup_camera(cam: Camera):
+#     with cam:
+#         # Try to adjust GeV packet size. This Feature is only available for GigE - Cameras.
+#         try:
+#             cam.GVSPAdjustPacketSize.run()
+# 
+#             while not cam.GVSPAdjustPacketSize.is_done():
+#                 pass
+# 
+#         except (AttributeError, VimbaFeatureError):
+#             pass
 
 class Processing():
     def __init__(self):
@@ -183,11 +183,12 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
                 # print("hello?")
         # self.Tis.Stop_pipeline()
         # exit()
-        im=None
-        with Vimba.get_instance():
-            with get_camera(None) as cam:
-                setup_camera(cam)
-                im=np.squeeze( cam.get_frame().as_numpy_ndarray() )
+        # im=None
+        im=np.zeros((4000,4000),dtype=np.float32)
+        # with Vimba.get_instance():
+        #     with get_camera(None) as cam:
+        #         setup_camera(cam)
+        #         im=np.squeeze( cam.get_frame().as_numpy_ndarray() )
 
         # im=self.retrieve_raw_img()
         # self.Tis.Stop_pipeline()
@@ -205,7 +206,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         self.plot_RE_IM=False
 
         # # initialize neural network
-        self.network=diffraction_net.DiffractionNet(params['network'],"original") # load a pre trained network
+        # self.network=diffraction_net.DiffractionNet(params['network'],"original") # load a pre trained network
 
 
 
@@ -269,76 +270,80 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
     def run_retrieval(self):
 
-        with Vimba.get_instance():
-            with get_camera(None) as cam:
-                setup_camera(cam)
-                while self.running:
-                    time1=time.time()
-                    QtCore.QCoreApplication.processEvents()
+        # with Vimba.get_instance():
+            # with get_camera(None) as cam:
+                # setup_camera(cam)
+        while self.running:
+            time1=time.time()
+            QtCore.QCoreApplication.processEvents()
 
-                    # grab raw image
-                    # im = self.retrieve_raw_img()
-                    # process image
-                    im=np.squeeze( cam.get_frame().as_numpy_ndarray() )
+            # grab raw image
+            # im = self.retrieve_raw_img()
+            # process image
+            # im=np.squeeze( cam.get_frame().as_numpy_ndarray() )
+            im=np.random.rand(500*500).reshape(500,500)
 
-                    transform={}
-                    transform["rotation_angle"]=self.processing.rotation
-                    transform["scale"]=self.processing.scale
-                    if self.processing.orientation == "None":
-                        transform["flip"]=None
+            transform={}
+            transform["rotation_angle"]=self.processing.rotation
+            transform["scale"]=self.processing.scale
+            if self.processing.orientation == "None":
+                transform["flip"]=None
 
-                    elif self.processing.orientation == "Left->Right":
-                        transform["flip"]="lr"
+            elif self.processing.orientation == "Left->Right":
+                transform["flip"]="lr"
 
-                    elif self.processing.orientation == "Up->Down":
-                        transform["flip"]="ud"
+            elif self.processing.orientation == "Up->Down":
+                transform["flip"]="ud"
 
-                    elif self.processing.orientation == "Left->Right & Up->Down":
-                        transform["flip"]="lrud"
-                    im_p = self.getMeasuredDiffractionPattern.format_measured_diffraction_pattern(im, transform)
+            elif self.processing.orientation == "Left->Right & Up->Down":
+                transform["flip"]="lrud"
+            im_p = self.getMeasuredDiffractionPattern.format_measured_diffraction_pattern(im, transform)
 
-                    # input through neural network
-                    print("input through net:")
-                    time_a=time.time()
-                    out_recons = self.network.sess.run( self.network.nn_nodes["recons_diffraction_pattern"], feed_dict={self.network.x:im_p})
-                    out_real = self.network.sess.run( self.network.nn_nodes["real_out"], feed_dict={self.network.x:im_p})
-                    out_imag = self.network.sess.run( self.network.nn_nodes["imag_out"], feed_dict={self.network.x:im_p})
-                    time_b=time.time()
-                    print(time_b-time_a)
+            # input through neural network
+            print("input through net:")
+            time_a=time.time()
+            # out_recons = self.network.sess.run( self.network.nn_nodes["recons_diffraction_pattern"], feed_dict={self.network.x:im_p})
+            out_recons=np.random.rand(128*128).reshape(128,128)
+            # out_real = self.network.sess.run( self.network.nn_nodes["real_out"], feed_dict={self.network.x:im_p})
+            out_real=np.random.rand(128*128).reshape(128,128)
+            # out_imag = self.network.sess.run( self.network.nn_nodes["imag_out"], feed_dict={self.network.x:im_p})
+            out_imag=np.random.rand(128*128).reshape(128,128)
+            time_b=time.time()
+            print(time_b-time_a)
 
-                    out_real=np.squeeze(out_real)
-                    out_imag=np.squeeze(out_imag)
-                    out_recons=np.squeeze(out_recons)
+            out_real=np.squeeze(out_real)
+            out_imag=np.squeeze(out_imag)
+            out_recons=np.squeeze(out_recons)
 
-                    # calculate the intensity
-                    complex_obj = out_real + 1j * out_imag
-                    I = np.abs(complex_obj)**2
-                    m_index = unravel_index(I.argmax(), I.shape)
-                    phase_Imax = np.angle(complex_obj[m_index[0], m_index[1]])
-                    complex_obj *= np.exp(-1j * phase_Imax)
-                    obj_phase = np.angle(complex_obj)
+            # calculate the intensity
+            complex_obj = out_real + 1j * out_imag
+            I = np.abs(complex_obj)**2
+            m_index = unravel_index(I.argmax(), I.shape)
+            phase_Imax = np.angle(complex_obj[m_index[0], m_index[1]])
+            complex_obj *= np.exp(-1j * phase_Imax)
+            obj_phase = np.angle(complex_obj)
 
-                    # not using the amplitude_mask, use the absolute value of the intensity
-                    nonzero_intensity = np.array(np.abs(complex_obj))
-                    nonzero_intensity[nonzero_intensity < 0.01*np.max(nonzero_intensity)] = 0
-                    nonzero_intensity[nonzero_intensity >= 0.01*np.max(nonzero_intensity)] = 1
-                    obj_phase *= nonzero_intensity
+            # not using the amplitude_mask, use the absolute value of the intensity
+            nonzero_intensity = np.array(np.abs(complex_obj))
+            nonzero_intensity[nonzero_intensity < 0.01*np.max(nonzero_intensity)] = 0
+            nonzero_intensity[nonzero_intensity >= 0.01*np.max(nonzero_intensity)] = 1
+            obj_phase *= nonzero_intensity
 
-                    im_p=np.squeeze(im_p)
+            im_p=np.squeeze(im_p)
 
-                    # grab image with orientation, rotation, scale settings
-                    print("self.processing.orientation =>", self.processing.orientation)
-                    print("self.processing.rotation =>", self.processing.rotation)
-                    print("self.processing.scale =>", self.processing.scale)
+            # grab image with orientation, rotation, scale settings
+            print("self.processing.orientation =>", self.processing.orientation)
+            print("self.processing.rotation =>", self.processing.rotation)
+            print("self.processing.scale =>", self.processing.scale)
 
-                    self.display_raw_draw["data"].setImage(im)
-                    self.display_proc_draw["data"].setImage(im_p)
-                    self.display_intens_real_draw["data"].setImage(I)
-                    self.display_phase_imag_draw["data"].setImage(obj_phase)
-                    self.display_recons_draw["data"].setImage(out_recons)
-                    time2=time.time()
-                    print("total time:")
-                    print(time2-time1)
+            self.display_raw_draw["data"].setImage(im)
+            self.display_proc_draw["data"].setImage(im_p)
+            self.display_intens_real_draw["data"].setImage(I)
+            self.display_phase_imag_draw["data"].setImage(obj_phase)
+            self.display_recons_draw["data"].setImage(out_recons)
+            time2=time.time()
+            print("total time:")
+            print(time2-time1)
 
 
     def retrieve_raw_img(self)->np.array:
