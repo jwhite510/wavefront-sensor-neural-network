@@ -153,9 +153,10 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # self.display_proc_draw["data"].setLookupTable(lut)
         # GraphicsLayoutWidget
         self.verticalLayout.addWidget(self.display_proc_draw["data"])
-        self.display_proc_draw["data"].setImage(np.random.rand(10*10).reshape(10,10)
+        self.display_proc_draw["data"].setImage(np.random.rand(10*10).reshape(10,10),
                 # ,axes={'t':0, 'x':1, 'y':2, 'c':3}
                 # ,axes={'x':1, 'y':2}
+                autoRange=False,autoLevels=False,
                 )
 
         # reconstructed
@@ -367,7 +368,9 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
             x=np.linspace(-1,1,128).reshape(-1,1);y=np.linspace(-1,1,128).reshape(1,-1);w=0.5;
             gau=np.exp(-(x**2/w))*np.exp(-(y**2)/w)
 
-            self.display_proc_draw["data"].setImage(gau)
+            self.display_proc_draw["data"].setImage(gau,
+                autoRange=False,autoLevels=False,
+                    )
             self.display_intens_real_draw["data"].setImage(I)
             self.display_phase_imag_draw["data"].setImage(obj_phase)
             self.display_recons_draw["data"].setImage(out_recons)
