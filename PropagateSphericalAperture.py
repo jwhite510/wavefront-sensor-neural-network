@@ -21,7 +21,7 @@ def create_aperture_material(N,x,p):
 
 if __name__ == "__main__":
 
-    N=128
+    N=256
     wavefront = tf.placeholder(tf.complex64, shape=[1,N,N,1])
 
     params_Si=PropagateTF.Params()

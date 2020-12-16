@@ -238,7 +238,7 @@ def create_dataset(filename:str, coefficients:int):
 
     print("called create_dataset")
     print(filename)
-    N = 128
+    N = 256
     with tables.open_file(filename, "w") as hdf5file:
 
         # create array for the object
@@ -300,7 +300,7 @@ if __name__ == "__main__":
     parser.add_argument('--samplesf',type=str)
     args,_=parser.parse_known_args()
 
-    datagenerator = DataGenerator(1024,128)
+    datagenerator = DataGenerator(1024,256)
 
     x = tf.placeholder(tf.float32, shape=[None, len(datagenerator.zernike_cvector)])
     scale = tf.placeholder(tf.float32, shape=[None,1])

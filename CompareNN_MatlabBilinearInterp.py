@@ -61,7 +61,7 @@ class CompareNetworkIterative():
         self.net_type=args.net_type
 
     def test(self,index,folder):
-        m_index=(64,64)
+        m_index=(128,128)
         # load diffraction pattern
         # index=11
         # index=9 # best
@@ -168,7 +168,7 @@ class CompareNetworkIterative():
     def retrieve_measured(self,measured,figtitle,mask=False):
         # retrieve with network
         # plot
-        N=128
+        N=256
         retrieved = {}
         retrieved["measured_pattern"] = measured
         retrieved["tf_reconstructed_diff"] = self.network.sess.run(
@@ -555,7 +555,7 @@ if __name__ == "__main__":
     experimental_params['pixel_size'] = 3.45e-6 # [meters] with 2x2 binning
     experimental_params['z_distance'] = 12.05e-3 # [meters] distance from camera
     experimental_params['wavelength'] = 612e-9 #[meters] wavelength
-    getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
+    getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=256,
             N_meas=np.shape(a)[0], # for calculating the measured frequency axis (not really needed)
             experimental_params=experimental_params)
 

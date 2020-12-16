@@ -77,7 +77,7 @@ if __name__ == "__main__":
         c_str=""
         for _i, _c, _z in zip(range(len(coefficients)),
                 coefficients,
-                datagen.DataGenerator(1024,128).zernike_cvector):
+                datagen.DataGenerator(1024,256).zernike_cvector):
             c_str += '\n' if (_i%3==0) else '   '
             c_str += r"$Z^{"+str(_z.m)+"}_{"+str(_z.n)+"}$"
             c_str+="    "

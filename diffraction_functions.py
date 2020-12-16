@@ -66,7 +66,7 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     fig.text(0.5, 0.95, title, ha="center", size=15)
 
     # run the constructor to get z n, m vector
-    datagenerator = datagen.DataGenerator(1024,128)
+    datagenerator = datagen.DataGenerator(1024,256)
     if 'coefficients' in retrieved_obj.keys():
         fig.text(0.05,0.9,'Zernike Coefficients:',size=20,color='red')
         c_str=""
@@ -408,6 +408,7 @@ def get_amplitude_mask_and_imagesize2(image_dimmension, desired_mask_width):
         return measured_axes, amplitude_mask
 
 def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
+        desired_mask_width+=1
 
         # image_dimmension must be divisible by 4
         assert image_dimmension/4 == int(image_dimmension/4)
