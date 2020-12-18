@@ -121,14 +121,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_4">
-        <item>
-         <widget class="GraphicsLayoutWidget" name="display_phase_imag"/>
-        </item>
-        <item>
-         <widget class="GraphicsLayoutWidget" name="display_intens_real"/>
-        </item>
-       </layout>
+       <layout class="QHBoxLayout" name="horizontalLayout_4"/>
       </item>
      </layout>
     </item>
@@ -153,13 +146,6 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>GraphicsLayoutWidget</class>
-   <extends>QGraphicsView</extends>
-   <header>pyqtgraph</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections>
   <connection>

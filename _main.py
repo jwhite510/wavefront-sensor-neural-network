@@ -1,4 +1,6 @@
 import main
+import params as globalparams
+import diffraction_functions
 import time
 from numpy import unravel_index
 import diffraction_net
@@ -16,6 +18,12 @@ import sys
 from typing import Optional
 # from vimba import *
 
+
+def nparray_to_axislabel(arr:np.array,ticknumber:int)->list:
+    axislabel=np.linspace(0,len(arr),ticknumber)
+    if axislabel[-1]>=len(arr):axislabel[-1]-=1;
+    axislabel=[[(int(v),"%.2f"%(arr[int(v)]))for v in axislabel]]
+    return axislabel
 
 def randomgaussiansignal()->np.array:
     x=np.linspace(-1,1,128).reshape(-1,1);y=np.linspace(-1,1,128).reshape(1,-1);w=0.5;
@@ -155,6 +163,20 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # MainWindow = QtWidgets.QMainWindow()
         QtWidgets.QMainWindow.__init__(self)
 
+        # # initialize neural network
+        # self.network=diffraction_net.DiffractionNet(params['network'],"original") # load a pre trained network
+        # N=self.network.get_data.N;
+        N=128
+        # get position and frequenxy axis
+        simulation_axes, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(
+                N, int(globalparams.params.wf_ratio*N)
+                )
+        self.x=simulation_axes['object']['x'] # meters
+        self.x*=1e6 # 1d numpy array [micrometers]
+
+        self.f=simulation_axes['diffraction_plane']['f'] # 1/meters
+        self.f*=1e-6 # 1d numpy array
+
         self.COLORGREEN='#54f542'
 
         self.setupUi(self)
@@ -166,9 +188,8 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
         # reconstructed image
         self.display_recons_draw=addimageviewplot('reconstruced',color=self.COLORGREEN,
-                ticks=[[ (0,'label1'), (64, 'label2'),(128,'label3')],],
-                axislabel='position [um]'
-
+                ticks=nparray_to_axislabel(self.f,3),
+                axislabel='frequency [1/m] 10^6'
                 );
         self.verticalLayout_3.addWidget(self.display_recons_draw)
         self.display_recons_draw.setImage(np.random.rand(128*128).reshape(128,128))
@@ -180,21 +201,27 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
         # processed image
         self.display_proc_draw=addimageviewplot('processed image',color=self.COLORGREEN,
-                ticks=[[ (0,'label1'), (64, 'label2'),(128,'label3')],],
-                axislabel='position [um]'
+                ticks=nparray_to_axislabel(self.f,3),
+                axislabel='frequency [1/m] 10^6'
                 );
         self.verticalLayout.addWidget(self.display_proc_draw)
         self.display_proc_draw.setImage(np.random.rand(128*128).reshape(128,128))
 
         # intensity / real
-        self.display_intens_real_draw=addimageitemplot(self.display_intens_real,'Intensity',self.COLORGREEN,lut,
-                ticks=[[ (0,'label1'), (64, 'label2'),(128,'label3')],]
+        self.display_intens_real_draw=addimageviewplot('intensity',color=self.COLORGREEN,
+                ticks=nparray_to_axislabel(self.x,3),
+                axislabel='position [um]'
                 )
+        self.horizontalLayout_4.addWidget(self.display_intens_real_draw)
+        self.display_intens_real_draw.setImage(np.random.rand(128*128).reshape(128,128))
 
         # phase / imag
-        self.display_phase_imag_draw=addimageitemplot(self.display_phase_imag,'Phase',self.COLORGREEN,lut,
-                ticks=[[ (0,'label1'), (64, 'label2'),(128,'label3')],]
+        self.display_phase_imag_draw=addimageviewplot('phase[rad]',color=self.COLORGREEN,
+                ticks=nparray_to_axislabel(self.x,3),
+                axislabel='position [um]'
                 )
+        self.horizontalLayout_4.addWidget(self.display_phase_imag_draw)
+        self.display_phase_imag_draw.setImage(np.random.rand(128*128).reshape(128,128))
 
         # initialize processing parameters
         self.processing=Processing()
@@ -240,8 +267,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         self.running=False
         self.plot_RE_IM=False
 
-        # # initialize neural network
-        # self.network=diffraction_net.DiffractionNet(params['network'],"original") # load a pre trained network
+
 
 
 
@@ -378,8 +404,8 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
             self.display_proc_draw.setImage(randomgaussiansignal(),
                 autoRange=False,autoLevels=False,
                     )
-            self.display_intens_real_draw["data"].setImage(I)
-            self.display_phase_imag_draw["data"].setImage(obj_phase)
+            self.display_intens_real_draw.setImage(I)
+            self.display_phase_imag_draw.setImage(obj_phase)
 
             self.display_recons_draw.setImage(randomgaussiansignal(),
                 autoRange=False,autoLevels=False,

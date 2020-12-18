@@ -61,12 +61,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_10.addLayout(self.horizontalLayout)
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.display_phase_imag = GraphicsLayoutWidget(self.centralwidget)
-        self.display_phase_imag.setObjectName("display_phase_imag")
-        self.horizontalLayout_4.addWidget(self.display_phase_imag)
-        self.display_intens_real = GraphicsLayoutWidget(self.centralwidget)
-        self.display_intens_real.setObjectName("display_intens_real")
-        self.horizontalLayout_4.addWidget(self.display_intens_real)
         self.verticalLayout_10.addLayout(self.horizontalLayout_4)
         self.gridLayout.addLayout(self.verticalLayout_10, 0, 0, 1, 1)
         self.view_toggle = QtWidgets.QPushButton(self.centralwidget)
@@ -97,7 +91,6 @@ class Ui_MainWindow(object):
         self.label_2.setText(_translate("MainWindow", "scale"))
         self.label_3.setText(_translate("MainWindow", "orientation"))
         self.view_toggle.setText(_translate("MainWindow", "Real/Imag"))
-from pyqtgraph import GraphicsLayoutWidget
 
 
 if __name__ == "__main__":
