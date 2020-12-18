@@ -17,6 +17,58 @@ from typing import Optional
 # from vimba import *
 
 
+def randomgaussiansignal()->np.array:
+    x=np.linspace(-1,1,128).reshape(-1,1);y=np.linspace(-1,1,128).reshape(1,-1);w=0.5;
+    gau=np.exp(-(x**2/w))*np.exp(-(y**2)/w);
+    gau+=np.random.rand(128*128).reshape(128,128);
+    return gau;
+
+
+def addimageitemplot(qtgraphics,title:str,color:str,lut,ticks:list=None):
+    newplot = {}
+    newplot["data"] = pg.ImageItem()
+    newplot["data"].setLookupTable(lut)
+    newplot["plot"] = qtgraphics.addPlot()
+    newplot["plot"].addItem(newplot["data"])
+    newplot["plot"].getAxis('left').setLabel('Position', color=color)
+    if ticks:newplot["plot"].getAxis('left').setTicks(ticks)
+    if ticks:newplot["plot"].getAxis('bottom').setTicks(ticks)
+    newplot["plot"].getAxis('bottom').setLabel('Position', color=color)
+    newplot["plot"].setTitle(title,color=color)
+    return newplot
+
+
+def addimageviewplot(title:str,color:str,ticks:list=None,
+        axislabel:str=None,
+        ):
+
+    # processed image
+    leftaxis=pg.AxisItem(orientation='left')
+    if ticks:leftaxis.setTicks(ticks)
+    bottomaxis=pg.AxisItem(orientation='bottom')
+    if ticks:bottomaxis.setTicks(ticks)
+    plot=pg.PlotItem(axisItems={'left':leftaxis,'bottom':bottomaxis})
+
+    if axislabel:plot.setLabel(axis='left',text=axislabel,color=color)
+    if axislabel:plot.setLabel(axis='bottom',text=axislabel,color=color)
+    plot.setTitle(title,color=color)
+    widget = pg.ImageView(view=plot)
+    colors = [
+        (0, 0, 0),
+        (45, 5, 61),
+        (84, 42, 55),
+        (150, 87, 60),
+        (208, 171, 141),
+        (255, 255, 255)
+    ]
+    cmap = pg.ColorMap(pos=np.linspace(0.0, 1.0, 6), color=colors)
+    widget.setColorMap(cmap)
+    # self.display_proc_draw["data"].setLookupTable(lut)
+    # GraphicsLayoutWidget
+    return widget
+
+
+
 def print_preamble():
     print('//////////////////////////////////////////')
     print('/// Vimba API Synchronous Grab Example ///')
@@ -111,83 +163,38 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         colormap._init()
         lut = (colormap._lut*255).view(np.ndarray)
 
+
+        # reconstructed image
+        self.display_recons_draw=addimageviewplot('reconstruced',color=self.COLORGREEN,
+                ticks=[[ (0,'label1'), (64, 'label2'),(128,'label3')],],
+                axislabel='position [um]'
+
+                );
+        self.verticalLayout_3.addWidget(self.display_recons_draw)
+        self.display_recons_draw.setImage(np.random.rand(128*128).reshape(128,128))
+
         # raw image
-        self.display_raw_draw = {}
-        self.display_raw_draw["data"] = pg.ImageItem()
-        self.display_raw_draw["data"].setLookupTable(lut)
-        self.display_raw_draw["plot"] = self.display_raw.addPlot()
-        self.display_raw_draw["plot"].addItem(self.display_raw_draw["data"])
-        self.display_raw_draw["plot"].getAxis('left').setLabel('Pixel', color=self.COLORGREEN)
-        self.display_raw_draw["plot"].getAxis('bottom').setLabel('Pixel', color=self.COLORGREEN)
-        self.display_raw_draw["plot"].setTitle('Raw',color=self.COLORGREEN)
+        self.display_raw_draw=addimageviewplot('raw image',color=self.COLORGREEN,axislabel='pixel');
+        self.verticalLayout.addWidget(self.display_raw_draw)
+        self.display_raw_draw.setImage(np.random.rand(128*128).reshape(128,128))
 
         # processed image
-        leftaxis=pg.AxisItem(orientation='left')
-        leftaxis.setTicks(
-                [
-                    [ (0, 'label1'), (5, 'label2'),  ],
-                ]
-                )
-        bottomaxis=pg.AxisItem(orientation='bottom')
-        bottomaxis.setTicks(
-                [
-                    [ (0, 'blabel1'), (5, 'blabel2'),  ],
-                ]
-                )
-        plot=pg.PlotItem(axisItems={'left':leftaxis,'bottom':bottomaxis})
-
-        plot.setLabel(axis='left',text='Y-axis')
-        plot.setLabel(axis='bottom',text='X-axis')
-        self.display_proc_draw = {}
-        self.display_proc_draw["data"] = pg.ImageView(view=plot)
-        colors = [
-            (0, 0, 0),
-            (45, 5, 61),
-            (84, 42, 55),
-            (150, 87, 60),
-            (208, 171, 141),
-            (255, 255, 255)
-        ]
-        cmap = pg.ColorMap(pos=np.linspace(0.0, 1.0, 6), color=colors)
-        self.display_proc_draw["data"].setColorMap(cmap)
-        # self.display_proc_draw["data"].setLookupTable(lut)
-        # GraphicsLayoutWidget
-        self.verticalLayout.addWidget(self.display_proc_draw["data"])
-        self.display_proc_draw["data"].setImage(np.random.rand(10*10).reshape(10,10),
-                # ,axes={'t':0, 'x':1, 'y':2, 'c':3}
-                # ,axes={'x':1, 'y':2}
-                autoRange=False,autoLevels=False,
-                )
-
-        # reconstructed
-        self.display_recons_draw = {}
-        self.display_recons_draw["data"] = pg.ImageItem()
-        self.display_recons_draw["data"].setLookupTable(lut)
-        self.display_recons_draw["plot"] = self.display_recons.addPlot()
-        self.display_recons_draw["plot"].addItem(self.display_recons_draw["data"])
-        self.display_recons_draw["plot"].getAxis('left').setLabel('Spatial Frequency', color=self.COLORGREEN)
-        self.display_recons_draw["plot"].getAxis('bottom').setLabel('Spatial Frequency', color=self.COLORGREEN)
-        self.display_recons_draw["plot"].setTitle('Reconstructed',color=self.COLORGREEN)
+        self.display_proc_draw=addimageviewplot('processed image',color=self.COLORGREEN,
+                ticks=[[ (0,'label1'), (64, 'label2'),(128,'label3')],],
+                axislabel='position [um]'
+                );
+        self.verticalLayout.addWidget(self.display_proc_draw)
+        self.display_proc_draw.setImage(np.random.rand(128*128).reshape(128,128))
 
         # intensity / real
-        self.display_intens_real_draw = {}
-        self.display_intens_real_draw["data"] = pg.ImageItem()
-        self.display_intens_real_draw["data"].setLookupTable(lut)
-        self.display_intens_real_draw["plot"] = self.display_intens_real.addPlot()
-        self.display_intens_real_draw["plot"].addItem(self.display_intens_real_draw["data"])
-        self.display_intens_real_draw["plot"].getAxis('left').setLabel('Position', color=self.COLORGREEN)
-        self.display_intens_real_draw["plot"].getAxis('bottom').setLabel('Position', color=self.COLORGREEN)
-        self.display_intens_real_draw["plot"].setTitle('Intensity',color=self.COLORGREEN)
+        self.display_intens_real_draw=addimageitemplot(self.display_intens_real,'Intensity',self.COLORGREEN,lut,
+                ticks=[[ (0,'label1'), (64, 'label2'),(128,'label3')],]
+                )
 
         # phase / imag
-        self.display_phase_imag_draw = {}
-        self.display_phase_imag_draw["data"] = pg.ImageItem()
-        self.display_phase_imag_draw["data"].setLookupTable(lut)
-        self.display_phase_imag_draw["plot"] = self.display_phase_imag.addPlot()
-        self.display_phase_imag_draw["plot"].addItem(self.display_phase_imag_draw["data"])
-        self.display_phase_imag_draw["plot"].getAxis('left').setLabel('Position', color=self.COLORGREEN)
-        self.display_phase_imag_draw["plot"].getAxis('bottom').setLabel('Position', color=self.COLORGREEN)
-        self.display_phase_imag_draw["plot"].setTitle('Phase',color=self.COLORGREEN)
+        self.display_phase_imag_draw=addimageitemplot(self.display_phase_imag,'Phase',self.COLORGREEN,lut,
+                ticks=[[ (0,'label1'), (64, 'label2'),(128,'label3')],]
+                )
 
         # initialize processing parameters
         self.processing=Processing()
@@ -364,16 +371,20 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
             print("self.processing.rotation =>", self.processing.rotation)
             print("self.processing.scale =>", self.processing.scale)
 
-            self.display_raw_draw["data"].setImage(im)
-            x=np.linspace(-1,1,128).reshape(-1,1);y=np.linspace(-1,1,128).reshape(1,-1);w=0.5;
-            gau=np.exp(-(x**2/w))*np.exp(-(y**2)/w)
+            self.display_raw_draw.setImage(randomgaussiansignal(),
+                autoRange=False,autoLevels=False,
+                    )
 
-            self.display_proc_draw["data"].setImage(gau,
+            self.display_proc_draw.setImage(randomgaussiansignal(),
                 autoRange=False,autoLevels=False,
                     )
             self.display_intens_real_draw["data"].setImage(I)
             self.display_phase_imag_draw["data"].setImage(obj_phase)
-            self.display_recons_draw["data"].setImage(out_recons)
+
+            self.display_recons_draw.setImage(randomgaussiansignal(),
+                autoRange=False,autoLevels=False,
+                    )
+
             time2=time.time()
             print("total time:")
             print(time2-time1)
