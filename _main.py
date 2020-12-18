@@ -16,6 +16,64 @@ import sys
 from typing import Optional
 # from vimba import *
 
+class ColorBar(pg.GraphicsObject):
+
+    def __init__(self, cmap, width, height, ticks=None, tick_labels=None, label=None):
+        pg.GraphicsObject.__init__(self)
+
+        # handle args
+        label = label or ''
+        w, h = width, height
+        stops, colors = cmap.getStops('float')
+        smn, spp = stops.min(), stops.ptp()
+        stops = (stops - stops.min())/stops.ptp()
+        if ticks is None:
+            ticks = np.r_[0.0:1.0:5j, 1.0] * spp + smn
+        tick_labels = tick_labels or ["%0.2g" % (t,) for t in ticks]
+
+        # setup picture
+        self.pic = pg.QtGui.QPicture()
+        p = pg.QtGui.QPainter(self.pic)
+
+        # draw bar with gradient following colormap
+        p.setPen(pg.mkPen('k'))
+        grad = pg.QtGui.QLinearGradient(w/2.0, 0.0, w/2.0, h*1.0)
+        for stop, color in zip(stops, colors):
+            grad.setColorAt(1.0 - stop, pg.QtGui.QColor(*[255*c for c in color]))
+        p.setBrush(pg.QtGui.QBrush(grad))
+        p.drawRect(pg.QtCore.QRectF(0, 0, w, h))
+
+        # draw ticks & tick labels
+        mintx = 0.0
+        for tick, tick_label in zip(ticks, tick_labels):
+            y_ = (1.0 - (tick - smn)/spp) * h
+            p.drawLine(0.0, y_, -5.0, y_)
+            br = p.boundingRect(0, 0, 0, 0, pg.QtCore.Qt.AlignRight, tick_label)
+            if br.x() < mintx:
+                mintx = br.x()
+            p.drawText(br.x() - 10.0, y_ + br.height() / 4.0, tick_label)
+
+        # draw label
+        br = p.boundingRect(0, 0, 0, 0, pg.QtCore.Qt.AlignRight, label)
+        p.drawText(-br.width() / 2.0, h + br.height() + 5.0, label)
+        
+        # done
+        p.end()
+
+        # compute rect bounds for underlying mask
+        self.zone = mintx - 12.0, -15.0, br.width() - mintx, h + br.height() + 30.0
+        
+    def paint(self, p, *args):
+        # paint underlying mask
+        p.setPen(pg.QtGui.QColor(255, 255, 255, 0))
+        p.setBrush(pg.QtGui.QColor(255, 255, 255, 200))
+        p.drawRoundedRect(*(self.zone + (9.0, 9.0)))
+        
+        # paint colorbar
+        p.drawPicture(0, 0, self.pic)
+        
+    def boundingRect(self):
+        return pg.QtCore.QRectF(self.pic.boundingRect())
 
 def randomgaussiansignal()->np.array:
     x=np.linspace(-1,1,128).reshape(-1,1);y=np.linspace(-1,1,128).reshape(1,-1);w=0.5;
@@ -27,8 +85,28 @@ def randomgaussiansignal()->np.array:
 def addimageitemplot(qtgraphics,title:str,color:str,lut,ticks:list=None):
     newplot = {}
     newplot["data"] = pg.ImageItem()
-    newplot["data"].setLookupTable(lut)
     newplot["plot"] = qtgraphics.addPlot()
+
+
+
+    # make colormap
+    # stops = np.r_[-1.0, -0.5, 0.5, 1.0]
+    stops = np.r_[0.0,0.25,0.5,1.0]
+    # colors = np.array([[0, 0, 1, 0.7], [0, 1, 0, 0.2], [0, 0, 0, 0.8], [1, 0, 0, 1.0]])
+    colors = np.array([[1, 0, 0, 1.0], [0, 1, 0, 1.0], [0, 0, 0, 1.0], [0, 0, 0, 1.0]])
+    cm = pg.ColorMap(stops, colors)
+    # import ipdb; ipdb.set_trace() # BREAKPOINT
+    # print("BREAKPOINT")
+    # make colorbar, placing by hand
+    cb = ColorBar(cm, 20, 100, label='Foo (Hz)')#, [0., 0.5, 1.0])
+    newplot["data"].setLookupTable(cm.getLookupTable())
+    # newplot["data"].setLookupTable(lut)
+    newplot["plot"].scene().addItem(cb)
+
+
+
+    # import ipdb; ipdb.set_trace() # BREAKPOINT
+    # print("BREAKPOINT")
     newplot["plot"].addItem(newplot["data"])
     newplot["plot"].getAxis('left').setLabel('Position', color=color)
     if ticks:newplot["plot"].getAxis('left').setTicks(ticks)
@@ -190,6 +268,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         self.display_intens_real_draw=addimageitemplot(self.display_intens_real,'Intensity',self.COLORGREEN,lut,
                 ticks=[[ (0,'label1'), (64, 'label2'),(128,'label3')],]
                 )
+        self.display_intens_real_draw["data"].setImage(1*np.random.rand(128*128).reshape(128,128))
 
         # phase / imag
         self.display_phase_imag_draw=addimageitemplot(self.display_phase_imag,'Phase',self.COLORGREEN,lut,
