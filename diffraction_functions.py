@@ -408,7 +408,7 @@ def get_amplitude_mask_and_imagesize2(image_dimmension, desired_mask_width):
         return measured_axes, amplitude_mask
 
 def get_amplitude_mask_and_imagesize(image_dimmension, desired_mask_width):
-        desired_mask_width+=1
+        # desired_mask_width+=1
 
         # image_dimmension must be divisible by 4
         assert image_dimmension/4 == int(image_dimmension/4)

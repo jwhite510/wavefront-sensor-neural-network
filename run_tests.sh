@@ -11,7 +11,7 @@ declare -a runs=(
 # "original" # nr network
 # "0" # wavefront sensor
 
-"256_6x6_square_wfs_test" # name
+"256_6x6_square_wfs_test_1_6ratio" # name
 "36000" # train samples
 "50,40,30,20,10,5" # peak count
 "original" # nr network
