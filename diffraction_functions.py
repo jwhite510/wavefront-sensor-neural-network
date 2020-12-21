@@ -244,12 +244,14 @@ def format_experimental_trace(N, df_ratio, measured_diffraction_pattern, rotatio
         measured_diffraction_pattern=measured_diffraction_pattern[:,(s[1]//2)-(_s//2):(s[1]//2)+(_s//2)]
     # print("shape after ",np.shape(measured_diffraction_pattern))
 
-    # # with PIL
-    # measured_diffraction_pattern=Image.fromarray(measured_diffraction_pattern)
-    # measured_diffraction_pattern.resize(measured_diffraction_pattern,(new_size, new_size))
-    # measured_diffraction_pattern=np.array(measured_diffraction_pattern)
+    # # original
+    # measured_diffraction_pattern=resize(np.array(measured_diffraction_pattern), (new_size, new_size))
 
-    measured_diffraction_pattern = resize(measured_diffraction_pattern, (new_size, new_size))
+    # # with PIL
+    measured_diffraction_pattern=Image.fromarray(measured_diffraction_pattern)
+    measured_diffraction_pattern=measured_diffraction_pattern.resize((new_size, new_size),PIL.Image.NEAREST)
+    measured_diffraction_pattern=np.array(measured_diffraction_pattern,dtype=np.float64)
+
 
     # rotate the image by eye
     measured_diffraction_pattern = ndimage.rotate(measured_diffraction_pattern, rotation_angle, reshape=False)

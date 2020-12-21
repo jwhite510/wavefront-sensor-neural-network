@@ -331,6 +331,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
 
     def run_retrieval(self):
 
+        first_image=True
         with Vimba.get_instance():
             with get_camera(None) as cam:
                 setup_camera(cam)
@@ -395,18 +396,19 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
                     print("self.processing.scale =>", self.processing.scale)
 
                     self.display_raw_draw.setImage(im,
-                        autoRange=False,autoLevels=False,
+                        autoRange=(True if first_image else False),autoLevels=(True if first_image else False),
                             )
 
                     self.display_proc_draw.setImage(im_p,
-                        autoRange=False,autoLevels=False,
+                        autoRange=(True if first_image else False),autoLevels=(True if first_image else False),
                             )
                     self.display_intens_real_draw.setImage(I)
                     self.display_phase_imag_draw.setImage(obj_phase)
 
                     self.display_recons_draw.setImage(out_recons,
-                        autoRange=False,autoLevels=False,
+                        autoRange=(True if first_image else False),autoLevels=(True if first_image else False),
                             )
+                    first_image=False
 
                     time2=time.time()
                     print("total time:")

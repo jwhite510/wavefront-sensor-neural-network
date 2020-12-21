@@ -238,11 +238,11 @@ class DiffractionNet():
         experimental_params['wavelength'] = 633e-9 #[meters] wavelength
 
         filenames = [
-            '9_02_20_data/0812_focus.npy',
-            '9_02_20_data/0812_focus_f3.npy',
-            '9_02_20_data/0812_focus_f7.npy',
-            '9_02_20_data/0812_focus_n3.npy',
-            '9_02_20_data/0812_focus_n7.npy',
+            # '9_02_20_data/0812_focus.npy',
+            # '9_02_20_data/0812_focus_f3.npy',
+            # '9_02_20_data/0812_focus_f7.npy',
+            # '9_02_20_data/0812_focus_n3.npy',
+            # '9_02_20_data/0812_focus_n7.npy',
                 ]
 
         getMeasuredDiffractionPattern=None
