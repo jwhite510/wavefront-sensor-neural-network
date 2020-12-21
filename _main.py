@@ -341,8 +341,8 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
                     # grab raw image
                     # im = self.retrieve_raw_img()
                     # process image
-                    # im=np.squeeze( cam.get_frame().as_numpy_ndarray() )
-                    im=np.random.rand(500*500).reshape(500,500)
+                    im=np.squeeze( cam.get_frame().as_numpy_ndarray() )
+                    # im=np.random.rand(500*500).reshape(500,500)
 
                     transform={}
                     transform["rotation_angle"]=self.processing.rotation
@@ -363,12 +363,9 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
                     # input through neural network
                     print("input through net:")
                     time_a=time.time()
-                    # out_recons = self.network.sess.run( self.network.nn_nodes["recons_diffraction_pattern"], feed_dict={self.network.x:im_p})
-                    out_recons=np.random.rand(128*128).reshape(128,128)
-                    # out_real = self.network.sess.run( self.network.nn_nodes["real_out"], feed_dict={self.network.x:im_p})
-                    out_real=np.random.rand(128*128).reshape(128,128)
-                    # out_imag = self.network.sess.run( self.network.nn_nodes["imag_out"], feed_dict={self.network.x:im_p})
-                    out_imag=np.random.rand(128*128).reshape(128,128)
+                    out_recons = self.network.sess.run( self.network.nn_nodes["recons_diffraction_pattern"], feed_dict={self.network.x:im_p})
+                    out_real = self.network.sess.run( self.network.nn_nodes["real_out"], feed_dict={self.network.x:im_p})
+                    out_imag = self.network.sess.run( self.network.nn_nodes["imag_out"], feed_dict={self.network.x:im_p})
                     time_b=time.time()
                     print(time_b-time_a)
 
@@ -397,17 +394,17 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
                     print("self.processing.rotation =>", self.processing.rotation)
                     print("self.processing.scale =>", self.processing.scale)
 
-                    self.display_raw_draw.setImage(randomgaussiansignal(),
+                    self.display_raw_draw.setImage(im,
                         autoRange=False,autoLevels=False,
                             )
 
-                    self.display_proc_draw.setImage(randomgaussiansignal(),
+                    self.display_proc_draw.setImage(im_p,
                         autoRange=False,autoLevels=False,
                             )
                     self.display_intens_real_draw.setImage(I)
                     self.display_phase_imag_draw.setImage(obj_phase)
 
-                    self.display_recons_draw.setImage(randomgaussiansignal(),
+                    self.display_recons_draw.setImage(out_recons,
                         autoRange=False,autoLevels=False,
                             )
 
