@@ -159,12 +159,19 @@ def plot_amplitude_phase_meas_retreival(retrieved_obj, title, plot_spherical_ape
     axes["intensity"].set_ylabel("position [um]")
     fig.colorbar(im, ax=axes["intensity"])
 
-    im = axes["measured"].pcolormesh(f,f,np.squeeze(retrieved_obj["measured_pattern"]),vmin=0,vmax=1.0,cmap='jet')
+
+    # plt.figure(13); plt.pcolormesh(np.squeeze(retrieved_obj["measured_pattern"]));plt.savefig('test.png')
+    # import ipdb; ipdb.set_trace() # BREAKPOINT
+    # print("BREAKPOINT")
+
+    im = axes["measured"].pcolormesh(f,f,np.log(np.squeeze(retrieved_obj["measured_pattern"])),vmin=-10,vmax=0,cmap='jet')
+    # axes["measured"].set_ylim(-0.25,0.25);axes["measured"].set_xlim(-0.25,0.25)
     axes["measured"].set_ylabel(r"frequency [1/m]$\cdot 10^{6}$")
     axes["measured"].text(0.2, 0.9,"measured", fontsize=10, ha='center', transform=axes["measured"].transAxes, backgroundcolor="cyan")
     fig.colorbar(im, ax=axes["measured"])
 
-    im = axes["reconstructed"].pcolormesh(f,f,np.squeeze(retrieved_obj["tf_reconstructed_diff"]),vmin=0,vmax=1.0,cmap='jet')
+    im = axes["reconstructed"].pcolormesh(f,f,np.log(np.squeeze(retrieved_obj["tf_reconstructed_diff"])),vmin=-10,vmax=0,cmap='jet')
+    # axes["reconstructed"].set_ylim(-0.25,0.25);axes["reconstructed"].set_xlim(-0.25,0.25)
     axes["reconstructed"].text(0.2, 0.9,RECONSTRUCTED, fontsize=10, ha='center', transform=axes["reconstructed"].transAxes, backgroundcolor="cyan")
 
     # calc mse

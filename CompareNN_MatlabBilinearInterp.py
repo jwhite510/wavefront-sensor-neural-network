@@ -522,24 +522,33 @@ if __name__ == "__main__":
 
     # 2020 08 12 data, HDR images
     for _fn in [
-            # '2020_08_12/1208_focus_up/1208_focus_up.npy',
-            # '2020_08_12/1208_focus_up_left/1208_focus_up_left.npy',
+            # HDR images
+            '12_18_20_data/left/new_folder/120_1216_HDR.npy',
+            '12_18_20_data/left/new_folder/128_1216_HDR.npy',
+            '12_18_20_data/left/new_folder/134_1216_HDR.npy',
+            '12_18_20_data/left/new_folder/138_1216_HDR.npy',
+            # '12_18_20_data/left/new_folder/140_1216_HDR.npy',
+            # '12_18_20_data/left2/142_1216_HDR.npy',
+            '12_18_20_data/left2/144_1216_HDR.npy',
+            '12_18_20_data/left2/146_1216_HDR.npy',
+            '12_18_20_data/left2/148_1216_HDR.npy',
+            '12_18_20_data/left2/150_1216_HDR.npy',
+            '12_18_20_data/right/152_1216_HDR.npy',
+            '12_18_20_data/right/154_1216_HDR.npy',
+            '12_18_20_data/right/156_1216_HDR.npy',
+            '12_18_20_data/right/158_1216_HDR.npy',
+            '12_18_20_data/right/160_1216_HDR.npy',
+            '12_18_20_data/right/162_1216_HDR.npy',
+            '12_18_20_data/right/166_1216_HDR.npy',
 
-            # '2020_08_12/1208_focus_n7/1208_focus_n7.npy',
-            # '2020_08_12/1208_focus_n3/1208_focus_n3.npy',
-            # '2020_08_12/1208_focus/1208_focus.npy',
 
-            # '9_02_20_data/0812_focus.npy',
-            # '9_02_20_data/0812_focus_f3.npy',
-            # '9_02_20_data/0812_focus_f7.npy',
-            # '9_02_20_data/0812_focus_n3.npy',
-            # '9_02_20_data/0812_focus_n7.npy',
-            # '11_12_20_data/2020_11_12.npy'
-
-            # '2020_08_12/1208_focus_f3/1208_focus_f3.npy',
-            # '2020_08_12/1208_focus_f7/1208_focus_f7.npy'
-
-            '12_18_20_data/left2/142_1216.npy',
+            # non HDR images
+            '12_18_20_data/left/new_folder/120_1216.npy',
+            '12_18_20_data/left/new_folder/128_1216.npy',
+            '12_18_20_data/left/new_folder/134_1216.npy',
+            '12_18_20_data/left/new_folder/138_1216.npy',
+            # '12_18_20_data/left/new_folder/140_1216.npy',
+            # '12_18_20_data/left2/142_1216.npy',
             '12_18_20_data/left2/144_1216.npy',
             '12_18_20_data/left2/146_1216.npy',
             '12_18_20_data/left2/148_1216.npy',
@@ -553,6 +562,7 @@ if __name__ == "__main__":
             '12_18_20_data/right/166_1216.npy',
             ]:
         a=np.load(_fn)
+        # print(_fn); plt.figure(1);plt.title(_fn);plt.imshow(a);plt.savefig('fig1.png');
         a[a<0]=0
         measured_images[os.path.split(_fn)[-1].replace('.','_')]=a
 
@@ -570,18 +580,37 @@ if __name__ == "__main__":
             N_meas=np.shape(a)[0], # for calculating the measured frequency axis (not really needed)
             experimental_params=experimental_params)
 
+    PREFIX='A9'
     for _name in measured_images.keys():
-        transform={};transform['rotation_angle']=0;transform['scale']=1.0;transform['flip']='lr'
+        transform={};transform['rotation_angle']=0;transform['scale']=0.9;transform['flip']='lr'
         m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_images[_name], transform)
-        m[m<0.003*np.max(m)]=0
+        # m[m<0.003*np.max(m)]=0
         m=np.squeeze(m)
         for _f,_ret_type in zip(
-                [comparenetworkiterative.retrieve_measured, comparenetworkiterative.matlab_cdi_retrieval],
-                ['retrieved_nn','retrieved_iterative']
+                [comparenetworkiterative.retrieve_measured],
+                ['retrieved_nn']
                 ):
             # compare to training data set
             retrieved,fig=_f(m,"measured: "+_name+"\n"+_ret_type+"predicted",mask=True)
-            fig.savefig('retrieved'+_name+'_'+_ret_type)
+            fig.savefig(PREFIX+'retrieved'+_name+'_'+_ret_type)
+    # retrieve simulated
+    for _file in ['0_simulated.npy','1_simulated.npy','2_simulated.npy']:
+        m=np.load(_file)
+        _name=_file.split('.')[0]
+        for _f,_ret_type in zip(
+                [comparenetworkiterative.retrieve_measured],
+                ['retrieved_nn']
+                ):
+            retrieved,fig=_f(m,"measured: "+_name+"\n"+_ret_type+"predicted",mask=True)
+            fig.savefig(PREFIX+'retrieved'+_name+'_'+_ret_type)
+
+
+
+    os.system('mkdir '+PREFIX)
+    os.system('mkdir '+PREFIX+'/HDR');os.system('mkdir '+PREFIX+'/SINGLE');os.system('mkdir '+PREFIX+'/SIM')
+    os.system('mv ./'+PREFIX+'*HDR*png '+PREFIX+'/HDR')
+    os.system('mv ./'+PREFIX+'*simulated*png '+PREFIX+'/SIM')
+    os.system('mv ./'+PREFIX+'*png '+PREFIX+'/SINGLE')
 
     exit()
 
