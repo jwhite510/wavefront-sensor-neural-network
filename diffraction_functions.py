@@ -1,5 +1,6 @@
 import numpy as np
 import params
+import cv2;import time
 from numpy import unravel_index
 import os
 import math
@@ -243,7 +244,14 @@ def format_experimental_trace(N, df_ratio, measured_diffraction_pattern, rotatio
         measured_diffraction_pattern=measured_diffraction_pattern[:,(s[1]//2)-(_s//2):(s[1]//2)+(_s//2)]
     # print("shape after ",np.shape(measured_diffraction_pattern))
 
-    measured_diffraction_pattern = resize(measured_diffraction_pattern, (new_size, new_size))
+    # time1=time.time()
+    measured_diffraction_pattern=cv2.resize(measured_diffraction_pattern,dsize=(new_size,new_size),interpolation=cv2.INTER_CUBIC)
+    # time2=time.time();print('time:',time2-time1)
+
+    # time1=time.time()
+    # measured_diffraction_pattern = resize(measured_diffraction_pattern, (new_size, new_size))
+    # time2=time.time();print('time:',time2-time1)
+    # exit()
 
     # rotate the image by eye
     measured_diffraction_pattern = ndimage.rotate(measured_diffraction_pattern, rotation_angle, reshape=False)

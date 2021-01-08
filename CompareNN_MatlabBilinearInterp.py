@@ -540,20 +540,35 @@ if __name__ == "__main__":
             # '9_02_20_data/0812_focus_n3.npy',
             # '9_02_20_data/0812_focus_n7.npy',
             # '11_12_20_data/2020_11_12.npy'
-            '20201124/1124_(in_focus).npy',
-            '20201124/1124_(left_less_rayleigh).npy',
-            '20201124/1124_(left_more_rayleigh).npy',
-            '20201124/1124_(left_rayleigh).npy',
-            '20201124/1124_(right_less_rayleigh).npy',
-            '20201124/1124_(right_more_rayleigh).npy',
-            '20201124/1124_(right_rayleigh).npy',
 
+            # '20201124/1124_(in_focus).npy',
+            # '20201124/1124_(left_less_rayleigh).npy',
+            # '20201124/1124_(left_more_rayleigh).npy',
+            # '20201124/1124_(left_rayleigh).npy',
+            # '20201124/1124_(right_less_rayleigh).npy',
+            # '20201124/1124_(right_more_rayleigh).npy',
+            # '20201124/1124_(right_rayleigh).npy',
 
-
+            '2020_12_10_data/132.npy',
+            # '2020_12_10_data/142.npy', # blank
+            '2020_12_10_data/146.npy',
+            '2020_12_10_data/150.npy',
+            '2020_12_10_data/154.npy',
+            '2020_12_10_data/158.npy',
+            '2020_12_10_data/168.npy',
+            '2020_12_10_data/138.npy',
+            '2020_12_10_data/144.npy',
+            '2020_12_10_data/148.npy',
+            '2020_12_10_data/152.npy',
+            '2020_12_10_data/156.npy',
+            '2020_12_10_data/162.npy',
+            '2020_12_10_data/175.npy',
             # '2020_08_12/1208_focus_f3/1208_focus_f3.npy',
             # '2020_08_12/1208_focus_f7/1208_focus_f7.npy'
             ]:
         a=np.load(_fn)
+        # print("np.shape(a)", np.shape(a))
+        # plt.figure();plt.pcolormesh(a);plt.savefig('unprocessed_%s'%ii);ii+=1;
         a[a<0]=0
         measured_images[os.path.split(_fn)[-1].replace('.','_')]=a
 
@@ -565,34 +580,37 @@ if __name__ == "__main__":
 
     experimental_params = {}
     experimental_params['pixel_size'] = 3.45e-6 # [meters] with 2x2 binning
-    experimental_params['z_distance'] = 18.4e-3 # [meters] distance from camera
+    experimental_params['z_distance'] = 16.5e-3 # [meters] distance from camera
     experimental_params['wavelength'] = 612e-9 #[meters] wavelength
     getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
             N_meas=np.shape(a)[0], # for calculating the measured frequency axis (not really needed)
             experimental_params=experimental_params)
 
     allretrieved={}
-    # for _name in measured_images.keys():
-    #     transform={};transform['rotation_angle']=0;transform['scale']=1.0;transform['flip']='lr'
-    #     m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_images[_name], transform)
-    #     m[m<0.003*np.max(m)]=0
-    #     m=np.squeeze(m)
-    #     for _f,_ret_type in zip(
-    #             [comparenetworkiterative.retrieve_measured, comparenetworkiterative.matlab_cdi_retrieval],
-    #             ['retrieved_nn','retrieved_iterative']
-    #             ):
-    #         # compare to training data set
-    #         retrieved,fig,simulation_axes=_f(m,"measured: "+_name+"\n"+_ret_type+"predicted",mask=True)
+    for _name in measured_images.keys():
+        transform={};transform['rotation_angle']=0;transform['scale']=1.0;transform['flip']='lr'
+        m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_images[_name], transform)
+        m[m<0.003*np.max(m)]=0
+        m=np.squeeze(m)
+        for _f,_ret_type in zip(
+                # [comparenetworkiterative.retrieve_measured, comparenetworkiterative.matlab_cdi_retrieval],
+                # ['retrieved_nn','retrieved_iterative']
+                [comparenetworkiterative.retrieve_measured],
+                ['retrieved_nn']
+                ):
+            # compare to training data set
+            retrieved,fig,simulation_axes=_f(m,"measured: "+_name+"\n"+_ret_type+"predicted",mask=True)
 
-    #         allretrieved['simulation_axes']=simulation_axes
-    #         if not _ret_type in allretrieved.keys():allretrieved[_ret_type]={}
-    #         allretrieved[_ret_type][_name]=retrieved
-    #         fig.savefig('retrieved'+_name+'_'+_ret_type)
+            # allretrieved['simulation_axes']=simulation_axes
+            # if not _ret_type in allretrieved.keys():allretrieved[_ret_type]={}
+            # allretrieved[_ret_type][_name]=retrieved
+            fig.savefig('opencvresize_retrieved'+_name+'_'+_ret_type)
 
-    # with open('allretrieved.p','wb') as file:
-    #     pickle.dump(allretrieved,file)
+    with open('allretrieved.p','wb') as file:
+        pickle.dump(allretrieved,file)
     with open('allretrieved.p','rb') as file:
         allretrieved=pickle.load(file)
+    exit()
 
     beam_images={}; prefix='20201124';
     filenames=['focus_detector1.tif','focus_detector2.tif','focus_sample2.tif','focus_sample.tif']
