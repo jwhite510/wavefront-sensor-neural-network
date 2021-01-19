@@ -166,7 +166,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         # # initialize neural network
         self.network=diffraction_net.DiffractionNet(params['network'],"original") # load a pre trained network
         # N=self.network.get_data.N;
-        N=128
+        N=256
         # get position and frequenxy axis
         simulation_axes, amplitude_mask = diffraction_functions.get_amplitude_mask_and_imagesize(
                 N, int(globalparams.params.wf_ratio*N)
@@ -446,7 +446,7 @@ if __name__ == "__main__":
     params['pixel_size']=3.45e-6 # meters
     params['z_distance']=16.5e-3 # meter
     params['wavelength']=612e-9
-    params['network']="varnoise_10ewfstest_2"
+    params['network']="256_6x6_square_wfs_test"
 
     # for camera
     # self.Tis = TIS.TIS("48710182", 640, 480, 30, False)
