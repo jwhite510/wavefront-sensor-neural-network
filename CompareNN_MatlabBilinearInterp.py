@@ -523,49 +523,66 @@ if __name__ == "__main__":
     # 2020 08 12 data, HDR images
     for _fn in [
             # HDR images
-            '12_18_20_data/left/new_folder/120_1216_HDR.npy',
-            '12_18_20_data/left/new_folder/128_1216_HDR.npy',
-            '12_18_20_data/left/new_folder/134_1216_HDR.npy',
-            '12_18_20_data/left/new_folder/138_1216_HDR.npy',
-            # '12_18_20_data/left/new_folder/140_1216_HDR.npy',
-            # '12_18_20_data/left2/142_1216_HDR.npy',
-            '12_18_20_data/left2/144_1216_HDR.npy',
-            '12_18_20_data/left2/146_1216_HDR.npy',
-            '12_18_20_data/left2/148_1216_HDR.npy',
-            '12_18_20_data/left2/150_1216_HDR.npy',
-            '12_18_20_data/right/152_1216_HDR.npy',
-            '12_18_20_data/right/154_1216_HDR.npy',
-            '12_18_20_data/right/156_1216_HDR.npy',
-            '12_18_20_data/right/158_1216_HDR.npy',
-            '12_18_20_data/right/160_1216_HDR.npy',
-            '12_18_20_data/right/162_1216_HDR.npy',
-            '12_18_20_data/right/166_1216_HDR.npy',
+            # '12_18_20_data/left/new_folder/120_1216_HDR.npy',
+            # '12_18_20_data/left/new_folder/128_1216_HDR.npy',
+            # '12_18_20_data/left/new_folder/134_1216_HDR.npy',
+            # '12_18_20_data/left/new_folder/138_1216_HDR.npy',
+            # # '12_18_20_data/left/new_folder/140_1216_HDR.npy',
+            # # '12_18_20_data/left2/142_1216_HDR.npy',
+            # '12_18_20_data/left2/144_1216_HDR.npy',
+            # '12_18_20_data/left2/146_1216_HDR.npy',
+            # '12_18_20_data/left2/148_1216_HDR.npy',
+            # '12_18_20_data/left2/150_1216_HDR.npy',
+            # '12_18_20_data/right/152_1216_HDR.npy',
+            # '12_18_20_data/right/154_1216_HDR.npy',
+            # '12_18_20_data/right/156_1216_HDR.npy',
+            # '12_18_20_data/right/158_1216_HDR.npy',
+            # '12_18_20_data/right/160_1216_HDR.npy',
+            # '12_18_20_data/right/162_1216_HDR.npy',
+            # '12_18_20_data/right/166_1216_HDR.npy',
 
 
-            # non HDR images
-            '12_18_20_data/left/new_folder/120_1216.npy',
-            '12_18_20_data/left/new_folder/128_1216.npy',
-            '12_18_20_data/left/new_folder/134_1216.npy',
-            '12_18_20_data/left/new_folder/138_1216.npy',
-            # '12_18_20_data/left/new_folder/140_1216.npy',
-            # '12_18_20_data/left2/142_1216.npy',
-            '12_18_20_data/left2/144_1216.npy',
-            '12_18_20_data/left2/146_1216.npy',
-            '12_18_20_data/left2/148_1216.npy',
-            '12_18_20_data/left2/150_1216.npy',
-            '12_18_20_data/right/152_1216.npy',
-            '12_18_20_data/right/154_1216.npy',
-            '12_18_20_data/right/156_1216.npy',
-            '12_18_20_data/right/158_1216.npy',
-            '12_18_20_data/right/160_1216.npy',
-            '12_18_20_data/right/162_1216.npy',
-            '12_18_20_data/right/166_1216.npy',
+            # # non HDR images
+            # '12_18_20_data/left/new_folder/120_1216.npy',
+            # '12_18_20_data/left/new_folder/128_1216.npy',
+            # '12_18_20_data/left/new_folder/134_1216.npy',
+            # '12_18_20_data/left/new_folder/138_1216.npy',
+            # # '12_18_20_data/left/new_folder/140_1216.npy',
+            # # '12_18_20_data/left2/142_1216.npy',
+            # '12_18_20_data/left2/144_1216.npy',
+            # '12_18_20_data/left2/146_1216.npy',
+            # '12_18_20_data/left2/148_1216.npy',
+            # '12_18_20_data/left2/150_1216.npy',
+            # '12_18_20_data/right/152_1216.npy',
+            # '12_18_20_data/right/154_1216.npy',
+            # '12_18_20_data/right/156_1216.npy',
+            # '12_18_20_data/right/158_1216.npy',
+            # '12_18_20_data/right/160_1216.npy',
+            # '12_18_20_data/right/162_1216.npy',
+            # '12_18_20_data/right/166_1216.npy',
+
+            '2021_01_18_processed/140_0118.npy',
+            '2021_01_18_processed/142_0118.npy',
+            '2021_01_18_processed/144_0118.npy',
+            '2021_01_18_processed/146_0118.npy',
+            '2021_01_18_processed/148_0118.npy',
+            '2021_01_18_processed/150_0118.npy',
+            '2021_01_18_processed/150_1216.npy',
+            '2021_01_18_processed/152_0118.npy',
+            '2021_01_18_processed/154_0118.npy',
+            '2021_01_18_processed/156_0118.npy',
+            '2021_01_18_processed/158_0118.npy',
+            '2021_01_18_processed/160_0118.npy',
             ]:
         a=np.load(_fn)
         # print(_fn); plt.figure(1);plt.title(_fn);plt.imshow(a);plt.savefig('fig1.png');
         a[a<0]=0
         measured_images[os.path.split(_fn)[-1].replace('.','_')]=a
 
+    # simulated data
+    # a=np.load('simulation_2021_01_18/2021_01_16.npy')
+    # for i,_name in enumerate(['-7mm','-3mm','0mm','3mm','7mm']):
+    #     measured_images['simulation_2021_01_18_'+_name]=a[:,:,i]
 
     # a=Image.open(filename).convert("L")
     # a=np.array(a)
@@ -573,16 +590,16 @@ if __name__ == "__main__":
     # measured_images['greyscale']=a
 
     experimental_params = {}
-    experimental_params['pixel_size'] = 3.45e-6 # [meters] with 2x2 binning
-    experimental_params['z_distance'] = 16.5e-3 # [meters] distance from camera
+    experimental_params['pixel_size'] = 6.9e-6 # [meters] with 2x2 binning
+    experimental_params['z_distance'] = 16.6e-3 # [meters] distance from camera
     experimental_params['wavelength'] = 612e-9 #[meters] wavelength
     getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=256,
             N_meas=np.shape(a)[0], # for calculating the measured frequency axis (not really needed)
             experimental_params=experimental_params)
 
-    PREFIX='A9'
+    PREFIX='A13'
     for _name in measured_images.keys():
-        transform={};transform['rotation_angle']=0;transform['scale']=0.9;transform['flip']='lr'
+        transform={};transform['rotation_angle']=0;transform['scale']=1.0;transform['flip']='lr'
         m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_images[_name], transform)
         # m[m<0.003*np.max(m)]=0
         m=np.squeeze(m)
@@ -593,22 +610,11 @@ if __name__ == "__main__":
             # compare to training data set
             retrieved,fig=_f(m,"measured: "+_name+"\n"+_ret_type+"predicted",mask=True)
             fig.savefig(PREFIX+'retrieved'+_name+'_'+_ret_type)
-    # retrieve simulated
-    for _file in ['0_simulated.npy','1_simulated.npy','2_simulated.npy']:
-        m=np.load(_file)
-        _name=_file.split('.')[0]
-        for _f,_ret_type in zip(
-                [comparenetworkiterative.retrieve_measured],
-                ['retrieved_nn']
-                ):
-            retrieved,fig=_f(m,"measured: "+_name+"\n"+_ret_type+"predicted",mask=True)
-            fig.savefig(PREFIX+'retrieved'+_name+'_'+_ret_type)
-
 
 
     os.system('mkdir '+PREFIX)
     os.system('mkdir '+PREFIX+'/HDR');os.system('mkdir '+PREFIX+'/SINGLE');os.system('mkdir '+PREFIX+'/SIM')
-    os.system('mv ./'+PREFIX+'*HDR*png '+PREFIX+'/HDR')
+    # os.system('mv ./'+PREFIX+'*HDR*png '+PREFIX+'/HDR')
     os.system('mv ./'+PREFIX+'*simulated*png '+PREFIX+'/SIM')
     os.system('mv ./'+PREFIX+'*png '+PREFIX+'/SINGLE')
 
