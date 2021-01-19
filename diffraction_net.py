@@ -95,7 +95,7 @@ class DiffractionNet():
         # real retrieval network
         self.nn_nodes = {}
 
-        self.datagenerator=datagen.DataGenerator(1024,128)
+        self.datagenerator=datagen.DataGenerator(1024,256)
         if self.net_type=='original':
             print("building original network")
             self.setup_network_2(self.nn_nodes)
@@ -442,8 +442,8 @@ class DiffractionNet():
 
     def setup_network_2(self, _nodes):
 
-        assert int(self.x.shape[2]) == 128
-        assert int(self.x.shape[1]) == 128
+        assert int(self.x.shape[2]) == 256
+        assert int(self.x.shape[1]) == 256
 
         _nodes["conv1"] = tf.keras.layers.Conv2D(filters=128, kernel_size=8, padding='SAME', strides=2)(self.x)
         _nodes["leakyrelu2"] = tf.keras.layers.LeakyReLU(alpha=0.2)(_nodes["conv1"])
@@ -875,7 +875,7 @@ class DiffractionNet():
             actual_object["tf_reconstructed_diff"] = diffraction_noisefree[index,:,:,0]
             actual_object["real_output"] = object_real_samples[index,:,:,0]
             actual_object["imag_output"] = object_imag_samples[index,:,:,0]
-            m_index=(64,64)
+            m_index=(128,128)
             fig=diffraction_functions.plot_amplitude_phase_meas_retreival(actual_object,"actual_object_"+str(index),ACTUAL=True,m_index=m_index)
             fig.savefig("nn_pictures/"+self.name+"_pictures/"+str(self.epoch)+"/"+_set+"/"+str(index)+"_actual")
 

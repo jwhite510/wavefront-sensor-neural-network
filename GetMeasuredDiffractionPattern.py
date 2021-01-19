@@ -95,7 +95,7 @@ if __name__ == "__main__":
     experimental_params['z_distance'] = 33e-3 # [meters] distance from camera
     experimental_params['wavelength'] = 13.5e-9 #[meters] wavelength
 
-    getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128, N_meas=N_meas, experimental_params=experimental_params)
+    getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=256, N_meas=N_meas, experimental_params=experimental_params)
 
     transform={}
     transform["rotation_angle"]=3
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     # transform["flip"]="lr"
     transform["flip"]=None
     m = getMeasuredDiffractionPattern.format_measured_diffraction_pattern(measured_pattern, transform)
-    m2 = diffraction_functions.get_and_format_experimental_trace(128, transform)
+    m2 = diffraction_functions.get_and_format_experimental_trace(256, transform)
 
     print("np.shape(m) => ",np.shape(m))
     print("np.shape(m2) => ",np.shape(m2))

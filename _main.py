@@ -259,7 +259,7 @@ class MainWindow(QtWidgets.QMainWindow, main.Ui_MainWindow):
         experimental_params['pixel_size'] = params['pixel_size'] # [meters] with 2x2 binning
         experimental_params['z_distance'] = params['z_distance'] # [meters] distance from camera
         experimental_params['wavelength'] = params['wavelength'] #[meters] wavelength
-        self.getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=128,
+        self.getMeasuredDiffractionPattern = GetMeasuredDiffractionPattern(N_sim=256,
                 N_meas=np.shape(im)[0], # for calculating the measured frequency axis (not really needed)
                 experimental_params=experimental_params)
 
