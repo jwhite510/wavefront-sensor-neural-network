@@ -5,6 +5,7 @@ import numpy as np
 import pickle
 import diffraction_functions
 import params
+from PIL import Image
 
 def place_colorbar(im,ax,offsetx,offsety,ticks:list,color:str,labels:list=None):
     caxis=fig.add_axes([ax.get_position().bounds[0]+offsetx,ax.get_position().bounds[1]+offsety,0.07,0.01])
@@ -31,17 +32,20 @@ if __name__ == "__main__":
     f=simulation_axes['diffraction_plane']['f'] # 1/meters
     f*=1e-6
 
-    fig = plt.figure(figsize=(10,10))
+    fig = plt.figure(figsize=(13,13))
     fig.subplots_adjust(wspace=0.00,hspace=0.0)
     # fig.suptitle('nn iterative compared')
-    gs = fig.add_gridspec(6,4)
+    gs = fig.add_gridspec(6,6)
     letter='a'
     for _ct,_z in zip(['0','10'],[0,3]):
         ax=fig.add_subplot(gs[0+_z:2+_z,0:2])
+        spacer=0.1
+        fig.subplots_adjust(left=0+spacer,right=1-spacer,top=1-spacer,bottom=0+spacer)
         ax.text(0.05,0.9,letter,transform=ax.transAxes,weight='bold',color='white');letter=chr(ord(letter)+1)
-        ax.pcolormesh(f,f,files['out_'+_ct]['retrieved_nn']['measured_pattern'],cmap='jet')
+        im=ax.pcolormesh(f,f,files['out_'+_ct]['retrieved_nn']['measured_pattern'],cmap='jet',vmin=0.0,vmax=1.0)
+        place_colorbar(im,ax,offsetx=0.015,offsety=0.005,ticks=[0,0.5,1],color='white')
         ax.xaxis.set_ticks([])
-        ax.set_title('Simulated Diffraction pattern no noise'if _ct=='0'else'Simulated diffraction pattern 10 counts peak')
+        ax.set_title('Simulated Diffraction pattern no noise'if _ct=='0'else'Simulated diffraction pattern\n10 counts peak')
         ax.set_ylabel(r"frequency [1/m]$\cdot 10^{6}$")
         for i,retrieval,name in zip(
                 [0,1,2],['retrieved_nn','retrieved_iterative','actual'],
@@ -78,7 +82,21 @@ if __name__ == "__main__":
             place_colorbar(im,ax,offsetx=0.015,offsety=0.005,ticks=[-3.14,0,3.14],color='black',labels=['-pi','0','+pi'])
 
     # fig.savefig('./wfs_'+str(args.wfsensor)+'beta_98_INTERP_iterative_nn_compared_noise_'+_ct+'.png')
-    fig.savefig('./wfs_'+str(args.wfsensor)+'_iterative_nn_compared_noise_'+'multiple'+'.png')
+    fig.canvas.draw()
+    image=np.frombuffer(fig.canvas.tostring_rgb(),dtype='uint8')
+    image=image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+    image=image[:,50:850,:]
+    newcanvas=np.ones_like(image)*255
+    _s=651;newcanvas[:_s,:,:]=image[:_s,:,:]
+    _s=650;newcanvas[_s+50:,:,:]=image[_s:-50,:,:]
+
+    newcanvas[652:699,100:400]=newcanvas[600:647,100:400]
+    # newcanvas[600:647,100:400]+=np.array([10,0,0],dtype=np.uint8)
+    # newcanvas[652:699,100:400]+=np.array([0,10,0],dtype=np.uint8)
+    newcanvas[600:657,60:426]=255
+    im=Image.fromarray(newcanvas);im.save('./wfs_'+str(args.wfsensor)+'_iterative_nn_compared_noise_'+'multiple'+'.png')
+
+    # fig.savefig('./wfs_'+str(args.wfsensor)+'_iterative_nn_compared_noise_'+'multiple'+'.png')
 
 
 
