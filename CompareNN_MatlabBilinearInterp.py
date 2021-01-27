@@ -12,6 +12,15 @@ import os
 from scipy import interpolate
 import argparse
 
+def place_colorbar(fig,im,ax,offsetx,offsety,ticks:list,color:str,labels:list=None):
+    caxis=fig.add_axes([ax.get_position().bounds[0]+offsetx,ax.get_position().bounds[1]+offsety,0.07,0.01])
+    fig.colorbar(im,cax=caxis,orientation='horizontal')
+    caxis.xaxis.set_ticks_position('top')
+    caxis.xaxis.set_ticks(ticks)
+    if labels: caxis.xaxis.set_ticklabels(labels)
+    caxis.tick_params(axis='x',colors=color)
+    # place_colorbar(fig,im,ax,offsetx=0.015,offsety=0.005,ticks=[-3.14,0,3.14],color='black',labels=['-pi','0','+pi'])
+    # place_colorbar(fig,im,ax,offsetx=0.015,offsety=0.005,ticks=[0,0.5,1],color='white')
 
 def make_nice_plot(samples:list)->None:
 
@@ -26,6 +35,7 @@ def make_nice_plot(samples:list)->None:
     for _s in range(5):
         ax = fig.add_subplot(gs[_s,0])
         im=ax.pcolormesh(measured_axes['diffraction_plane']['f']*1e-6,measured_axes['diffraction_plane']['f']*1e-6,samples[_s]['actual']['measured_pattern'],cmap='jet')
+        place_colorbar(fig,im,ax,offsetx=0.015,offsety=0.005,ticks=[0,0.5,1],color='white')
         if _s==0:
             ax.text(0.1, 0.85,figletter, fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="white",weight='bold')
             figletter = chr(ord(figletter)+1)
@@ -41,6 +51,7 @@ def make_nice_plot(samples:list)->None:
         ax = fig.add_subplot(gs[_s,1])
         intensity=np.abs(ret_obj)**2
         im=ax.pcolormesh(measured_axes['object']['x']*1e6,measured_axes['object']['x']*1e6,intensity,cmap='jet')
+        place_colorbar(fig,im,ax,offsetx=0.015,offsety=0.005,ticks=[0,0.5,1],color='white')
         if _s==0:
             ax.text(0.1, 0.85,figletter, fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="white",weight='bold')
             figletter = chr(ord(figletter)+1)
@@ -53,6 +64,7 @@ def make_nice_plot(samples:list)->None:
         phase_angle=np.angle(ret_obj)
         phase_angle[intensity<0.005*np.max(intensity)]=0
         im=ax.pcolormesh(measured_axes['object']['x']*1e6,measured_axes['object']['x']*1e6,phase_angle,cmap='jet')
+        place_colorbar(fig,im,ax,offsetx=0.015,offsety=0.005,ticks=[-3.14,0,3.14],color='black',labels=['-pi','0','+pi'])
         if _s==0:
             ax.text(0.1, 0.85,figletter, fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="white",weight='bold')
             figletter = chr(ord(figletter)+1)
@@ -64,6 +76,7 @@ def make_nice_plot(samples:list)->None:
         ax = fig.add_subplot(gs[_s,3])
         intensity=np.abs(actual_obj)**2
         im=ax.pcolormesh(measured_axes['object']['x']*1e6,measured_axes['object']['x']*1e6,intensity,cmap='jet')
+        place_colorbar(fig,im,ax,offsetx=0.015,offsety=0.005,ticks=[0,0.5,1],color='white')
         if _s==0:
             ax.text(0.1, 0.85,figletter, fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="white",weight='bold')
             figletter = chr(ord(figletter)+1)
@@ -76,6 +89,7 @@ def make_nice_plot(samples:list)->None:
         phase_angle=np.angle(actual_obj)
         phase_angle[intensity<0.005*np.max(intensity)]=0
         im=ax.pcolormesh(measured_axes['object']['x']*1e6,measured_axes['object']['x']*1e6,phase_angle,cmap='jet')
+        place_colorbar(fig,im,ax,offsetx=0.015,offsety=0.005,ticks=[-3.14,0,3.14],color='black',labels=['-pi','0','+pi'])
         if _s==0:
             ax.text(0.1, 0.85,figletter, fontsize=10, ha='center', transform=ax.transAxes, backgroundcolor="white",weight='bold')
             figletter = chr(ord(figletter)+1)
@@ -670,8 +684,8 @@ if __name__ == "__main__":
         # compare to training data set
         retrieved=comparenetworkiterative.retrieve_measured(actual['measured_pattern'],"Validation, Predicted")
         samples.append({'actual':actual,'retrieved':retrieved})
-    with open("samples_retrieved.p",'wb') as file:
-        pickle.dump(samples,file)
+    # with open("samples_retrieved.p",'wb') as file:
+    #     pickle.dump(samples,file)
     with open("samples_retrieved.p",'rb') as file:
         samples=pickle.load(file)
     plt.close('all')
