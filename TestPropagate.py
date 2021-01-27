@@ -49,6 +49,14 @@ def calculate_percentage_inside(x:np.array,complex_obj:np.array,d1:float,d2:floa
 
     fig.savefig('intensitycalc.png')
 
+def place_colorbar(fig,im,ax,offsetx,offsety,ticks:list,color:str,labels:list=None):
+    caxis=fig.add_axes([ax.get_position().bounds[0]+offsetx,ax.get_position().bounds[1]+offsety,0.07,0.01])
+    fig.colorbar(im,cax=caxis,orientation='horizontal')
+    caxis.xaxis.set_ticks_position('top')
+    caxis.xaxis.set_ticks(ticks)
+    if labels: caxis.xaxis.set_ticklabels(labels)
+    caxis.tick_params(axis='x',colors=color)
+
 def make_nice_figure(retrieved:dict):
 
     # get axes for retrieved object and diffraction pattern
@@ -60,11 +68,11 @@ def make_nice_figure(retrieved:dict):
     f=simulation_axes['diffraction_plane']['f'] # 1/meters
     f*=1e-6
 
-    fig = plt.figure(figsize=(10,8))
-    fig.subplots_adjust(hspace=0.02,wspace=0.02, left=0.1,right=0.8)
+    fig = plt.figure(figsize=(10,10))
+    fig.subplots_adjust(hspace=0.02,wspace=0.02, left=0.1,right=0.9,top=0.9,bottom=0.1)
     # fig.text(0.5, 0.95, run_name, ha="center")
     # fig.subplots_adjust(hspace=0.0, left=0.2)
-    gs = fig.add_gridspec(4,3)
+    gs = fig.add_gridspec(4,4)
 
     figletter = 'a'
     for _name, _i, _dist in zip(['-1000','-500','0','500_sim'],range(4),[-1000,-500,0,500]):
@@ -74,7 +82,8 @@ def make_nice_figure(retrieved:dict):
             ax = fig.add_subplot(gs[_i,0])
             if _i==0:
                 ax.set_title("Diffraction Pattern")
-            ax.pcolormesh(f,f,np.squeeze(retrieved[_name]['measured_pattern']),cmap='jet')
+            im=ax.pcolormesh(f,f,np.squeeze(retrieved[_name]['measured_pattern']),cmap='jet')
+            place_colorbar(fig,im,ax,offsetx=0.015,offsety=0.005,ticks=[0,0.5,1],color='white')
             ax.text(0.04,0.9,figletter,transform=ax.transAxes,backgroundcolor='white',weight='bold')
             figletter = chr(ord(figletter)+1)
             # annotate measured
@@ -89,7 +98,8 @@ def make_nice_figure(retrieved:dict):
         ax = fig.add_subplot(gs[_i,1])
         if _i==0:
             ax.set_title("Intensity")
-        ax.pcolormesh(x,x,np.abs(complex_obj)**2,cmap='jet')
+        im=ax.pcolormesh(x,x,(np.abs(complex_obj)**2)/np.max(np.abs(complex_obj)**2),cmap='jet')
+        place_colorbar(fig,im,ax,offsetx=0.015,offsety=0.005,ticks=[0,0.5,1],color='white')
         ax.text(0.04,0.9,figletter,transform=ax.transAxes,backgroundcolor='white',weight='bold')
         figletter = chr(ord(figletter)+1)
         ax.set_yticks([])
@@ -126,11 +136,13 @@ def make_nice_figure(retrieved:dict):
         if _i == 0 or _i == 1:
             ax.set_xticks([])
         ax.set_yticks([])
-        fig.colorbar(im,ax=ax)
+        # fig.colorbar(im,ax=ax)
+        place_colorbar(fig,im,ax,offsetx=0.015,offsety=0.005,ticks=[-3.14,0,3.14],color='black',labels=['-pi','0','+pi'])
+        # place_colorbar(im,ax,offsetx=0.015,offsety=0.005,ticks=[0,0.5,1],color='white')
         if _i == 2:
             ax.set_xlabel(r"position [um]")
             ax.set_xticks([-5,-2.5,0,2.5,5])
-        ax.text(1.27,0.5,'z='+str(_dist)+r' $[\mu m]$',transform=ax.transAxes,size=20)
+        ax.text(1.10,0.5,'z='+str(_dist)+r' $[\mu m]$',transform=ax.transAxes,size=20)
     fig.savefig('xuv_experimental_results_1.png')
 
     fig=plt.figure(figsize=(10,6))
