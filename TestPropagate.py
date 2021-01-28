@@ -193,7 +193,7 @@ def make_nice_figure(retrieved:dict):
     ax.text(424,472,r'$e^{i \phi}$',size=14,ha='left',color='black',backgroundcolor='white')
 
     ax.text(560,263,'$FFT$',size=8,ha='left',color='black',backgroundcolor='white')
-    ax.text(724,150,'Object',size=15,ha='left',color='black')
+    ax.text(724,150,'Object\n'+r'$\hat{E}_{\mathrm{wavefront}}(x,y)$',size=15,ha='left',color='black')
 
     ax.text(375,20,'Zernike\nCoefficients',size=15,ha='left',color='black')
 
@@ -203,8 +203,8 @@ def make_nice_figure(retrieved:dict):
 
     ax.text(733,669,'Neural\nNetwork',size=8,ha='left',color='black',backgroundcolor='white')
 
-    ax.text(175,855,'Through\nWavefront\nSensor',size=15,ha='left',color='black')
-    ax.text(522,835,'Diffraction\nPattern',size=15,ha='left',color='black')
+    ax.text(85,890,r'$\hat{E}^{\mathrm{i+n}}(x,y)$'+'\nPropagated Through\n'+r'$\hat{M}_{\mathrm{wavefront\/sensor}}(x,y)$',size=15,ha='left',color='black')
+    ax.text(485,845,'Diffraction Pattern\n'+r'$FFT\/[\hat{E}^{\mathrm{i+n}}(x,y)]$',size=15,ha='left',color='black')
 
     ax.text(883,835,'Retrieved\nObject',size=15,ha='left',color='black')
 
