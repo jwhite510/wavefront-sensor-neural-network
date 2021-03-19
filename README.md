@@ -1,7 +1,7 @@
 # wavefront sensor neural network
 neural network trained to retrieve the amplitude and phase of objects by measurement of their diffraction pattern
 
-publication:
+## publication:
 Real-time phase-retrieval and wavefront sensing enabled by an artificial neural network  
 Jonathon White, Sici Wang, Wilhelm Eschen, and Jan Rothhardt  
 https://www.osapublishing.org/oe/fulltext.cfm?uri=oe-29-6-9283&id=449096  
